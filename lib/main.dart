@@ -26,6 +26,7 @@ import 'repositories/add_appointment_repository.dart';
 
 SharedPreferences? prefs;
 
+//! Starting point
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
