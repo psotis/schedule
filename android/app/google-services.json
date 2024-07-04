@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "986778539489",
+    "project_id": "scheldule-project",
+    "storage_bucket": "scheldule-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:986778539489:android:4484747df3b444968beea0",
+        "android_client_info": {
+          "package_name": "com.example.scheldule"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTzi_OH35N9lBodF1GH-BIxCdoFZVm1BE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
