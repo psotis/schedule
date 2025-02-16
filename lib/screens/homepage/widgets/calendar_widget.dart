@@ -20,7 +20,7 @@ Timestamp timestampday = Timestamp.fromDate(selectedDay1);
 
 class Calendar extends StatefulWidget {
   final User user;
-  bool isMobile;
+  final bool isMobile;
   Calendar({super.key, required this.user, required this.isMobile});
 
   @override

@@ -6,7 +6,7 @@ import '../../../providers/providers.dart';
 import '../../../providers/sign_up/signup_state.dart';
 
 class SignupWidget extends StatefulWidget {
-  bool isMobile;
+  final bool isMobile;
   SignupWidget({super.key, required this.isMobile});
 
   @override
@@ -158,8 +158,7 @@ class _SignupWidgetState extends State<SignupWidget> {
                 foregroundColor: WidgetStatePropertyAll(Colors.white),
                 backgroundColor: signupStatus == SignupStatus.submitting
                     ? WidgetStatePropertyAll(Colors.grey)
-                    : WidgetStatePropertyAll(
-                        Color.fromARGB(255, 226, 48, 24))),
+                    : WidgetStatePropertyAll(Color.fromARGB(255, 226, 48, 24))),
             onPressed: signupStatus == SignupStatus.submitting ? null : signUp,
             child: signupStatus == SignupStatus.submitting
                 ? SizedBox(

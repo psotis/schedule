@@ -11,7 +11,7 @@ class AppointMent extends Equatable {
   final String address;
   final String description;
   final String amka;
-  Timestamp? date;
+  final Timestamp? date;
   AppointMent({
     required this.id,
     required this.name,

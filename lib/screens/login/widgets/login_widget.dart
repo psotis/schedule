@@ -1,13 +1,18 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:scheldule/providers/log_in/login_state.dart';
 
 import '../../../constants/screen%20sizes/screen_sizes.dart';
 import '../../../providers/providers.dart';
 
 class LoginWidget extends StatefulWidget {
-  bool isMobile;
-  LoginWidget({super.key, required this.isMobile});
+  final bool isMobile;
+  LoginWidget({
+    super.key,
+    required this.isMobile,
+  });
 
   @override
   State<LoginWidget> createState() => _LoginWidgetState();
@@ -123,8 +128,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                 foregroundColor: WidgetStatePropertyAll(Colors.white),
                 backgroundColor: loginStatus == SigninStatus.submitting
                     ? WidgetStatePropertyAll(Colors.grey)
-                    : WidgetStatePropertyAll(
-                        Color.fromARGB(255, 226, 48, 24))),
+                    : WidgetStatePropertyAll(Color.fromARGB(255, 226, 48, 24))),
             onPressed: loginStatus == SigninStatus.submitting ? null : signIn,
             child: loginStatus == SigninStatus.submitting
                 ? SizedBox(

@@ -12,7 +12,7 @@ import '../providers/providers.dart';
 import '../providers/search user/search_user_status.dart';
 
 class AddAppointment extends StatefulWidget {
-  User? user;
+  final User? user;
   AddAppointment({
     super.key,
     this.user,

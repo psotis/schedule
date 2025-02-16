@@ -8,9 +8,9 @@ import 'package:scheldule/providers/appointment/appointment_provider.dart';
 class Customer extends StatelessWidget {
   final User? user;
   const Customer({
-    Key? key,
+    super.key,
     this.user,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

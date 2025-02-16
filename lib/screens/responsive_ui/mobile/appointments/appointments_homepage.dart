@@ -12,11 +12,11 @@ import '../../../../utils/custom_text_form.dart';
 import '../../../homepage/widgets/calendar_widget.dart';
 
 class Appointments extends StatefulWidget {
-  User? user;
+  final User? user;
   Appointments({
-    Key? key,
+    super.key,
     this.user,
-  }) : super(key: key);
+  });
 
   @override
   State<Appointments> createState() => _AppointmentsState();

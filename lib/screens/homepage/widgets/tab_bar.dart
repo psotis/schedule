@@ -7,7 +7,7 @@ import 'package:scheldule/widgets/add_patient.dart';
 
 class TabWidget extends StatefulWidget {
   final User? user;
-  bool isMobile;
+  final bool isMobile;
   TabWidget({
     super.key,
     this.user,

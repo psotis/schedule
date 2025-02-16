@@ -8,7 +8,7 @@ import '../providers/appointment/appointment_status.dart';
 import '../providers/providers.dart';
 
 class SeeScheldule extends StatefulWidget {
-  User? user;
+  final User? user;
   SeeScheldule({
     super.key,
     this.user,
