@@ -83,7 +83,7 @@ class _CalendarState extends State<Calendar> {
             shape: BoxShape.circle,
           ),
           todayDecoration: BoxDecoration(
-            color: Color.fromARGB(255, 189, 143, 228).withOpacity(.8),
+            color: Color.fromARGB(255, 189, 143, 228).withAlpha(80),
             shape: BoxShape.circle,
           ),
           markerDecoration: BoxDecoration(

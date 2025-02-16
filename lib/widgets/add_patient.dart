@@ -11,9 +11,9 @@ import '../providers/providers.dart';
 class AddPatient extends StatefulWidget {
   User? user;
   AddPatient({
-    Key? key,
+    super.key,
     this.user,
-  }) : super(key: key);
+  });
 
   @override
   State<AddPatient> createState() => _AddPatientState();

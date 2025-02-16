@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutterfire_ui/auth.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/log_in/login_state.dart';
 
@@ -121,10 +120,10 @@ class _LoginWidgetState extends State<LoginWidget> {
               : ScreenSize.screenWidth * .3,
           child: ElevatedButton(
             style: ButtonStyle(
-                foregroundColor: MaterialStatePropertyAll(Colors.white),
+                foregroundColor: WidgetStatePropertyAll(Colors.white),
                 backgroundColor: loginStatus == SigninStatus.submitting
-                    ? MaterialStatePropertyAll(Colors.grey)
-                    : MaterialStatePropertyAll(
+                    ? WidgetStatePropertyAll(Colors.grey)
+                    : WidgetStatePropertyAll(
                         Color.fromARGB(255, 226, 48, 24))),
             onPressed: loginStatus == SigninStatus.submitting ? null : signIn,
             child: loginStatus == SigninStatus.submitting

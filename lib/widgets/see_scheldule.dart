@@ -10,9 +10,9 @@ import '../providers/providers.dart';
 class SeeScheldule extends StatefulWidget {
   User? user;
   SeeScheldule({
-    Key? key,
+    super.key,
     this.user,
-  }) : super(key: key);
+  });
 
   @override
   State<SeeScheldule> createState() => _SeeSchelduleState();

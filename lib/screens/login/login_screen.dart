@@ -1,6 +1,10 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+// import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
-import 'package:flutterfire_ui/auth.dart';
+// import 'package:flutterfire_ui/auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/login%20to%20sign%20up/change_page_state.dart';
 import 'package:scheldule/providers/providers.dart';
@@ -19,9 +23,13 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final providers = [GoogleAuthProvider()];
+
   static const mobileHeight = 600;
   static const mobileWidth = 480;
+
   bool isMobile = false;
+
   @override
   Widget build(BuildContext context) {
     ScreenSize().init(context);
@@ -89,12 +97,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       height: ScreenSize.screenHeight * .3,
                       width: ScreenSize.screenWidth * .30,
                       child: SignInScreen(
-                        resizeToAvoidBottomInset: true,
-                        providerConfigs: [
-                          GoogleProviderConfiguration(
+                        providers: [
+                          GoogleProvider(
                               clientId:
                                   '124706936019-4h1tvjmgmadgeg05mnm1oa8do9beieqo.apps.googleusercontent.com')
                         ],
+                        resizeToAvoidBottomInset: true,
                       ),
                     ),
                   ],
@@ -153,12 +161,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => SignInScreen(
-                                            resizeToAvoidBottomInset: true,
-                                            providerConfigs: [
-                                              GoogleProviderConfiguration(
+                                            providers: [
+                                              GoogleProvider(
                                                   clientId:
                                                       '124706936019-4h1tvjmgmadgeg05mnm1oa8do9beieqo.apps.googleusercontent.com')
                                             ],
+                                            resizeToAvoidBottomInset: true,
                                           )))),
                         ),
                         SizedBox(height: ScreenSize.screenHeight * .02),
@@ -184,10 +192,10 @@ class EntryGif extends StatelessWidget {
   double? height;
   double? width;
   EntryGif({
-    Key? key,
+    super.key,
     required this.height,
     required this.width,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
 import 'package:scheldule/providers/add%20appointment/add_appointment_status.dart';
 import 'package:scheldule/screens/homepage/widgets/calendar_widget.dart';
@@ -13,9 +14,9 @@ import '../providers/search user/search_user_status.dart';
 class AddAppointment extends StatefulWidget {
   User? user;
   AddAppointment({
-    Key? key,
+    super.key,
     this.user,
-  }) : super(key: key);
+  });
 
   @override
   State<AddAppointment> createState() => _AddAppointmentState();
@@ -271,9 +272,8 @@ class _AddAppointmentState extends State<AddAppointment> {
                     width: ScreenSize.screenWidth,
                     child: ElevatedButton(
                       style: ButtonStyle(
-                          foregroundColor:
-                              MaterialStatePropertyAll(Colors.white),
-                          backgroundColor: MaterialStatePropertyAll(
+                          foregroundColor: WidgetStatePropertyAll(Colors.white),
+                          backgroundColor: WidgetStatePropertyAll(
                               Color.fromARGB(255, 226, 48, 24))),
                       onPressed: () async => pickDateTime(),
                       child: finalDate == null

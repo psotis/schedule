@@ -10,6 +10,7 @@ import 'appointment_status.dart';
 
 class AppointmentProvider extends ChangeNotifier {
   List<AppointMent> appointment = [];
+  List<AppointMent> appointments = [];
   AppointmentState _appointmentState = AppointmentState.initial();
   AppointmentState get appointmentState => _appointmentState;
   late DocumentReference documentReference;
@@ -24,6 +25,10 @@ class AppointmentProvider extends ChangeNotifier {
   AppointmentProvider({
     required this.appointmentRepository,
   });
+
+  Stream<List<AppointMent>> getApp(String userId) {
+    return appointmentRepository.streamAppointment(userId: userId);
+  }
 
   Future<void> getAppointMents(
       String userid, DateTime selectedDay1, DateTime endOfDay) async {

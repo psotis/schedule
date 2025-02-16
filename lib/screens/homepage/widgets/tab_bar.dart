@@ -9,10 +9,10 @@ class TabWidget extends StatefulWidget {
   final User? user;
   bool isMobile;
   TabWidget({
-    Key? key,
+    super.key,
     this.user,
     required this.isMobile,
-  }) : super(key: key);
+  });
 
   @override
   State<TabWidget> createState() => _TabWidgetState();

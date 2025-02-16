@@ -155,10 +155,10 @@ class _SignupWidgetState extends State<SignupWidget> {
               : ScreenSize.screenWidth * .3,
           child: ElevatedButton(
             style: ButtonStyle(
-                foregroundColor: MaterialStatePropertyAll(Colors.white),
+                foregroundColor: WidgetStatePropertyAll(Colors.white),
                 backgroundColor: signupStatus == SignupStatus.submitting
-                    ? MaterialStatePropertyAll(Colors.grey)
-                    : MaterialStatePropertyAll(
+                    ? WidgetStatePropertyAll(Colors.grey)
+                    : WidgetStatePropertyAll(
                         Color.fromARGB(255, 226, 48, 24))),
             onPressed: signupStatus == SignupStatus.submitting ? null : signUp,
             child: signupStatus == SignupStatus.submitting

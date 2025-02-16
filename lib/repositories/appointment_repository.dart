@@ -9,6 +9,15 @@ class AppointmentRepository {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   List<AppointMent>? appointment;
 
+  Stream<List<AppointMent>> streamAppointment({required String userId}) {
+    return FirebaseFirestore.instance
+        .collection(userId)
+        .where('date', isGreaterThanOrEqualTo: DateTime(2020))
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => AppointMent.fromDoc(doc)).toList());
+  }
+
   Future<List<AppointMent>> fetchAppointments({required String userid}) async {
     try {
       appointMentsFromFirebase = await firestore

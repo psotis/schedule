@@ -4,15 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fbAuth;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:flutterfire_ui/i10n.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/firebase_options.dart';
 import 'package:scheldule/keys/material_key.dart';
 import 'package:scheldule/providers/auth/auth_provider.dart';
+import 'package:scheldule/providers/drawer_nav/drawer_provider.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/repositories/appointment_repository.dart';
 import 'package:scheldule/repositories/auth_repository.dart';
@@ -43,15 +43,6 @@ Future<void> main() async {
   prefs = await SharedPreferences.getInstance();
 
   runApp(const MyApp());
-}
-
-class MyCustomScrollBehavior extends MaterialScrollBehavior {
-  // Override behavior methods and getters like dragDevices
-  @override
-  Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-      };
 }
 
 class MyApp extends StatelessWidget {
@@ -120,14 +111,17 @@ class MyApp extends StatelessWidget {
                   context.read<AddAppointmentRepository>()),
         ),
         ChangeNotifierProvider<ChangePageProvider>(
-            create: (context) => ChangePageProvider()),
+          create: (context) => ChangePageProvider(),
+        ),
+        ChangeNotifierProvider<DrawerProvider>(
+          create: (context) => DrawerProvider(),
+        ),
       ],
       child: Builder(builder: (context) {
         return MaterialApp(
           title: 'My Schedule',
           debugShowCheckedModeBanner: false,
           theme: Themes().darkTheme,
-          scrollBehavior: MyCustomScrollBehavior(),
           // darkTheme: Themes().darkTheme,
           themeMode: ThemeMode.system,
           onGenerateRoute: RouteGenerator.generateRoute,

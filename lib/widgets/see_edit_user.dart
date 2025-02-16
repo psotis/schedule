@@ -14,10 +14,10 @@ class SeeEditUser extends StatefulWidget {
   AppointMent? list;
   User? user;
   SeeEditUser({
-    Key? key,
+    super.key,
     required this.list,
     this.user,
-  }) : super(key: key);
+  });
 
   @override
   State<SeeEditUser> createState() => _SeeEditUserState();
