@@ -22,7 +22,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'repositories/add_appointment_repository.dart';
-import 'styling/themes/dark_theme.dart';
 
 SharedPreferences? prefs;
 
@@ -53,9 +52,6 @@ class MyApp extends StatelessWidget {
     // final Future<FirebaseApp> _fbApp = Firebase.initializeApp();
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<ThemeProvider>(
-          create: (context) => ThemeProvider(),
-        ),
         Provider<AuthRepository>(
           create: (context) => AuthRepository(
             firebaseFirestore: FirebaseFirestore.instance,
@@ -113,6 +109,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<ChangePageProvider>(
           create: (context) => ChangePageProvider(),
         ),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (context) => ThemeProvider(),
+        ),
         ChangeNotifierProvider<DrawerProvider>(
           create: (context) => DrawerProvider(),
         ),
@@ -122,7 +121,6 @@ class MyApp extends StatelessWidget {
           title: 'My Schedule',
           debugShowCheckedModeBanner: false,
           theme: context.watch<ThemeProvider>().state?.themeData,
-          themeMode: ThemeMode.system,
           onGenerateRoute: RouteGenerator.generateRoute,
           navigatorKey: AppMaterialKey.materialKey,
           initialRoute: '/',
