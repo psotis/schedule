@@ -144,10 +144,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
         stream: stream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          }
-          if (snapshot.data!.isEmpty) {
-            return Text('Empty list');
+            return Center(child: CircularProgressIndicator());
           }
           return Card(
             child: SfCalendar(

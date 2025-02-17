@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Employee extends StatelessWidget {
-  const Employee({super.key});
+  final User? user;
+  const Employee({super.key, this.user});
 
   @override
   Widget build(BuildContext context) {
