@@ -6,7 +6,6 @@ import 'package:scheldule/screens/homepage/widgets/syncfusion_calendar.dart';
 
 import '../../constants/screen%20sizes/screen_sizes.dart';
 import '../../providers/providers.dart';
-import 'widgets/calendar_widget.dart';
 import 'widgets/search.dart';
 import 'widgets/tab_bar.dart';
 
@@ -27,23 +26,23 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    callInitialAppointments();
+    // callInitialAppointments();
     print(user!.uid);
-    print(selectedDay1.toUtc());
-    print(endOfDay.toUtc());
+    // print(selectedDay1.toUtc());
+    // print(endOfDay.toUtc());
     context.read<SearchUserProvider>().searchUsers(user: user!.uid);
 
     super.initState();
   }
 
-  Future callInitialAppointments() async {
-    await Future.delayed(Duration(), () {
-      context
-          .read<AppointmentProvider>()
-          .getAppointMents(user!.uid, selectedDay1.toUtc(), endOfDay.toUtc());
-    });
-    print('Call init appointments');
-  }
+  // Future callInitialAppointments() async {
+  //   await Future.delayed(Duration(), () {
+  //     context
+  //         .read<AppointmentProvider>()
+  //         .getAppointMents(user!.uid, selectedDay1.toUtc(), endOfDay.toUtc());
+  //   });
+  //   print('Call init appointments');
+  // }
 
   bool isMobile = false;
 

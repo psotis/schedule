@@ -2,6 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:scheldule/models/custom_errors.dart';
 
 import 'package:scheldule/repositories/appointment_repository.dart';
 
@@ -26,9 +27,32 @@ class AppointmentProvider extends ChangeNotifier {
     required this.appointmentRepository,
   });
 
-  Stream<List<AppointMent>> getApp(String userId) {
-    return appointmentRepository.streamAppointment(userId: userId);
-  }
+  // Stream<List<AppointMent>> getApp(String userId) {
+  //   // return appointmentRepository.streamAppointment(userId: userId);
+  //   _appointmentState = _appointmentState.copyWith(
+  //       appointmentStatus: AppointmentStatus.loading);
+  //   try {
+  //     // Use the streamAppointment method from your repository
+  //     return appointmentRepository
+  //         .streamAppointment(userId: userId)
+  //         .map((appointments) {
+  //       // Update the state based on the data received
+  //       if (appointments.isEmpty) {
+  //         _appointmentState = _appointmentState.copyWith(
+  //             appointMent: appointments,
+  //             appointmentStatus: AppointmentStatus.empty);
+  //       } else {
+  //         _appointmentState = _appointmentState.copyWith(
+  //             appointMent: appointments,
+  //             appointmentStatus: AppointmentStatus.loaded);
+  //       }
+  //       notifyListeners();
+  //       return appointments;
+  //     });
+  //   } catch (e) {
+  //     throw CustomError(message: e.toString());
+  //   }
+  // }
 
   Future<void> getAppointMents(
       String userid, DateTime selectedDay1, DateTime endOfDay) async {

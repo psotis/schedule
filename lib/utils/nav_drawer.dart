@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/drawer_nav/drawer_provider.dart';
@@ -40,6 +41,10 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
       icon: Icons.settings,
     ),
   ];
+
+  Future logout() async {
+    await FirebaseAuth.instance.signOut();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +89,7 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
             child: ListTile(
               title: Text('Log out'),
               leading: Icon(Icons.logout),
-              onTap: () {},
+              onTap: logout,
             ),
           )
         ],

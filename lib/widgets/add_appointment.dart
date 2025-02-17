@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 
 import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
 import 'package:scheldule/providers/add%20appointment/add_appointment_status.dart';
-import 'package:scheldule/screens/homepage/widgets/calendar_widget.dart';
 
 import '../providers/providers.dart';
 import '../providers/search user/search_user_status.dart';
@@ -28,6 +27,7 @@ class _AddAppointmentState extends State<AddAppointment> {
   TextEditingController surnameController = TextEditingController();
   TextEditingController controller = TextEditingController();
   DateTime selectedDateTime = DateTime.now();
+  late final Timestamp timestampday;
 
   DateTime? finalDate;
 
@@ -44,6 +44,8 @@ class _AddAppointmentState extends State<AddAppointment> {
     final userForm = _formKey.currentState;
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
+
+    // await context.read<AddAppointmentProvider>().
     await context.read<AddAppointmentProvider>().addAppointment(
           userUid: widget.user!.uid,
           name: name!,
@@ -56,17 +58,17 @@ class _AddAppointmentState extends State<AddAppointment> {
         );
   }
 
-  void addAppointment({
-    required String userId,
-    required DateTime selectedDay,
-    required DateTime endOfDay,
-  }) async {
-    await Future.delayed(Duration(), () {
-      context
-          .read<AppointmentProvider>()
-          .getAppointMents(userId, selectedDay, endOfDay);
-    });
-  }
+  // void addAppointment({
+  //   required String userId,
+  //   required DateTime selectedDay,
+  //   required DateTime endOfDay,
+  // }) async {
+  //   await Future.delayed(Duration(), () {
+  //     context
+  //         .read<AppointmentProvider>()
+  //         .getAppointMents(userId, selectedDay, endOfDay);
+  //   });
+  // }
 
   Future pickDateTime() async {
     DateTime? date = await pickDate();
@@ -84,7 +86,6 @@ class _AddAppointmentState extends State<AddAppointment> {
     );
     setState(() {
       finalDate = dateTime;
-      print(finalDate);
       timestampday = Timestamp.fromDate(finalDate!);
     });
   }
@@ -209,18 +210,18 @@ class _AddAppointmentState extends State<AddAppointment> {
               child: Text('Αποτυχία'),
             );
           }
-          if (state.appointmentState.appointmentStatus ==
-              AddAppointmentStatus.addAppointment) {
-            addAppointment(
-              userId: widget.user!.uid,
-              selectedDay: selectedDay1,
-              endOfDay: endOfDay,
-            );
-            nameController.clear();
-            surnameController.clear();
+          // if (state.appointmentState.appointmentStatus ==
+          //     AddAppointmentStatus.addAppointment) {
+          //   addAppointment(
+          //     userId: widget.user!.uid,
+          //     selectedDay: selectedDay1,
+          //     endOfDay: endOfDay,
+          //   );
+          //   nameController.clear();
+          //   surnameController.clear();
 
-            print(finalDate);
-          }
+          //   print(finalDate);
+          // }
           finalDate == null;
           return Form(
             key: _formKey,

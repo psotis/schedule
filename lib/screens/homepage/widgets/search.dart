@@ -21,62 +21,59 @@ class _SearchState extends State<Search> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      child: Center(
-        child: Consumer<SearchUserProvider>(
-          builder: (context, value, child) {
-            if (value.searchUserState.searchUserStatus ==
-                SearchUserStatus.empty) {
-              return Text('Καταχώρησε ασθενή');
-            }
-            if (value.searchUserState.searchUserStatus ==
-                SearchUserStatus.loadedList) {
-              return ListView.builder(
-                itemCount: value.appointment.length,
-                itemBuilder: (context, index) {
-                  var p = value.appointment[index];
-                  print('This is the docId of search ${p.id}');
+    return Consumer<SearchUserProvider>(
+      builder: (context, value, child) {
+        if (value.searchUserState.searchUserStatus == SearchUserStatus.empty) {
+          return Text('Καταχώρησε ασθενή');
+        }
+        if (value.searchUserState.searchUserStatus ==
+            SearchUserStatus.loadedList) {
+          return ListView.builder(
+            itemCount: value.appointment.length,
+            itemBuilder: (context, index) {
+              var p = value.appointment[index];
+              print('This is the docId of search ${p.id}');
 
-                  return DropdownMenu(
-                    menuHeight: ScreenSize.screenHeight * .4,
-                    inputDecorationTheme:
-                        InputDecorationTheme(border: InputBorder.none
-                            // OutlineInputBorder(
-                            //     borderRadius:
-                            //         BorderRadius.all(Radius.circular(10)))
-                            ),
-                    textStyle: TextStyle(fontSize: 14),
-                    label: Text('Αναζήτηση',
-                        style: TextStyle(fontSize: 12, color: Colors.black)),
-                    enableFilter: true,
-                    enableSearch: true,
-                    dropdownMenuEntries: value.appointment.map((e) {
-                      return DropdownMenuEntry(
-                          value: e, label: '${e.name} ${e.surname}');
-                    }).toList(),
-                    onSelected: (val) {
-                      setState(() {
-                        selectedUser = val;
+              return DropdownMenu(
+                menuHeight: ScreenSize.screenHeight * .4,
+                inputDecorationTheme:
+                    InputDecorationTheme(border: InputBorder.none
+                        // OutlineInputBorder(
+                        //     borderRadius:
+                        //         BorderRadius.all(Radius.circular(10)))
+                        ),
+                textStyle: TextStyle(fontSize: 14),
+                label: Text('Αναζήτηση',
+                    style: TextStyle(fontSize: 12, color: Colors.black)),
+                enableFilter: true,
+                enableSearch: true,
+                dropdownMenuEntries: value.appointment.map((e) {
+                  return DropdownMenuEntry(
+                      value: e, label: '${e.name} ${e.surname}');
+                }).toList(),
+                onSelected: (val) {
+                  setState(() {
+                    selectedUser = val;
+                  });
+                  showAdaptiveDialog(
+                      context: context,
+                      builder: (context) {
+                        return Dialog(
+                          child: SeeEditUser(
+                            list: selectedUser,
+                            user: widget.user,
+                          ),
+                        );
                       });
-                      showAdaptiveDialog(
-                          context: context,
-                          builder: (context) {
-                            return Dialog(
-                              child: SeeEditUser(
-                                list: selectedUser,
-                                user: widget.user,
-                              ),
-                            );
-                          });
-                    },
-                  );
                 },
               );
-            }
-            return SizedBox();
-          },
-        ),
-      ),
+            },
+          );
+        }
+        return SizedBox(
+          child: Text('Please add a customer before adding an appointment'),
+        );
+      },
     );
   }
 }

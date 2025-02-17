@@ -8,6 +8,7 @@ class CustomTextForm extends StatelessWidget {
   final IconData? suffixIcon;
   final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onChanged;
+  final void Function(String?)? onSaved;
   final bool obscureText;
   final TextEditingController? controller;
 
@@ -21,6 +22,7 @@ class CustomTextForm extends StatelessWidget {
     this.onChanged,
     this.obscureText = false,
     this.controller,
+    this.onSaved,
   });
 
   @override
@@ -91,6 +93,7 @@ class CustomTextForm extends StatelessWidget {
       ),
       validator: validator,
       onChanged: onChanged,
+      onSaved: onSaved,
     );
   }
 }

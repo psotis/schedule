@@ -4,12 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
 
-import 'package:scheldule/providers/add%20appointment/add_appointment_provider.dart';
-import 'package:scheldule/providers/appointment/appointment_provider.dart';
+import 'package:scheldule/screens/homepage/widgets/search.dart';
+import 'package:scheldule/utils/send_button.dart';
 
+import '../../../../providers/add appointment/add_appointment_provider.dart';
 import '../../../../utils/custom_text_form.dart';
-import '../../../homepage/widgets/calendar_widget.dart';
 
 class Appointments extends StatefulWidget {
   final User? user;
@@ -23,12 +24,12 @@ class Appointments extends StatefulWidget {
 }
 
 class _AppointmentsState extends State<Appointments> {
-  String? name, surname, email, phone, address, description;
+  String? name, surname;
 
   TextEditingController nameController = TextEditingController();
   TextEditingController surnameController = TextEditingController();
-  TextEditingController controller = TextEditingController();
   DateTime selectedDateTime = DateTime.now();
+  late Timestamp timestampday;
 
   DateTime? finalDate;
   String? formattedTime;
@@ -47,28 +48,17 @@ class _AppointmentsState extends State<Appointments> {
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
     await context.read<AddAppointmentProvider>().addAppointment(
-          userUid: widget.user!.uid,
-          name: name!,
-          surname: surname!,
-          date: timestampday,
-          // phone: phone!,
-          // email: email!,
-          // address: address!,
-          // description: description!,
-        );
-  }
+        userUid: widget.user!.uid,
+        name: name!,
+        surname: surname!,
+        date: timestampday);
 
-  // void addAppointment({
-  //   required String userId,
-  //   required DateTime selectedDay,
-  //   required DateTime endOfDay,
-  // }) async {
-  //   await Future.delayed(Duration(), () {
-  //     context
-  //         .read<AppointmentProvider>()
-  //         .getAppointMents(userId, selectedDay, endOfDay);
-  //   });
-  // }
+    setState(() {
+      nameController.clear();
+      surnameController.clear();
+      formattedTime = null;
+    });
+  }
 
   Future pickDateTime() async {
     DateTime? date = await pickDate();
@@ -122,7 +112,6 @@ class _AppointmentsState extends State<Appointments> {
 
   @override
   void initState() {
-    controller = TextEditingController();
     nameController = TextEditingController();
     surnameController = TextEditingController();
     super.initState();
@@ -130,7 +119,6 @@ class _AppointmentsState extends State<Appointments> {
 
   @override
   void dispose() {
-    controller.dispose();
     nameController.dispose();
     surnameController.dispose();
     super.dispose();
@@ -138,43 +126,104 @@ class _AppointmentsState extends State<Appointments> {
 
   @override
   Widget build(BuildContext context) {
+    ScreenSize().init(context);
     return Padding(
       padding: EdgeInsets.all(10),
-      child: SingleChildScrollView(
-        child: Column(
-          spacing: 20,
-          children: [
-            CustomTextForm(
-              labelText: 'Name',
-              hintText: 'John',
-              prefixIcon: Icons.person,
-            ),
-            CustomTextForm(
-              labelText: 'Surname',
-              hintText: 'Doe',
-              prefixIcon: Icons.person_2,
-            ),
-            CustomTextForm(
-              labelText: 'E-mail',
-              hintText: 'example@gmail.com',
-              prefixIcon: Icons.email,
-            ),
-            Row(
-              spacing: 10,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Pick a date'),
-                OutlinedButton(
-                    onPressed: pickDateTime,
-                    child: formattedTime == null
-                        ? Icon(Icons.date_range)
-                        : Text(formattedTime!)),
-              ],
-            ),
-          ],
+      child: Column(
+        spacing: 20,
+        children: [Search(user: widget.user), _form(), Spacer(), _sendButton()],
+      ),
+    );
+  }
+
+  Form _form() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        spacing: 20,
+        children: [
+          CustomTextForm(
+            controller: nameController,
+            labelText: 'Name',
+            hintText: 'John',
+            prefixIcon: Icons.person,
+            onChanged: (value) {
+              setState(() {
+                nameController.text == value;
+              });
+            },
+            onSaved: (value) {
+              name = value;
+            },
+          ),
+          CustomTextForm(
+            controller: surnameController,
+            labelText: 'Surname',
+            hintText: 'Doe',
+            prefixIcon: Icons.person_2,
+            onChanged: (value) {
+              setState(() {
+                surnameController.text == value;
+              });
+            },
+            onSaved: (value) {
+              surname = value;
+            },
+          ),
+          _pickDate(),
+          _assignTo(),
+        ],
+      ),
+    );
+  }
+
+  Padding _sendButton() {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 30),
+      child: SizedBox(
+        child: SendButton(
+          icon: Icons.send,
+          iconColor: Colors.white,
+          text: 'Send',
+          onPressed: nameController.text.isNotEmpty &&
+                  surnameController.text.isNotEmpty &&
+                  finalDate != null
+              ? _submit
+              : null,
         ),
       ),
+    );
+  }
+
+  SizedBox _assignTo() {
+    return SizedBox(
+      width: double.infinity,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Text('Assign to: '),
+          DropdownMenu(
+            width: ScreenSize.screenWidth * .5,
+            dropdownMenuEntries: [],
+          )
+        ],
+      ),
+    );
+  }
+
+  Row _pickDate() {
+    return Row(
+      spacing: 10,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text('Pick a date'),
+        OutlinedButton(
+            onPressed: pickDateTime,
+            child: formattedTime == null
+                ? Icon(Icons.date_range)
+                : Text(formattedTime!)),
+      ],
     );
   }
 }

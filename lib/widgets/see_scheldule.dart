@@ -2,7 +2,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scheldule/screens/homepage/widgets/calendar_widget.dart';
 
 import '../providers/appointment/appointment_status.dart';
 import '../providers/providers.dart';
@@ -25,9 +24,9 @@ class _SeeSchelduleState extends State<SeeScheldule> {
         .deleteAppointments(userId, appointmentId);
 
     // ignore: use_build_context_synchronously
-    context
-        .read<AppointmentProvider>()
-        .getAppointMents(widget.user!.uid, selectedDay1, endOfDay);
+    // context
+    //     .read<AppointmentProvider>()
+    //     .getAppointMents(widget.user!.uid, selectedDay1, endOfDay);
   }
 
   @override
@@ -52,15 +51,15 @@ class _SeeSchelduleState extends State<SeeScheldule> {
       }
       if (appointment.appointmentState.appointmentStatus ==
           AppointmentStatus.delete) {
-        context
-            .read<AppointmentProvider>()
-            .getAppointMents(widget.user!.uid, selectedDay1, endOfDay);
+        // context
+        //     .read<AppointmentProvider>()
+        //     .getAppointMents(widget.user!.uid, selectedDay1, endOfDay);
       }
       if (appointment.appointmentState.appointmentStatus ==
           AppointmentStatus.delete) {
-        context
-            .read<AppointmentProvider>()
-            .getAppointMents(widget.user!.uid, selectedDay1, endOfDay);
+        // context
+        //     .read<AppointmentProvider>()
+        //     .getAppointMents(widget.user!.uid, selectedDay1, endOfDay);
       }
       return ListView.builder(
         shrinkWrap: true,

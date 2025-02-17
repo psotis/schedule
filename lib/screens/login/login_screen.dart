@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:scheldule/constants/device_sizes.dart';
 import 'package:scheldule/providers/login%20to%20sign%20up/change_page_state.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/screens/signup/widgets/signup_widget.dart';
@@ -26,7 +27,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final providers = [GoogleAuthProvider()];
 
   static const mobileHeight = 600;
-  static const mobileWidth = 480;
 
   bool isMobile = false;
 
@@ -35,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
     ScreenSize().init(context);
     return LayoutBuilder(builder: (context, constraints) {
       if (constraints.maxHeight > mobileHeight &&
-          constraints.maxWidth > mobileWidth) {
+          constraints.maxWidth > DeviceSizes.mobileSize) {
         bool isMobile = false;
         return GestureDetector(
           onTap: () => FocusManager.instance.primaryFocus?.unfocus(),

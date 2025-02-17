@@ -18,11 +18,11 @@ import 'package:scheldule/repositories/appointment_repository.dart';
 import 'package:scheldule/repositories/auth_repository.dart';
 import 'package:scheldule/repositories/search_edit_user_repository.dart';
 import 'package:scheldule/routes/route_generator.dart';
-import 'package:scheldule/styling/themes/themes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'repositories/add_appointment_repository.dart';
+import 'styling/themes/dark_theme.dart';
 
 SharedPreferences? prefs;
 
@@ -53,9 +53,9 @@ class MyApp extends StatelessWidget {
     // final Future<FirebaseApp> _fbApp = Firebase.initializeApp();
     return MultiProvider(
       providers: [
-        // ChangeNotifierProvider<ThemeProvider>(
-        //   create: (context) => ThemeProvider(),
-        // ),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (context) => ThemeProvider(),
+        ),
         Provider<AuthRepository>(
           create: (context) => AuthRepository(
             firebaseFirestore: FirebaseFirestore.instance,
@@ -121,8 +121,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'My Schedule',
           debugShowCheckedModeBanner: false,
-          theme: Themes().darkTheme,
-          // darkTheme: Themes().darkTheme,
+          theme: context.watch<ThemeProvider>().state?.themeData,
           themeMode: ThemeMode.system,
           onGenerateRoute: RouteGenerator.generateRoute,
           navigatorKey: AppMaterialKey.materialKey,

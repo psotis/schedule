@@ -1,14 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scheldule/providers/add%20appointment/add_appointment_provider.dart';
 import 'package:scheldule/providers/appointment/appointment_provider.dart';
-import 'package:scheldule/screens/homepage/widgets/calendar_widget.dart';
 import 'package:scheldule/styling/fonts/textstyle.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
-import '../../../providers/appointment/appointment_status.dart';
+import '../../../repositories/appointment_repository.dart';
 
 class SyncFusionCalendar extends StatefulWidget {
   final User user;
@@ -21,6 +18,17 @@ class SyncFusionCalendar extends StatefulWidget {
 class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
   final CalendarController _controller = CalendarController();
   List<AppointMent> appointment = [];
+  String? userId;
+
+  late final stream =
+      AppointmentRepository().streamAppointment(userId: userId!);
+
+  @override
+  void initState() {
+    userId = widget.user.uid;
+    super.initState();
+  }
+
   void calendarPicker(CalendarTapDetails details) async {
     if (details.targetElement == CalendarElement.appointment) {
       setState(() {
@@ -79,16 +87,6 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
     }
   }
 
-  Future<void> changeAppointment({required DateTime date}) async {
-    Future.delayed(Duration(seconds: 1), () {
-      context.read<AddAppointmentProvider>().addAppointment(
-          name: '',
-          surname: '',
-          date: Timestamp.fromDate(date),
-          userUid: 'u7eSN16xV3eT2048ESJ5izbNdkE2');
-    });
-  }
-
   Future<void> showEditDialog(AppointMent appointment) async {
     await showAdaptiveDialog(
       context: context,
@@ -132,7 +130,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
     required DateTime selectedDay1,
     required DateTime endOfDay,
   }) async {
-    await Future.delayed(Duration(), () {
+    await Future.delayed(Duration(milliseconds: 100), () {
       context
           .read<AppointmentProvider>()
           .getAppointMents(userId, selectedDay1, endOfDay);
@@ -142,14 +140,14 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<AppointmentProvider>(
-        builder: (context, state, child) {
-          if (state.appointmentState.appointmentStatus ==
-              AppointmentStatus.delete) {
-            deleteAppointment(
-                userId: widget.user.uid,
-                selectedDay1: selectedDay1,
-                endOfDay: endOfDay);
+      body: StreamBuilder(
+        stream: stream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          }
+          if (snapshot.data!.isEmpty) {
+            return Text('Empty list');
           }
           return Card(
             child: SfCalendar(
@@ -192,7 +190,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
               monthViewSettings: const MonthViewSettings(
                 appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
               ),
-              dataSource: MeetingDataSource(state.appointment
+              dataSource: MeetingDataSource(snapshot.data!
                   .map((e) => AppointMent(
                         '${e.name} ${e.surname}',
                         e.id,

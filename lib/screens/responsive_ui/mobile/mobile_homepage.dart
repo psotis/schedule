@@ -4,8 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:scheldule/providers/drawer_nav/drawer_provider.dart';
 import 'package:scheldule/screens/homepage/widgets/syncfusion_calendar.dart';
 import 'package:scheldule/screens/responsive_ui/mobile/appointments/appointments_homepage.dart';
-import 'package:scheldule/screens/responsive_ui/mobile/client/customer.dart';
+import 'package:scheldule/screens/responsive_ui/mobile/customer/customer.dart';
 import 'package:scheldule/screens/responsive_ui/mobile/employee/employee.dart';
+import 'package:scheldule/screens/responsive_ui/mobile/settings/settings_homepage.dart';
 import 'package:scheldule/utils/nav_drawer.dart';
 
 import '../../../providers/drawer_nav/drawer_state.dart';
@@ -33,7 +34,10 @@ class MobileHomepage extends StatelessWidget {
       return Employee();
     }
     if (provider.state.drawerStatus == DrawerStatus.appointments) {
-      return Appointments();
+      return Appointments(user: user!);
+    }
+    if (provider.state.drawerStatus == DrawerStatus.settings) {
+      return Settings();
     }
     return SyncFusionCalendar(user: user!);
   }
