@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/providers.dart';
+import 'package:scheldule/providers/themes/theme_status.dart';
+import 'package:scheldule/utils/send_button.dart';
 
 class Settings extends StatelessWidget {
   final User? user;
@@ -9,10 +11,18 @@ class Settings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var switchTheme = context.watch<ThemeProvider>().state?.themeStatus;
     return Center(
-      child: ElevatedButton(
-          onPressed: () => context.read<ThemeProvider>().changeTheme(),
-          child: Text('Change Theme')),
-    );
+        child: SendButton(
+      onPressed: () => context.read<ThemeProvider>().changeTheme(),
+      text: 'Change Theme',
+      icon:
+          switchTheme == ThemeStatus.dark ? Icons.light_mode : Icons.dark_mode,
+    )
+
+        //  ElevatedButton(
+        //     onPressed: () => context.read<ThemeProvider>().changeTheme(),
+        //     child: Text('Change Theme')),
+        );
   }
 }
