@@ -6,3 +6,4 @@ export 'search user/search_user_provider.dart';
 export 'sign_up/signup_provider.dart';
 export 'themes/theme_provider.dart';
 export 'login to sign up/change_page_provider.dart';
+export 'drawer_nav/drawer_provider.dart';

@@ -2,7 +2,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:scheldule/models/custom_errors.dart';
 
 import 'package:scheldule/repositories/appointment_repository.dart';
 
