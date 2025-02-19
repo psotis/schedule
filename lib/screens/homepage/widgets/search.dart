@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../providers/providers.dart';
-import '../../../widgets/see_edit_user.dart';
 
 // ignore: must_be_immutable
 class Search extends StatefulWidget {
@@ -21,8 +20,6 @@ class Search extends StatefulWidget {
 }
 
 class _SearchState extends State<Search> {
-  var selectedUser;
-
   @override
   void initState() {
     fetchUsers();
@@ -45,19 +42,7 @@ class _SearchState extends State<Search> {
         return DropdownMenuEntry(value: e, label: '${e.name} ${e.surname}');
       }).toList(),
       onSelected: (val) {
-        setState(() {
-          selectedUser = val;
-        });
-        showAdaptiveDialog(
-            context: context,
-            builder: (context) {
-              return Dialog(
-                child: SeeEditUser(
-                  list: selectedUser,
-                  user: widget.user,
-                ),
-              );
-            });
+        setState(() {});
       },
     );
   }

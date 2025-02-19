@@ -27,9 +27,9 @@ class _CustomerState extends State<Customer>
     super.initState();
   }
 
-  void _dismissKeyboard(BuildContext context) {
-    FocusScope.of(context).requestFocus(FocusNode());
-  }
+  // void _dismissKeyboard(BuildContext context) {
+  //   FocusScope.of(context).requestFocus(FocusNode());
+  // }
 
   @override
   void dispose() {

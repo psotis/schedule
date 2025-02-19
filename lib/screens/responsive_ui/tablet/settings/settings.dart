@@ -1,8 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scheldule/providers/drawer_nav/drawer_provider.dart';
-import 'package:scheldule/providers/drawer_nav/drawer_state.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/providers/themes/theme_status.dart';
 import 'package:scheldule/utils/send_button.dart';

@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart' as fbAuth;
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/cupertino.dart';
 
 import '../../repositories/auth_repository.dart';
@@ -13,7 +13,7 @@ class AuthProvider with ChangeNotifier {
     required this.authRepository,
   });
 
-  void update(fbAuth.User? user) {
+  void update(fb_auth.User? user) {
     if (user != null) {
       _state = _state.copyWith(
         authStatus: AuthStatus.authenticated,

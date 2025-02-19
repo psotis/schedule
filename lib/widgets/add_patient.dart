@@ -22,7 +22,7 @@ class AddPatient extends StatefulWidget {
 class _AddPatientState extends State<AddPatient> {
   String? name, surname, email, phone, address, description, amka;
   final _formKey = GlobalKey<FormState>();
-  AutovalidateMode _autovalidateUser = AutovalidateMode.disabled;
+  AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
   TextEditingController nameController = TextEditingController();
   TextEditingController surnameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
@@ -38,7 +38,7 @@ class _AddPatientState extends State<AddPatient> {
   void _submit() async {
     if (mounted) {
       setState(() {
-        _autovalidateUser = AutovalidateMode.always;
+        autovalidateUser = AutovalidateMode.always;
       });
     }
 

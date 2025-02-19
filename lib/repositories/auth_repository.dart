@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 // ignore: depend_on_referenced_packages
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fbAuth;
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/material.dart';
 import 'package:scheldule/constants/db_constans.dart';
 import 'package:scheldule/keys/material_key.dart';
@@ -10,13 +10,13 @@ import 'package:scheldule/utils/snackbar.dart';
 
 class AuthRepository {
   final FirebaseFirestore firebaseFirestore;
-  final fbAuth.FirebaseAuth firebaseAuth;
+  final fb_auth.FirebaseAuth firebaseAuth;
   AuthRepository({
     required this.firebaseFirestore,
     required this.firebaseAuth,
   });
 
-  Stream<fbAuth.User?> get user => firebaseAuth.userChanges();
+  Stream<fb_auth.User?> get user => firebaseAuth.userChanges();
 
   Future<void> signup({
     required String name,
@@ -24,7 +24,7 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      final fbAuth.UserCredential userCredential =
+      final fb_auth.UserCredential userCredential =
           await firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -37,7 +37,7 @@ class AuthRepository {
         'point': 0,
         'rank': 'bronze',
       });
-    } on fbAuth.FirebaseAuthException catch (e) {
+    } on fb_auth.FirebaseAuthException catch (e) {
       // ignore: use_build_context_synchronously
       snackBarDialog(
           color: Colors.red,
@@ -66,7 +66,7 @@ class AuthRepository {
         email: email,
         password: password,
       );
-    } on fbAuth.FirebaseAuthException catch (e) {
+    } on fb_auth.FirebaseAuthException catch (e) {
       // ignore: use_build_context_synchronously
       snackBarDialog(
           color: Colors.red,

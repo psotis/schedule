@@ -1,7 +1,7 @@
 // ignore: depend_on_referenced_packages
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fbAuth;
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
         Provider<AuthRepository>(
           create: (context) => AuthRepository(
             firebaseFirestore: FirebaseFirestore.instance,
-            firebaseAuth: fbAuth.FirebaseAuth.instance,
+            firebaseAuth: fb_auth.FirebaseAuth.instance,
           ),
         ),
         Provider<AppointmentRepository>(
@@ -67,15 +67,15 @@ class MyApp extends StatelessWidget {
         Provider<SearchEditUserRepository>(
           create: (context) => SearchEditUserRepository(),
         ),
-        StreamProvider<fbAuth.User?>(
+        StreamProvider<fb_auth.User?>(
           create: (context) => context.read<AuthRepository>().user,
           initialData: null,
         ),
-        ChangeNotifierProxyProvider<fbAuth.User?, AuthProvider>(
+        ChangeNotifierProxyProvider<fb_auth.User?, AuthProvider>(
           create: (context) => AuthProvider(
             authRepository: context.read<AuthRepository>(),
           ),
-          update: (BuildContext context, fbAuth.User? userStream,
+          update: (BuildContext context, fb_auth.User? userStream,
                   AuthProvider? authProvider) =>
               authProvider!..update(userStream),
         ),

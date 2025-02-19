@@ -184,6 +184,7 @@ class _CustomerListState extends State<CustomerList> {
               SizedBox(height: 12),
               Text(
                 '${customer.name} ${customer.surname}',
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 12),
@@ -192,10 +193,12 @@ class _CustomerListState extends State<CustomerList> {
                 children: [
                   Icon(Icons.email, size: 16, color: Colors.grey[600]),
                   SizedBox(width: 6),
-                  Text(
-                    customer.email,
-                    style: TextStyle(color: Colors.grey[800]),
-                    overflow: TextOverflow.ellipsis,
+                  Flexible(
+                    child: Text(
+                      customer.email,
+                      style: TextStyle(color: Colors.grey[800]),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -207,6 +210,7 @@ class _CustomerListState extends State<CustomerList> {
                   SizedBox(width: 6),
                   Text(
                     customer.phone,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(color: Colors.grey[800]),
                   ),
                 ],
