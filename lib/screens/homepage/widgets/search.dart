@@ -1,16 +1,20 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scheldule/providers/search%20user/search_user_status.dart';
 
-import '../../../constants/screen sizes/screen_sizes.dart';
 import '../../../providers/providers.dart';
 import '../../../widgets/see_edit_user.dart';
 
 // ignore: must_be_immutable
 class Search extends StatefulWidget {
   User? user;
-  Search({super.key, this.user});
+  final double width;
+  Search({
+    super.key,
+    this.user,
+    required this.width,
+  });
 
   @override
   State<Search> createState() => _SearchState();
@@ -20,59 +24,40 @@ class _SearchState extends State<Search> {
   var selectedUser;
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer<SearchUserProvider>(
-      builder: (context, value, child) {
-        if (value.searchUserState.searchUserStatus == SearchUserStatus.empty) {
-          return Text('Καταχώρησε ασθενή');
-        }
-        if (value.searchUserState.searchUserStatus ==
-            SearchUserStatus.loadedList) {
-          return ListView.builder(
-            itemCount: value.appointment.length,
-            itemBuilder: (context, index) {
-              var p = value.appointment[index];
-              print('This is the docId of search ${p.id}');
+  void initState() {
+    fetchUsers();
+    super.initState();
+  }
 
-              return DropdownMenu(
-                menuHeight: ScreenSize.screenHeight * .4,
-                inputDecorationTheme:
-                    InputDecorationTheme(border: InputBorder.none
-                        // OutlineInputBorder(
-                        //     borderRadius:
-                        //         BorderRadius.all(Radius.circular(10)))
-                        ),
-                textStyle: TextStyle(fontSize: 14),
-                label: Text('Αναζήτηση',
-                    style: TextStyle(fontSize: 12, color: Colors.black)),
-                enableFilter: true,
-                enableSearch: true,
-                dropdownMenuEntries: value.appointment.map((e) {
-                  return DropdownMenuEntry(
-                      value: e, label: '${e.name} ${e.surname}');
-                }).toList(),
-                onSelected: (val) {
-                  setState(() {
-                    selectedUser = val;
-                  });
-                  showAdaptiveDialog(
-                      context: context,
-                      builder: (context) {
-                        return Dialog(
-                          child: SeeEditUser(
-                            list: selectedUser,
-                            user: widget.user,
-                          ),
-                        );
-                      });
-                },
+  void fetchUsers() {
+    context.read<SearchUserProvider>().searchUsers(user: widget.user!.uid);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var searchUser = context.watch<SearchUserProvider>().appointment;
+    return DropdownMenu(
+      width: widget.width,
+      label: Text('Αναζήτηση πελάτη'),
+      enableFilter: true,
+      enableSearch: true,
+      dropdownMenuEntries: searchUser.map((e) {
+        return DropdownMenuEntry(value: e, label: '${e.name} ${e.surname}');
+      }).toList(),
+      onSelected: (val) {
+        setState(() {
+          selectedUser = val;
+        });
+        showAdaptiveDialog(
+            context: context,
+            builder: (context) {
+              return Dialog(
+                child: SeeEditUser(
+                  list: selectedUser,
+                  user: widget.user,
+                ),
               );
-            },
-          );
-        }
-        return SizedBox(
-          child: Text('Please add a customer before adding an appointment'),
-        );
+            });
       },
     );
   }

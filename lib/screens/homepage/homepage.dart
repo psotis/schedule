@@ -174,7 +174,10 @@ class _HomePageState extends State<HomePage> {
                         height: selected ? selectedHeightActive : 100,
                         child: Padding(
                           padding: const EdgeInsets.all(10),
-                          child: Search(user: user),
+                          child: Search(
+                            user: user,
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),

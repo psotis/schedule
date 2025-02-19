@@ -23,6 +23,9 @@ class SearchUserProvider extends ChangeNotifier {
   });
 
   Future<List<AppointMent>> searchUsers({required String user}) async {
+    _searchUserState =
+        _searchUserState.copyWith(searchUserStatus: SearchUserStatus.loading);
+    notifyListeners();
     try {
       appointment = await searchEditUserRepository.findUsers(user: user);
       if (appointment.isEmpty) {

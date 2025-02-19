@@ -1,5 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:scheldule/screens/responsive_ui/tablet/customer/customer.dart';
+
+import '../../../providers/drawer_nav/drawer_provider.dart';
+import '../../../providers/drawer_nav/drawer_state.dart';
+import '../../../utils/nav_drawer.dart';
+import '../../homepage/widgets/syncfusion_calendar.dart';
+import '../tablet/appointments/appointments.dart';
+import '../tablet/employee/employee.dart';
+import '../tablet/settings/settings.dart';
 
 class TabletHomepage extends StatelessWidget {
   final User? user;
@@ -7,23 +17,28 @@ class TabletHomepage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      drawer: Drawer(),
-      body: Row(
-        children: [
-          Flexible(
-            child: Container(
-              color: Colors.red,
-            ),
-          ),
-          Flexible(
-            child: Container(
-              color: Colors.blue,
-            ),
-          ),
-        ],
-      ),
-    );
+    return Consumer<DrawerProvider>(builder: (context, state, child) {
+      return Scaffold(
+        appBar: AppBar(title: Text(state.state.title)),
+        drawer: DrawerNavigation(),
+        body: pages(state),
+      );
+    });
+  }
+
+  Widget pages(DrawerProvider provider) {
+    if (provider.state.drawerStatus == DrawerStatus.customer) {
+      return Customer(user: user!);
+    }
+    if (provider.state.drawerStatus == DrawerStatus.employee) {
+      return Employee(user: user!);
+    }
+    if (provider.state.drawerStatus == DrawerStatus.appointments) {
+      return Appointments(user: user!);
+    }
+    if (provider.state.drawerStatus == DrawerStatus.settings) {
+      return Settings(user: user!);
+    }
+    return SyncFusionCalendar(user: user!);
   }
 }

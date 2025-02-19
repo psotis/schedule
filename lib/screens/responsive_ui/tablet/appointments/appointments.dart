@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
+import 'package:scheldule/providers/providers.dart';
 
 import 'package:scheldule/screens/homepage/widgets/search.dart';
 import 'package:scheldule/utils/send_button.dart';
+import 'package:scheldule/utils/snackbar.dart';
 
 import '../../../../providers/add appointment/add_appointment_provider.dart';
 import '../../../../utils/custom_text_form.dart';
@@ -52,12 +54,6 @@ class _AppointmentsState extends State<Appointments> {
         name: name!,
         surname: surname!,
         date: timestampday);
-
-    setState(() {
-      nameController.clear();
-      surnameController.clear();
-      formattedTime = null;
-    });
   }
 
   Future pickDateTime() async {
@@ -114,6 +110,7 @@ class _AppointmentsState extends State<Appointments> {
   void initState() {
     nameController = TextEditingController();
     surnameController = TextEditingController();
+
     super.initState();
   }
 
@@ -130,8 +127,17 @@ class _AppointmentsState extends State<Appointments> {
     return Padding(
       padding: EdgeInsets.all(10),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         spacing: 20,
-        children: [Search(user: widget.user), _form(), Spacer(), _sendButton()],
+        children: [
+          Search(
+            user: widget.user,
+            width: ScreenSize.screenWidth * .3,
+          ),
+          _form(),
+          Spacer(),
+          _sendButton(),
+        ],
       ),
     );
   }
@@ -140,56 +146,101 @@ class _AppointmentsState extends State<Appointments> {
     return Form(
       key: _formKey,
       child: Column(
+        // shrinkWrap: true,
         spacing: 20,
         children: [
-          CustomTextForm(
-            controller: nameController,
-            labelText: 'Name',
-            hintText: 'John',
-            prefixIcon: Icons.person,
-            onChanged: (value) {
-              setState(() {
-                nameController.text == value;
-              });
-            },
-            onSaved: (value) {
-              name = value;
-            },
+          SizedBox(
+            width: ScreenSize.screenWidth * .5,
+            child: CustomTextForm(
+              controller: nameController,
+              labelText: 'Name',
+              hintText: 'John',
+              prefixIcon: Icons.person,
+              onChanged: (value) {
+                setState(() {
+                  nameController.text == value;
+                });
+              },
+              onSaved: (value) {
+                name = value;
+              },
+            ),
           ),
-          CustomTextForm(
-            controller: surnameController,
-            labelText: 'Surname',
-            hintText: 'Doe',
-            prefixIcon: Icons.person_2,
-            onChanged: (value) {
-              setState(() {
-                surnameController.text == value;
-              });
-            },
-            onSaved: (value) {
-              surname = value;
-            },
+          SizedBox(
+            width: ScreenSize.screenWidth * .5,
+            child: CustomTextForm(
+              controller: surnameController,
+              labelText: 'Surname',
+              hintText: 'Doe',
+              prefixIcon: Icons.person_2,
+              onChanged: (value) {
+                setState(() {
+                  surnameController.text == value;
+                });
+              },
+              onSaved: (value) {
+                surname = value;
+              },
+            ),
           ),
+          SizedBox(height: 20),
           _pickDate(),
+          SizedBox(height: 10),
           _assignTo(),
         ],
       ),
     );
   }
 
+  void show() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Please fill all fields before sending.'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   Padding _sendButton() {
+    bool isEnabled = nameController.text.isNotEmpty &&
+        surnameController.text.isNotEmpty &&
+        finalDate != null;
     return Padding(
       padding: EdgeInsets.only(bottom: 30),
       child: SizedBox(
-        child: SendButton(
-          icon: Icons.send,
-          iconColor: Colors.white,
-          text: 'Send',
-          onPressed: nameController.text.isNotEmpty &&
-                  surnameController.text.isNotEmpty &&
-                  finalDate != null
-              ? _submit
-              : null,
+        child: GestureDetector(
+          onTap: () {
+            if (!isEnabled) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Please fill all fields before sending.'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+          },
+          child: AbsorbPointer(
+            absorbing: !isEnabled,
+            child: SendButton(
+              icon: Icons.send,
+              iconColor: Colors.white,
+              text: 'Send',
+              onPressed: isEnabled
+                  ? () {
+                      _submit();
+                      snackBarDialog(
+                        context,
+                        color: Colors.blueGrey,
+                        message:
+                            'Appointment with customer ${nameController.text} ${surnameController.text} was added',
+                      );
+                      nameController.clear();
+                      surnameController.clear();
+                      formattedTime = null;
+                    }
+                  : null,
+            ),
+          ),
         ),
       ),
     );
@@ -203,7 +254,7 @@ class _AppointmentsState extends State<Appointments> {
         children: [
           Text('Assign to: '),
           DropdownMenu(
-            width: ScreenSize.screenWidth * .5,
+            width: ScreenSize.screenWidth * .3,
             dropdownMenuEntries: [],
           )
         ],
