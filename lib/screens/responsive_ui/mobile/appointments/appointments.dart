@@ -9,6 +9,7 @@ import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
 import 'package:scheldule/screens/homepage/widgets/search.dart';
 import 'package:scheldule/utils/send_button.dart';
 
+import '../../../../constants/logos/photos_gifs.dart';
 import '../../../../providers/add appointment/add_appointment_provider.dart';
 import '../../../../utils/custom_text_form.dart';
 
@@ -129,17 +130,31 @@ class _AppointmentsState extends State<Appointments> {
     ScreenSize().init(context);
     return Padding(
       padding: EdgeInsets.all(10),
-      child: Column(
-        spacing: 20,
-        children: [
-          Search(
-            user: widget.user,
-            width: ScreenSize.screenWidth * .5,
-          ),
-          _form(),
-          Spacer(),
-          _sendButton()
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          spacing: 20,
+          children: [
+            Search(
+              user: widget.user,
+              width: ScreenSize.screenWidth * .5,
+            ),
+            _form(),
+            SizedBox(height: MediaQuery.of(context).size.height * .15),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Image.asset(
+                  Media.addAppointment,
+                  width: 150,
+                  height: 150,
+                ),
+                _sendButton(),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -148,35 +163,42 @@ class _AppointmentsState extends State<Appointments> {
     return Form(
       key: _formKey,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         spacing: 20,
         children: [
-          CustomTextForm(
-            controller: nameController,
-            labelText: 'Name',
-            hintText: 'John',
-            prefixIcon: Icons.person,
-            onChanged: (value) {
-              setState(() {
-                nameController.text == value;
-              });
-            },
-            onSaved: (value) {
-              name = value;
-            },
+          SizedBox(
+            width: 400,
+            child: CustomTextForm(
+              controller: nameController,
+              labelText: 'Name',
+              hintText: 'John',
+              prefixIcon: Icons.person,
+              onChanged: (value) {
+                setState(() {
+                  nameController.text == value;
+                });
+              },
+              onSaved: (value) {
+                name = value;
+              },
+            ),
           ),
-          CustomTextForm(
-            controller: surnameController,
-            labelText: 'Surname',
-            hintText: 'Doe',
-            prefixIcon: Icons.person_2,
-            onChanged: (value) {
-              setState(() {
-                surnameController.text == value;
-              });
-            },
-            onSaved: (value) {
-              surname = value;
-            },
+          SizedBox(
+            width: 400,
+            child: CustomTextForm(
+              controller: surnameController,
+              labelText: 'Surname',
+              hintText: 'Doe',
+              prefixIcon: Icons.person_2,
+              onChanged: (value) {
+                setState(() {
+                  surnameController.text == value;
+                });
+              },
+              onSaved: (value) {
+                surname = value;
+              },
+            ),
           ),
           _pickDate(),
           _assignTo(),
@@ -208,7 +230,8 @@ class _AppointmentsState extends State<Appointments> {
             child: SendButton(
               icon: Icons.send,
               iconColor: Colors.white,
-              text: 'Send',
+              text: 'Αποστολή',
+              backgroundColor: Color(0xFF003128),
               onPressed: isEnabled
                   ? () {
                       _submit();

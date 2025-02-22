@@ -12,7 +12,6 @@ class RouteGenerator {
       case '/login':
         return MaterialPageRoute(builder: (context) => LoginScreen());
       case '/home':
-        // return MaterialPageRoute(builder: (context) => HomePage());
         return MaterialPageRoute(builder: (context) => HomeLayoutScreen());
 
       default:

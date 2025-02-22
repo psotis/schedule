@@ -9,6 +9,8 @@ import 'package:scheldule/screens/responsive_ui/desktop/customer/customer.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/employee/employee.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/settings/settings.dart';
 
+import '../../../constants/logos/photos_gifs.dart';
+
 class DesktopHomepage extends StatefulWidget {
   final User? user;
   DesktopHomepage({super.key, this.user});
@@ -38,12 +40,28 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
   @override
   Widget build(BuildContext context) {
     var checkTheme = context.watch<ThemeProvider>().state?.themeStatus;
-    return Scaffold(
-      body: Row(
-        children: [
-          _navigationRail(context, checkTheme),
-          Expanded(child: _screens[_selectedIndex]),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          stops: [0.1, 0.5, 0.7, 0.9],
+          colors: [
+            Color(0xFF005448),
+            Color(0xFF007a6b),
+            Color(0xFF00a190),
+            Color(0xFF00c9b7),
+          ],
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Row(
+          children: [
+            _navigationRail(context, checkTheme),
+            Expanded(child: _screens[_selectedIndex]),
+          ],
+        ),
       ),
     );
   }
@@ -117,14 +135,16 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
         child: Column(
           children: [
             Container(
+              width: 120,
+              height: 120,
               decoration: BoxDecoration(
-                  border: Border.all(
-                    width: 2,
-                    color: Colors.blueAccent,
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(20),
                   ),
-                  borderRadius: BorderRadius.all(Radius.circular(20))),
-              height: 100,
-              width: MediaQuery.of(context).size.width * .1,
+                  image: DecorationImage(
+                      image: AssetImage(
+                    Media.logoGif,
+                  ))),
             ),
             Divider(
               color: Colors.white,

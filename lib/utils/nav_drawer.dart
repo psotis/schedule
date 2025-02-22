@@ -2,6 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scheldule/constants/logos/photos_gifs.dart';
 import 'package:scheldule/providers/drawer_nav/drawer_provider.dart';
 
 import '../providers/drawer_nav/drawer_state.dart';
@@ -51,7 +52,21 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
     return Drawer(
       child: Column(
         children: [
-          DrawerHeader(child: Container(color: Colors.teal)),
+          DrawerHeader(
+            child: Container(
+              width: 130,
+              height: 100,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(20),
+                  ),
+                  image: DecorationImage(
+                      fit: BoxFit.fill,
+                      image: AssetImage(
+                        Media.logoGif,
+                      ))),
+            ),
+          ),
           Consumer<DrawerProvider>(builder: (context, state, child) {
             return ListView.builder(
               shrinkWrap: true,

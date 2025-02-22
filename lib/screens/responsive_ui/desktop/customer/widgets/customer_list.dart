@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:scheldule/models/appointment_model.dart';
-import 'package:scheldule/screens/responsive_ui/tablet/customer/widgets/customer_card.dart';
+import 'package:scheldule/screens/responsive_ui/desktop/customer/widgets/customer_card.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 
 import '../../../../../repositories/search_edit_user_repository.dart';
@@ -117,7 +117,7 @@ class _CustomerListState extends State<CustomerList> {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Container(
-                width: 500,
+                width: 650,
                 padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 child: Row(
                   children: [
@@ -126,7 +126,7 @@ class _CustomerListState extends State<CustomerList> {
                       backgroundColor: Colors.blueAccent,
                       child: Icon(Icons.person, color: Colors.white, size: 24),
                     ),
-                    SizedBox(width: 50),
+                    SizedBox(width: 70),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,7 +144,7 @@ class _CustomerListState extends State<CustomerList> {
                               Icon(Icons.email,
                                   size: 16, color: Colors.grey[600]),
                               SizedBox(width: 6),
-                              Expanded(
+                              Flexible(
                                 child: Text(
                                   customer.email,
                                   style: TextStyle(color: Colors.grey[800]),
@@ -159,9 +159,11 @@ class _CustomerListState extends State<CustomerList> {
                               Icon(Icons.phone,
                                   size: 16, color: Colors.grey[600]),
                               SizedBox(width: 6),
-                              Text(
-                                customer.phone,
-                                style: TextStyle(color: Colors.grey[800]),
+                              Flexible(
+                                child: Text(
+                                  customer.phone,
+                                  style: TextStyle(color: Colors.grey[800]),
+                                ),
                               ),
                             ],
                           ),
@@ -183,7 +185,7 @@ class _CustomerListState extends State<CustomerList> {
     return GridView.builder(
       padding: EdgeInsets.all(30),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+        crossAxisCount: 5,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
         childAspectRatio: 1.2,
@@ -204,45 +206,52 @@ class _CustomerListState extends State<CustomerList> {
           child: Card(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(child: Icon(Icons.person)),
-                SizedBox(height: 12),
-                Text(
-                  '${customer.name} ${customer.surname}',
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 12),
-                Row(
+            child: SizedBox(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.email, size: 16, color: Colors.grey[600]),
-                    SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        customer.email,
-                        style: TextStyle(color: Colors.grey[800]),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.phone, size: 16, color: Colors.grey[600]),
-                    SizedBox(width: 6),
+                    CircleAvatar(child: Icon(Icons.person)),
+                    SizedBox(height: 12),
                     Text(
-                      customer.phone,
+                      '${customer.name} ${customer.surname}',
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.grey[800]),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.email, size: 16, color: Colors.grey[600]),
+                        SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            customer.email,
+                            style: TextStyle(color: Colors.grey[800]),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.phone, size: 16, color: Colors.grey[600]),
+                        SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            customer.phone,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: Colors.grey[800]),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         );

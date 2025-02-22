@@ -134,29 +134,31 @@ class _AppointmentsState extends State<Appointments> {
     ScreenSize().init(context);
     return Padding(
       padding: EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        spacing: 20,
-        children: [
-          Search(
-            user: widget.user,
-            width: ScreenSize.screenWidth * .3,
-            setAppointment: (p0, p1) => setCustomer(p0, p1),
-          ),
-          _form(),
-          Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Image.asset(
-                Media.addAppointment,
-                width: 200,
-                height: 200,
-              ),
-              _sendButton(),
-            ],
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          spacing: 20,
+          children: [
+            Search(
+              user: widget.user,
+              width: ScreenSize.screenWidth * .3,
+              setAppointment: (p0, p1) => setCustomer(p0, p1),
+            ),
+            _form(),
+            SizedBox(height: MediaQuery.of(context).size.height * .15),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Image.asset(
+                  Media.addAppointment,
+                  width: 200,
+                  height: 200,
+                ),
+                _sendButton(),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -165,7 +167,6 @@ class _AppointmentsState extends State<Appointments> {
     return Form(
       key: _formKey,
       child: Column(
-        // shrinkWrap: true,
         spacing: 20,
         children: [
           SizedBox(

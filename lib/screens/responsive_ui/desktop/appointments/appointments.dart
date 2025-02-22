@@ -9,6 +9,7 @@ import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
 import 'package:scheldule/screens/homepage/widgets/search.dart';
 import 'package:scheldule/utils/send_button.dart';
 
+import '../../../../constants/logos/photos_gifs.dart';
 import '../../../../providers/add appointment/add_appointment_provider.dart';
 import '../../../../utils/custom_text_form.dart';
 
@@ -130,15 +131,25 @@ class _AppointmentsState extends State<Appointments> {
     return Padding(
       padding: EdgeInsets.all(10),
       child: Column(
-        spacing: 20,
+        spacing: 40,
         children: [
           Search(
             user: widget.user,
-            width: ScreenSize.screenWidth * .3,
+            width: ScreenSize.screenWidth * .25,
           ),
           _form(),
-          Spacer(),
-          _sendButton()
+          SizedBox(height: MediaQuery.of(context).size.height * .15),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Image.asset(
+                Media.addAppointment,
+                width: 300,
+                height: 300,
+              ),
+              _sendButton(),
+            ],
+          ),
         ],
       ),
     );
@@ -148,35 +159,41 @@ class _AppointmentsState extends State<Appointments> {
     return Form(
       key: _formKey,
       child: Column(
-        spacing: 20,
+        spacing: 30,
         children: [
-          CustomTextForm(
-            controller: nameController,
-            labelText: 'Name',
-            hintText: 'John',
-            prefixIcon: Icons.person,
-            onChanged: (value) {
-              setState(() {
-                nameController.text == value;
-              });
-            },
-            onSaved: (value) {
-              name = value;
-            },
+          SizedBox(
+            width: 600,
+            child: CustomTextForm(
+              controller: nameController,
+              labelText: 'Name',
+              hintText: 'John',
+              prefixIcon: Icons.person,
+              onChanged: (value) {
+                setState(() {
+                  nameController.text == value;
+                });
+              },
+              onSaved: (value) {
+                name = value;
+              },
+            ),
           ),
-          CustomTextForm(
-            controller: surnameController,
-            labelText: 'Surname',
-            hintText: 'Doe',
-            prefixIcon: Icons.person_2,
-            onChanged: (value) {
-              setState(() {
-                surnameController.text == value;
-              });
-            },
-            onSaved: (value) {
-              surname = value;
-            },
+          SizedBox(
+            width: 600,
+            child: CustomTextForm(
+              controller: surnameController,
+              labelText: 'Surname',
+              hintText: 'Doe',
+              prefixIcon: Icons.person_2,
+              onChanged: (value) {
+                setState(() {
+                  surnameController.text == value;
+                });
+              },
+              onSaved: (value) {
+                surname = value;
+              },
+            ),
           ),
           _pickDate(),
           _assignTo(),
@@ -228,11 +245,12 @@ class _AppointmentsState extends State<Appointments> {
     return SizedBox(
       width: double.infinity,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        spacing: 50,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text('Assign to: '),
           DropdownMenu(
-            width: ScreenSize.screenWidth * .5,
+            width: ScreenSize.screenWidth * .25,
             dropdownMenuEntries: [],
           )
         ],
