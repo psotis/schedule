@@ -135,7 +135,7 @@ class _AddAppointmentState extends State<AddAppointment> {
     super.dispose();
   }
 
-  var selectedUser;
+  // var selectedUser;
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +178,7 @@ class _AddAppointmentState extends State<AddAppointment> {
                       }).toList(),
                       onSelected: (val) {
                         setState(() {
-                          selectedUser = val;
+                          // selectedUser = val;
                           nameController.text = val!.name;
                           surnameController.text = val.surname;
                         });

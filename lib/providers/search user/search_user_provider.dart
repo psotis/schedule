@@ -98,10 +98,10 @@ class SearchUserProvider extends ChangeNotifier {
       _searchUserState =
           _searchUserState.copyWith(searchUserStatus: SearchUserStatus.sent);
       notifyListeners();
-      await Future.delayed(Duration(milliseconds: 500));
-      _searchUserState = _searchUserState.copyWith(
-          searchUserStatus: SearchUserStatus.bringEditedUser);
-      notifyListeners();
+      // await Future.delayed(Duration(milliseconds: 500));
+      // _searchUserState = _searchUserState.copyWith(
+      //     searchUserStatus: SearchUserStatus.bringEditedUser);
+      // notifyListeners();
       await Future.delayed(Duration(seconds: 2));
       _searchUserState = _searchUserState.copyWith(
           searchUserStatus: SearchUserStatus.loadedList);

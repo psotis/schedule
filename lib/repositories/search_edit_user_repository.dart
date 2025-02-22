@@ -10,6 +10,40 @@ class SearchEditUserRepository {
   List<AppointMent> patientLength = [];
   AppointMent? appointMent;
 
+  Stream<List<AppointMent>> streamUser({required String userId}) {
+    return FirebaseFirestore.instance
+        .collection(userId)
+        .where('date', isEqualTo: Timestamp.fromMicrosecondsSinceEpoch(0))
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => AppointMent.fromDoc(doc)).toList());
+  }
+
+  // Future<List<AppointMent>> searchUsersFromDB({
+  //   required String user,
+  //   required String name,
+  // }) async {
+  //   try {
+  //     appointMentsFromFirebase = await firestore
+  //         .collection(user)
+  //         .where('name', isEqualTo: name)
+  //         // .where('email', isNotEqualTo: )
+  //         .get();
+
+  //     appointment = appointMentsFromFirebase!.docs
+  //         .map((e) => AppointMent.fromDoc(e))
+  //         .toList();
+  //     print(appointment);
+  //     return appointment;
+  //   } catch (e) {
+  //     throw CustomError(
+  //       code: 'Exception',
+  //       message: e.toString(),
+  //       plugin: 'flutter_error/server_error',
+  //     );
+  //   }
+  // }
+
   Future<List<AppointMent>> findUsers({required String user}) async {
     try {
       appointMentsFromFirebase = await firestore

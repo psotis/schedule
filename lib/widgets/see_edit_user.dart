@@ -39,9 +39,6 @@ class _SeeEditUserState extends State<SeeEditUser> {
     final userForm = _formKey.currentState;
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
-    print(name);
-
-    print(widget.user?.uid);
 
     context.read<SearchUserProvider>().editUser(
           name: name!,
@@ -84,7 +81,6 @@ class _SeeEditUserState extends State<SeeEditUser> {
     setState(() {
       length = fetchedLength;
     });
-    print(length);
   }
 
   @override
@@ -277,6 +273,7 @@ class _SeeEditUserState extends State<SeeEditUser> {
                       onPressed: () async {
                         _submit();
                         await Future.delayed(Duration(seconds: 3));
+                        // ignore: use_build_context_synchronously
                         Navigator.pop(context);
                       },
                       child: Text('Αποστολή'))

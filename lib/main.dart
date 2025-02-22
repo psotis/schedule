@@ -12,7 +12,6 @@ import 'package:provider/provider.dart';
 import 'package:scheldule/firebase_options.dart';
 import 'package:scheldule/keys/material_key.dart';
 import 'package:scheldule/providers/auth/auth_provider.dart';
-import 'package:scheldule/providers/drawer_nav/drawer_provider.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/repositories/appointment_repository.dart';
 import 'package:scheldule/repositories/auth_repository.dart';

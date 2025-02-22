@@ -9,10 +9,12 @@ import '../../../providers/providers.dart';
 class Search extends StatefulWidget {
   User? user;
   final double width;
+  final void Function(String, String)? setAppointment;
   Search({
     super.key,
     this.user,
     required this.width,
+    this.setAppointment,
   });
 
   @override
@@ -41,9 +43,7 @@ class _SearchState extends State<Search> {
       dropdownMenuEntries: searchUser.map((e) {
         return DropdownMenuEntry(value: e, label: '${e.name} ${e.surname}');
       }).toList(),
-      onSelected: (val) {
-        setState(() {});
-      },
+      onSelected: (val) => widget.setAppointment!(val!.name, val.surname),
     );
   }
 }

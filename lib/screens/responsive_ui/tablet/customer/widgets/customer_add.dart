@@ -1,10 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/send_button.dart';
 
+import '../../../../../constants/logos/photos_gifs.dart';
 import '../../../../../providers/add user/add_user_status.dart';
 
 class CustomerAdd extends StatefulWidget {
@@ -204,7 +205,17 @@ class _CustomerAddState extends State<CustomerAdd> {
           },
         ),
         SizedBox(height: 200),
-        _sendButton(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Image.asset(
+              Media.addCustomer,
+              width: 200,
+              height: 200,
+            ),
+            _sendButton(),
+          ],
+        ),
       ],
     );
   }
@@ -233,6 +244,7 @@ class _CustomerAddState extends State<CustomerAdd> {
               icon: Icons.send,
               iconColor: Colors.white,
               text: 'Αποστολή',
+              backgroundColor: Color(0xFF003128),
               onPressed: isEnabled
                   ? () {
                       _submit();

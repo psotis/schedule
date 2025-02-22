@@ -11,6 +11,7 @@ class CustomTextForm extends StatelessWidget {
   final void Function(String?)? onSaved;
   final bool obscureText;
   final TextEditingController? controller;
+  final String? initial;
 
   const CustomTextForm({
     super.key,
@@ -20,9 +21,10 @@ class CustomTextForm extends StatelessWidget {
     this.suffixIcon,
     this.validator,
     this.onChanged,
+    this.onSaved,
     this.obscureText = false,
     this.controller,
-    this.onSaved,
+    this.initial,
   });
 
   @override
@@ -30,10 +32,11 @@ class CustomTextForm extends StatelessWidget {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
+      initialValue: initial,
       decoration: InputDecoration(
         labelText: labelText,
         labelStyle: TextStyle(
-          color: Colors.deepPurple,
+          color: Color(0xFFf1b24b),
           fontSize: 16,
           fontWeight: FontWeight.bold,
         ),
@@ -43,12 +46,12 @@ class CustomTextForm extends StatelessWidget {
         ),
         prefixIcon: Icon(
           prefixIcon,
-          color: Colors.deepPurple,
+          color: Color(0xFFf1b24b),
         ),
         suffixIcon: suffixIcon != null
             ? Icon(
                 suffixIcon,
-                color: Colors.deepPurple,
+                color: Color(0xFFf1b24b),
               )
             : null,
         filled: true,
@@ -57,14 +60,14 @@ class CustomTextForm extends StatelessWidget {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15.0),
           borderSide: BorderSide(
-            color: Colors.deepPurple.withAlpha(30),
+            color: Color(0xFFf1b24b),
             width: 2.0,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15.0),
           borderSide: BorderSide(
-            color: Colors.deepPurple,
+            color: Color(0xFFf1b24b),
             width: 2.5,
           ),
         ),
@@ -88,7 +91,7 @@ class CustomTextForm extends StatelessWidget {
         ),
       ),
       style: TextStyle(
-        color: Colors.deepPurple,
+        color: Color(0xFFf1b24b),
         fontSize: 16,
       ),
       validator: validator,

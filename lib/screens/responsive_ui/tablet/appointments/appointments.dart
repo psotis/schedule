@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:scheldule/constants/logos/photos_gifs.dart';
 import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
 import 'package:scheldule/providers/providers.dart';
 
@@ -121,6 +122,13 @@ class _AppointmentsState extends State<Appointments> {
     super.dispose();
   }
 
+  void setCustomer(String name, String surename) {
+    setState(() {
+      nameController.text = name;
+      surnameController.text = surename;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     ScreenSize().init(context);
@@ -133,10 +141,21 @@ class _AppointmentsState extends State<Appointments> {
           Search(
             user: widget.user,
             width: ScreenSize.screenWidth * .3,
+            setAppointment: (p0, p1) => setCustomer(p0, p1),
           ),
           _form(),
           Spacer(),
-          _sendButton(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Image.asset(
+                Media.addAppointment,
+                width: 200,
+                height: 200,
+              ),
+              _sendButton(),
+            ],
+          ),
         ],
       ),
     );
@@ -224,7 +243,8 @@ class _AppointmentsState extends State<Appointments> {
             child: SendButton(
               icon: Icons.send,
               iconColor: Colors.white,
-              text: 'Send',
+              text: 'Αποστολή',
+              backgroundColor: Color(0xFF003128),
               onPressed: isEnabled
                   ? () {
                       _submit();
