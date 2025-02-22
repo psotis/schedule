@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scheldule/models/appointment_model.dart';
-import 'package:scheldule/screens/responsive_ui/desktop/customer/widgets/customer_card.dart';
+import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 
 import '../../../../../repositories/search_edit_user_repository.dart';
@@ -102,14 +103,8 @@ class _CustomerListState extends State<CustomerList> {
 
         return Center(
           child: GestureDetector(
-            onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CustomerCard(
-                    customer: customer,
-                    user: widget.user,
-                  ),
-                )),
+            onTap: () =>
+                context.read<ToggleScreenProvider>().showScreen(customer),
             child: Card(
               elevation: 4,
               margin: EdgeInsets.symmetric(vertical: 8),
@@ -195,14 +190,8 @@ class _CustomerListState extends State<CustomerList> {
       itemBuilder: (context, index) {
         var customer = appointment[index];
         return GestureDetector(
-          onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CustomerCard(
-                  customer: customer,
-                  user: widget.user,
-                ),
-              )),
+          onTap: () =>
+              context.read<ToggleScreenProvider>().showScreen(customer),
           child: Card(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

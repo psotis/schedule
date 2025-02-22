@@ -114,6 +114,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<DrawerProvider>(
           create: (context) => DrawerProvider(),
         ),
+        ChangeNotifierProvider<ToggleScreenProvider>(
+          create: (context) => ToggleScreenProvider(),
+        ),
       ],
       child: Builder(builder: (context) {
         return MaterialApp(

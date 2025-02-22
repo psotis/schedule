@@ -1,10 +1,14 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/customer/widgets/customer_add.dart';
+import 'package:scheldule/screens/responsive_ui/desktop/customer/widgets/customer_card.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/customer/widgets/customer_list.dart';
 
 import '../../../../constants/screen sizes/screen_sizes.dart';
+import '../../../../providers/toggle_screen/toggle_screen_state.dart';
 
 class Customer extends StatefulWidget {
   final User? user;
@@ -39,46 +43,60 @@ class _CustomerState extends State<Customer>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      child: Column(
-        children: [
-          TabBar(controller: _tabController, tabs: [
-            SizedBox(
-              height: ScreenSize.screenHeight * .08,
-              width: ScreenSize.screenWidth * .2,
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Λίστα πελατών',
+    return Row(
+      children: [
+        Flexible(
+          child: Column(
+            children: [
+              TabBar(controller: _tabController, tabs: [
+                SizedBox(
+                  height: ScreenSize.screenHeight * .08,
+                  width: ScreenSize.screenWidth * .2,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Λίστα πελατών',
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: ScreenSize.screenHeight * .08,
+                  width: ScreenSize.screenWidth * .2,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Προσθήκη πελάτη',
+                    ),
+                  ),
+                ),
+              ]),
+              Flexible(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    Tab(
+                      child: CustomerList(user: widget.user),
+                    ),
+                    Tab(
+                      child: CustomerAdd(user: widget.user),
+                    )
+                  ],
                 ),
               ),
-            ),
-            SizedBox(
-              height: ScreenSize.screenHeight * .08,
-              width: ScreenSize.screenWidth * .2,
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Προσθήκη πελάτη',
-                ),
-              ),
-            ),
-          ]),
-          Flexible(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                Tab(
-                  child: CustomerList(user: widget.user),
-                ),
-                Tab(
-                  child: CustomerAdd(user: widget.user),
-                )
-              ],
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+        VerticalDivider(),
+        Flexible(child: Consumer<ToggleScreenProvider>(
+          builder: (context, state, child) {
+            if (state.toggleState?.toggleStatus == ToggleStatus.yes) {
+              return CustomerCard(
+                  customer: state.toggleState!.customer, user: widget.user);
+            }
+            return Container();
+          },
+        )),
+      ],
     );
   }
 }

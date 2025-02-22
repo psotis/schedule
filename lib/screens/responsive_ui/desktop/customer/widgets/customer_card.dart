@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:scheldule/models/appointment_model.dart';
+import 'package:scheldule/providers/toggle_screen/toggle_screen_provider.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
@@ -40,7 +41,7 @@ class _CustomerCardState extends State<CustomerCard> {
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
 
-    context.read<SearchUserProvider>().editUser(
+    await context.read<SearchUserProvider>().editUser(
           name: name!,
           surname: surname!,
           phone: phone!,
@@ -59,16 +60,24 @@ class _CustomerCardState extends State<CustomerCard> {
         .deleteUsers(userId: userId, userDoc: userDoc);
   }
 
+  void hideScreen() async {
+    context.read<ToggleScreenProvider>().showInitialScreen();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Material(
-      child: Center(
-        child: Column(
-          children: [
-            _form(context),
-            Spacer(),
-            _buttons(context),
-          ],
+      color: Colors.transparent,
+      child: SizedBox(
+        height: 800,
+        child: Center(
+          child: Column(
+            children: [
+              _form(context),
+              // Spacer(),
+              _buttons(context),
+            ],
+          ),
         ),
       ),
     );
@@ -83,13 +92,13 @@ class _CustomerCardState extends State<CustomerCard> {
         spacing: 20,
         children: [
           SendButton(
-            onPressed: () {
+            onPressed: () async {
               _removeUser(
                 userId: widget.user!.uid,
                 userDoc: widget.customer.id,
               );
 
-              Navigator.pop(context);
+              hideScreen();
               snackBarDialog(context,
                   color: Colors.red,
                   message:
@@ -100,10 +109,9 @@ class _CustomerCardState extends State<CustomerCard> {
             icon: Icons.delete,
           ),
           SendButton(
-            onPressed: () {
+            onPressed: () async {
               _submit();
-
-              Navigator.pop(context);
+              hideScreen();
               snackBarDialog(context,
                   color: Colors.orange,
                   message:
@@ -193,7 +201,6 @@ class _CustomerCardState extends State<CustomerCard> {
                     description = val;
                   },
                 ),
-                // Spacer(),
               ],
             ),
           ),

@@ -142,11 +142,7 @@ class _AppointmentsState extends State<Appointments> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Image.asset(
-                Media.addAppointment,
-                width: 300,
-                height: 300,
-              ),
+              Image.asset(Media.addAppointment, width: 250, height: 250),
               _sendButton(),
             ],
           ),
@@ -225,7 +221,8 @@ class _AppointmentsState extends State<Appointments> {
             child: SendButton(
               icon: Icons.send,
               iconColor: Colors.white,
-              text: 'Send',
+              text: 'Αποστολή',
+              backgroundColor: Color(0xFF003128),
               onPressed: isEnabled
                   ? () {
                       _submit();
