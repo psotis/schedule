@@ -5,7 +5,7 @@ import 'package:scheldule/providers/appointment/appointment_provider.dart';
 import 'package:scheldule/styling/fonts/textstyle.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
-import '../../../repositories/appointment_repository.dart';
+import '../../repositories/appointment_repository.dart';
 
 class SyncFusionCalendar extends StatefulWidget {
   final User user;

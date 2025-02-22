@@ -24,7 +24,9 @@ class Search extends StatefulWidget {
 class _SearchState extends State<Search> {
   @override
   void initState() {
-    fetchUsers();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchUsers();
+    });
     super.initState();
   }
 

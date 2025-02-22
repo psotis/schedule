@@ -53,12 +53,6 @@ class _AppointmentsState extends State<Appointments> {
         name: name!,
         surname: surname!,
         date: timestampday);
-
-    // setState(() {
-    //   nameController.clear();
-    //   surnameController.clear();
-    //   formattedTime = null;
-    // });
   }
 
   Future pickDateTime() async {
@@ -130,23 +124,25 @@ class _AppointmentsState extends State<Appointments> {
     ScreenSize().init(context);
     return Padding(
       padding: EdgeInsets.all(10),
-      child: Column(
-        spacing: 40,
-        children: [
-          Search(
-            user: widget.user,
-            width: ScreenSize.screenWidth * .25,
-          ),
-          _form(),
-          SizedBox(height: MediaQuery.of(context).size.height * .15),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Image.asset(Media.addAppointment, width: 250, height: 250),
-              _sendButton(),
-            ],
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          spacing: 40,
+          children: [
+            Search(
+              user: widget.user,
+              width: ScreenSize.screenWidth * .25,
+            ),
+            _form(),
+            SizedBox(height: MediaQuery.of(context).size.height * .15),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Image.asset(Media.addAppointment, width: 250, height: 250),
+                _sendButton(),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

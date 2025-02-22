@@ -6,7 +6,7 @@ import 'package:scheldule/screens/responsive_ui/tablet/customer/customer.dart';
 import '../../../providers/drawer_nav/drawer_provider.dart';
 import '../../../providers/drawer_nav/drawer_state.dart';
 import '../../../utils/nav_drawer.dart';
-import '../../homepage/widgets/syncfusion_calendar.dart';
+import '../../calendar/syncfusion_calendar.dart';
 import '../tablet/appointments/appointments.dart';
 import '../tablet/employee/employee.dart';
 import '../tablet/settings/settings.dart';
