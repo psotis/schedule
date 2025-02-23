@@ -1,16 +1,1 @@
-{
-  "hosting": {
-    "source": "./",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
-}
+{"hosting":{"source":"./","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}]},"flutter":{"platforms":{"android":{"default":{"projectId":"psysio-25b98","appId":"1:661685076637:android:134fb1f7b34ad936df0a74","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"psysio-25b98","configurations":{"android":"1:661685076637:android:134fb1f7b34ad936df0a74","ios":"1:661685076637:ios:70f4e6556f2a5aaddf0a74","macos":"1:661685076637:ios:70f4e6556f2a5aaddf0a74","web":"1:661685076637:web:482a642e8ca85eefdf0a74","windows":"1:661685076637:web:6aca9fd88e7982bbdf0a74"}}}}}}
