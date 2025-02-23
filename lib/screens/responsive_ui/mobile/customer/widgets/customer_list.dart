@@ -106,9 +106,9 @@ class _CustomerListState extends State<CustomerList> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => CustomerCard(
-                    customer: customer,
-                    user: widget.user,
-                  ),
+                      customer: customer,
+                      user: widget.user,
+                      title: 'Customer Details'),
                 )),
             child: Card(
               elevation: 4,
@@ -201,6 +201,7 @@ class _CustomerListState extends State<CustomerList> {
                 builder: (context) => CustomerCard(
                   customer: customer,
                   user: widget.user,
+                  title: 'Customer Details',
                 ),
               )),
           child: Card(

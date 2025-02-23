@@ -6,12 +6,12 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
 
-import 'package:scheldule/screens/homepage/widgets/search.dart';
 import 'package:scheldule/utils/send_button.dart';
 
 import '../../../../constants/logos/photos_gifs.dart';
 import '../../../../providers/add appointment/add_appointment_provider.dart';
 import '../../../../utils/custom_text_form.dart';
+import '../../../../utils/search/search.dart';
 
 class Appointments extends StatefulWidget {
   final User? user;

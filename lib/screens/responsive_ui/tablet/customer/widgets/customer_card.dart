@@ -9,13 +9,16 @@ import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
 
 import '../../../../../providers/search user/search_user_provider.dart';
+import '../../../../../utils/cutom_text.dart';
 
 class CustomerCard extends StatefulWidget {
   final AppointMent customer;
   final User? user;
+  final String title;
   const CustomerCard({
     super.key,
     required this.customer,
+    required this.title,
     this.user,
   });
 
@@ -61,15 +64,42 @@ class _CustomerCardState extends State<CustomerCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: Center(
-        child: Column(
-          children: [
-            _form(context),
-            Spacer(),
-            _buttons(context),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          stops: [0.1, 0.5, 0.7, 0.9],
+          colors: [
+            Color(0xFF005448),
+            Color(0xFF007a6b),
+            Color(0xFF00a190),
+            Color(0xFF00c9b7),
           ],
         ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          centerTitle: true,
+          title: CustomText(
+            text: widget.title,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFf1b24b),
+          ),
+        ),
+        body: Center(
+          child: Column(
+            children: [
+              SizedBox(height: 10),
+              _form(context),
+              // Spacer(),
+              // _buttons(context),
+            ],
+          ),
+        ),
+        floatingActionButton: _buttons(context),
       ),
     );
   }
