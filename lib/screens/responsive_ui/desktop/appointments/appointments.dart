@@ -49,10 +49,11 @@ class _AppointmentsState extends State<Appointments> {
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
     await context.read<AddAppointmentProvider>().addAppointment(
-        userUid: widget.user!.uid,
-        name: name!,
-        surname: surname!,
-        date: timestampday);
+          userUid: widget.user!.uid,
+          name: name!,
+          surname: surname!,
+          date: timestampday,
+        );
   }
 
   Future pickDateTime() async {
@@ -119,6 +120,13 @@ class _AppointmentsState extends State<Appointments> {
     super.dispose();
   }
 
+  void setCustomer(String name, String surename) {
+    setState(() {
+      nameController.text = name;
+      surnameController.text = surename;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     ScreenSize().init(context);
@@ -131,13 +139,18 @@ class _AppointmentsState extends State<Appointments> {
             Search(
               user: widget.user,
               width: ScreenSize.screenWidth * .25,
+              setAppointment: (p0, p1) => setCustomer(p0, p1),
             ),
             _form(),
             SizedBox(height: MediaQuery.of(context).size.height * .15),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Image.asset(Media.addAppointment, width: 250, height: 250),
+                Image.asset(
+                  Media.addAppointment,
+                  width: 200,
+                  height: 200,
+                ),
                 _sendButton(),
               ],
             ),

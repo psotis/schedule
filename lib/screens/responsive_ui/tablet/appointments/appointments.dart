@@ -151,8 +151,8 @@ class _AppointmentsState extends State<Appointments> {
               children: [
                 Image.asset(
                   Media.addAppointment,
-                  width: 200,
-                  height: 200,
+                  width: 150,
+                  height: 150,
                 ),
                 _sendButton(),
               ],

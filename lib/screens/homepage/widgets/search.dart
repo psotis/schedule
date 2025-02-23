@@ -38,12 +38,27 @@ class _SearchState extends State<Search> {
   Widget build(BuildContext context) {
     var searchUser = context.watch<SearchUserProvider>().appointment;
     return DropdownMenu(
+      menuStyle: MenuStyle(
+        shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(5)))),
+      ),
       width: widget.width,
       label: Text('Αναζήτηση πελάτη'),
       enableFilter: true,
       enableSearch: true,
       dropdownMenuEntries: searchUser.map((e) {
-        return DropdownMenuEntry(value: e, label: '${e.name} ${e.surname}');
+        return DropdownMenuEntry(
+          value: e,
+          label: '${e.name} ${e.surname}',
+          leadingIcon: Icon(Icons.person_outline),
+          style: ButtonStyle(
+            elevation: WidgetStatePropertyAll(4),
+            animationDuration: Duration(microseconds: 200),
+            padding: WidgetStatePropertyAll(EdgeInsets.all(8)),
+            shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20)))),
+          ),
+        );
       }).toList(),
       onSelected: (val) => widget.setAppointment!(val!.name, val.surname),
     );
