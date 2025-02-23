@@ -19,31 +19,6 @@ class SearchEditUserRepository {
             snapshot.docs.map((doc) => AppointMent.fromDoc(doc)).toList());
   }
 
-  // Future<List<AppointMent>> searchUsersFromDB({
-  //   required String user,
-  //   required String name,
-  // }) async {
-  //   try {
-  //     appointMentsFromFirebase = await firestore
-  //         .collection(user)
-  //         .where('name', isEqualTo: name)
-  //         // .where('email', isNotEqualTo: )
-  //         .get();
-
-  //     appointment = appointMentsFromFirebase!.docs
-  //         .map((e) => AppointMent.fromDoc(e))
-  //         .toList();
-  //     print(appointment);
-  //     return appointment;
-  //   } catch (e) {
-  //     throw CustomError(
-  //       code: 'Exception',
-  //       message: e.toString(),
-  //       plugin: 'flutter_error/server_error',
-  //     );
-  //   }
-  // }
-
   Future<List<AppointMent>> findUsers({required String user}) async {
     try {
       appointMentsFromFirebase = await firestore
@@ -87,11 +62,10 @@ class SearchEditUserRepository {
           .collection(userId)
           .where('name', isEqualTo: name)
           .where('surname', isEqualTo: surename)
-          // .where('date', isNotEqualTo: Timestamp.fromMicrosecondsSinceEpoch(0))
           .get();
       patientLength =
           appointLength!.docs.map((e) => AppointMent.fromDoc(e)).toList();
-      // print(patientLength.length - 1);
+      print(patientLength);
       return patientLength.length - 1;
     } catch (e) {
       throw Exception(e);

@@ -9,6 +9,7 @@ import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
 
 import '../../../../../providers/search user/search_user_provider.dart';
+import '../../../../../repositories/search_edit_user_repository.dart';
 import '../../../../../utils/cutom_text.dart';
 
 class CustomerCard extends StatefulWidget {
@@ -60,6 +61,19 @@ class _CustomerCardState extends State<CustomerCard> {
     await context
         .read<SearchUserProvider>()
         .deleteUsers(userId: userId, userDoc: userDoc);
+  }
+
+  void seeApp() {
+    SearchEditUserRepository().patientAppointmentLength(
+        userId: widget.user!.uid,
+        name: widget.customer.name,
+        surename: widget.customer.surname);
+  }
+
+  @override
+  void initState() {
+    seeApp();
+    super.initState();
   }
 
   @override
