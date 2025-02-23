@@ -29,6 +29,10 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
     super.initState();
   }
 
+  Future logout() async {
+    await FirebaseAuth.instance.signOut();
+  }
+
   late final List _screens = [
     SyncFusionCalendar(user: user!),
     Appointments(user: user!),
@@ -121,9 +125,7 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
             IconButton(
               icon: Icon(Icons.logout, color: Colors.redAccent),
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Logging out...')),
-                );
+                logout();
               },
             ),
             SizedBox(height: 10),
