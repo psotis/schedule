@@ -72,20 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               return SignupWidget(isMobile: isMobile);
                             }
                           }),
-
                           SizedBox(height: ScreenSize.screenHeight * .05),
-                          // SizedBox(
-                          //   height: ScreenSize.screenHeight * .2,
-                          //   width: ScreenSize.screenWidth * .30,
-                          //   child: SignInScreen(
-                          //     resizeToAvoidBottomInset: true,
-                          //     providerConfigs: [
-                          //       GoogleProviderConfiguration(
-                          //           clientId:
-                          //               '124706936019-4h1tvjmgmadgeg05mnm1oa8do9beieqo.apps.googleusercontent.com')
-                          //     ],
-                          //   ),
-                          // ),
                           Text(
                             'Contact us',
                             style: TextStyle(color: Colors.black),
@@ -157,17 +144,36 @@ class _LoginScreenState extends State<LoginScreen> {
                               shape: RoundedRectangleBorder(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(20))),
-                              onPressed: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => SignInScreen(
-                                            providers: [
-                                              GoogleProvider(
-                                                  clientId:
-                                                      '124706936019-4h1tvjmgmadgeg05mnm1oa8do9beieqo.apps.googleusercontent.com')
-                                            ],
-                                            resizeToAvoidBottomInset: true,
-                                          )))),
+                              onPressed: () => showModalBottomSheet(
+                                    context: context,
+                                    builder: (context) => Container(
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(20),
+                                              topRight: Radius.circular(20))),
+                                      child: SignInScreen(
+                                        providers: [
+                                          GoogleProvider(
+                                              clientId:
+                                                  '124706936019-4h1tvjmgmadgeg05mnm1oa8do9beieqo.apps.googleusercontent.com')
+                                        ],
+                                        resizeToAvoidBottomInset: true,
+                                      ),
+                                    ),
+                                  )
+
+                              //  Navigator.push(
+                              //     context,
+                              //     MaterialPageRoute(
+                              //         builder: (context) => SignInScreen(
+                              //               providers: [
+                              //                 GoogleProvider(
+                              //                     clientId:
+                              //                         '124706936019-4h1tvjmgmadgeg05mnm1oa8do9beieqo.apps.googleusercontent.com')
+                              //               ],
+                              //               resizeToAvoidBottomInset: true,
+                              //             ))),
+                              ),
                         ),
                         SizedBox(height: ScreenSize.screenHeight * .02),
                         Text(
