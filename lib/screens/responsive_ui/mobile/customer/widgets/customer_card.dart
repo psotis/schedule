@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:scheldule/models/appointment_model.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
+import 'package:scheldule/utils/get%20layout/get_layout.dart';
 import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
 
@@ -29,6 +30,7 @@ class CustomerCard extends StatefulWidget {
 
 class _CustomerCardState extends State<CustomerCard> {
   String? name, surname, email, phone, address, description, amka;
+  int appointmentLength = 0;
   final _formKey = GlobalKey<FormState>();
 
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
@@ -63,11 +65,15 @@ class _CustomerCardState extends State<CustomerCard> {
         .deleteUsers(userId: userId, userDoc: userDoc);
   }
 
-  void seeApp() {
-    SearchEditUserRepository().patientAppointmentLength(
-        userId: widget.user!.uid,
-        name: widget.customer.name,
-        surename: widget.customer.surname);
+  void seeApp() async {
+    var length = await SearchEditUserRepository().patientAppointmentLength(
+      userId: widget.user!.uid,
+      name: widget.customer.name,
+      surename: widget.customer.surname,
+    );
+    setState(() {
+      appointmentLength = length;
+    });
   }
 
   @override
@@ -78,6 +84,8 @@ class _CustomerCardState extends State<CustomerCard> {
 
   @override
   Widget build(BuildContext context) {
+    var layoutWidth = getLayout(context);
+    print(layoutWidth);
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -107,7 +115,8 @@ class _CustomerCardState extends State<CustomerCard> {
           child: Column(
             children: [
               SizedBox(height: 10),
-              _form(context),
+              Text(appointmentLength.toString()),
+              _form(context, layoutWidth),
             ],
           ),
         ),
@@ -118,7 +127,7 @@ class _CustomerCardState extends State<CustomerCard> {
 
   Padding _buttons(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20, right: 20),
+      padding: const EdgeInsets.only(bottom: 20),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.end,
@@ -160,12 +169,17 @@ class _CustomerCardState extends State<CustomerCard> {
     );
   }
 
-  Padding _form(BuildContext context) {
+  Padding _form(BuildContext context, double layoutWidth) {
     return Padding(
       padding: EdgeInsets.only(top: 30),
       child: SizedBox(
-        width: 400,
-        height: MediaQuery.of(context).size.height * .7,
+        width: layoutWidth < 600
+            ? 350
+            : layoutWidth < 1300
+                ? 500
+                : 700,
+        // width: MediaQuery.of(context).size.width * .7,
+        // height: MediaQuery.of(context).size.height * .7,
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(

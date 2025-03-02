@@ -10,6 +10,7 @@ import 'package:scheldule/utils/snackbar.dart';
 
 import '../../../../../providers/search user/search_user_provider.dart';
 import '../../../../../utils/cutom_text.dart';
+import '../../../../../utils/get layout/get_layout.dart';
 
 class CustomerCard extends StatefulWidget {
   final AppointMent customer;
@@ -64,6 +65,7 @@ class _CustomerCardState extends State<CustomerCard> {
 
   @override
   Widget build(BuildContext context) {
+    var layoutWidth = getLayout(context);
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -93,7 +95,7 @@ class _CustomerCardState extends State<CustomerCard> {
           child: Column(
             children: [
               SizedBox(height: 10),
-              _form(context),
+              _form(context, layoutWidth),
               // Spacer(),
               // _buttons(context),
             ],
@@ -148,11 +150,15 @@ class _CustomerCardState extends State<CustomerCard> {
     );
   }
 
-  Padding _form(BuildContext context) {
+  Padding _form(BuildContext context, double layoutWidth) {
     return Padding(
       padding: EdgeInsets.only(top: 30),
       child: SizedBox(
-        width: 500,
+        width: layoutWidth < 600
+            ? 350
+            : layoutWidth < 1300
+                ? 500
+                : 700,
         height: MediaQuery.of(context).size.height * .7,
         child: Form(
           key: _formKey,

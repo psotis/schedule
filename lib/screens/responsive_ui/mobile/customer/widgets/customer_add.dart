@@ -141,7 +141,7 @@ class _CustomerAddState extends State<CustomerAdd> {
           spacing: 20,
           children: [
             Flexible(
-              flex: 2,
+              flex: 1,
               child: CustomTextForm(
                 labelText: 'Email',
                 hintText: 'example@gmail.com',
@@ -173,7 +173,7 @@ class _CustomerAddState extends State<CustomerAdd> {
           spacing: 20,
           children: [
             Flexible(
-              flex: 2,
+              flex: 1,
               child: CustomTextForm(
                 labelText: 'Διεύθυνση',
                 hintText: 'Agiou Nikolaou, Patra',
@@ -210,10 +210,10 @@ class _CustomerAddState extends State<CustomerAdd> {
           children: [
             Image.asset(
               Media.addCustomer,
-              width: 200,
-              height: 200,
+              width: 150,
+              height: 150,
             ),
-            _sendButton(),
+            Flexible(child: _sendButton()),
           ],
         ),
       ],

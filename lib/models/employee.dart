@@ -23,6 +23,20 @@ class Employee extends Equatable {
     required this.contractType,
   });
 
+  factory Employee.initial() {
+    return Employee(
+      name: '',
+      surname: '',
+      email: '',
+      phone: '',
+      address: '',
+      afm: '',
+      amka: '',
+      specialization: '',
+      contractType: '',
+    );
+  }
+
   Employee copyWith({
     String? name,
     String? surname,

@@ -32,7 +32,7 @@ class _CustomerListState extends State<CustomerList> {
       children: [
         _switchListGrid(),
         SizedBox(
-          width: 400,
+          width: MediaQuery.of(context).size.width * .8,
           child: CustomTextForm(
             labelText: 'Αναζήτηση',
             hintText: 'Ονοματεπώνυμο πελάτη',
@@ -185,7 +185,7 @@ class _CustomerListState extends State<CustomerList> {
     return GridView.builder(
       padding: EdgeInsets.all(30),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+        crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
         childAspectRatio: 1.2,
