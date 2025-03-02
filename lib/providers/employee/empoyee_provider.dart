@@ -7,6 +7,8 @@ import 'package:scheldule/models/employee.dart';
 import 'package:scheldule/providers/employee/employee_state.dart';
 import 'package:scheldule/repositories/employee_repository.dart';
 
+import '../../models/custom_errors.dart';
+
 class EmployeeProvider with ChangeNotifier {
   EmployeeState? _employeeState = EmployeeState.initial();
   EmployeeState? get employeeState => _employeeState;
@@ -21,6 +23,29 @@ class EmployeeProvider with ChangeNotifier {
   EmployeeProvider({
     required this.employeeRepository,
   });
+
+  Future<List<Employee>> searchEmployee({required String user}) async {
+    _employeeState =
+        _employeeState?.copyWith(employeeStatus: EmployeeStatus.loading);
+    notifyListeners();
+    try {
+      employees = await employeeRepository.findEmployee(user: user);
+      if (employees.isEmpty) {
+        _employeeState = _employeeState
+            ?.copyWith(employee: [], employeeStatus: EmployeeStatus.empty);
+        notifyListeners();
+      } else {
+        _employeeState = _employeeState?.copyWith(
+            employee: employees, employeeStatus: EmployeeStatus.loaded);
+        notifyListeners();
+      }
+
+      return employees;
+    } on CustomError catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
 
   Future<void> addEmployee({
     required String name,

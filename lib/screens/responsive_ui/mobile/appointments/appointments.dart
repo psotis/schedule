@@ -141,6 +141,7 @@ class _AppointmentsState extends State<Appointments> {
             Search(
               user: widget.user,
               width: ScreenSize.screenWidth * .5,
+              selectSearch: SelectSearch.customer,
               setAppointment: (p0, p1) => setCustomer(p0, p1),
             ),
             _form(),
@@ -257,10 +258,12 @@ class _AppointmentsState extends State<Appointments> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Text('Assign to: '),
-          DropdownMenu(
+          Search(
+            user: widget.user,
             width: ScreenSize.screenWidth * .5,
-            dropdownMenuEntries: [],
-          )
+            selectSearch: SelectSearch.employee,
+            // setAppointment: (p0, p1) => setCustomer(p0, p1),
+          ),
         ],
       ),
     );

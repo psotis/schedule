@@ -11,6 +11,7 @@ enum EmployeeStatus {
   update,
   delete,
   error,
+  empty,
 }
 
 class EmployeeState extends Equatable {

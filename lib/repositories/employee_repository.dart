@@ -18,6 +18,26 @@ class EmployeeRepository {
             snapshot.docs.map((doc) => Employee.fromDoc(doc)).toList());
   }
 
+  Future<List<Employee>> findEmployee({required String user}) async {
+    try {
+      appointMentsFromFirebase = await firestore
+          .collection(user)
+          .where('specialiazation', isNull: false)
+          .get();
+
+      employee = appointMentsFromFirebase!.docs
+          .map((e) => Employee.fromDoc(e))
+          .toList();
+      return employee!;
+    } catch (e) {
+      throw CustomError(
+        code: 'Exception',
+        message: e.toString(),
+        plugin: 'flutter_error/server_error',
+      );
+    }
+  }
+
   Future<void> addEmployee({
     required String userUid,
     required String name,
