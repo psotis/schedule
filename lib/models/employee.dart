@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 class Employee extends Equatable {
@@ -22,6 +23,21 @@ class Employee extends Equatable {
     required this.specialization,
     required this.contractType,
   });
+
+  factory Employee.fromDoc(DocumentSnapshot doc) {
+    final userData = doc.data() as Map<String, dynamic>;
+    return Employee(
+      name: userData['name'],
+      surname: userData['surname'],
+      phone: userData['phone'],
+      email: userData['email'],
+      address: userData['address'],
+      afm: userData['afm'],
+      amka: userData['amka'],
+      specialization: userData['specialization'],
+      contractType: userData['contractType'],
+    );
+  }
 
   factory Employee.initial() {
     return Employee(

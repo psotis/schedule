@@ -93,35 +93,4 @@ class AppointMent extends Equatable {
       date: date ?? this.date,
     );
   }
-
-  // Map<String, dynamic> toMap() {
-  //   return <String, dynamic>{
-  //     'id': id,
-  //     'name': name,
-  //     'surname': surname,
-  //     'phone': phone,
-  //     'email': email,
-  //     'address': address,
-  //     'description': description,
-  //     'date': date?.millisecondsSinceEpoch,
-  //   };
-  // }
-
-  // factory AppointMent.fromMap(Map<String, dynamic> map) {
-  //   return AppointMent(
-  //     id: map['id'] != null ? map['id'] as String : '',
-  //     name: map['name'] as String,
-  //     surname: map['surname'] as String,
-  //     phone: map['phone'] as String,
-  //     email: map['email'] as String,
-  //     address: map['address'] as String,
-  //     description: map['description'] as String,
-  //     date: map['date'] != null ? map['date'] as Timestamp : null,
-  //   );
-  // }
-
-  // String toJson() => json.encode(toMap());
-
-  // factory AppointMent.fromJson(String source) =>
-  //     AppointMent.fromMap(json.decode(source) as Map<String, dynamic>);
 }

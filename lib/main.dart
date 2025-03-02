@@ -21,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'repositories/add_appointment_repository.dart';
+import 'repositories/employee_repository.dart';
 
 SharedPreferences? prefs;
 
@@ -62,6 +63,9 @@ class MyApp extends StatelessWidget {
         ),
         Provider<AddAppointmentRepository>(
           create: (context) => AddAppointmentRepository(),
+        ),
+        Provider<EmployeeRepository>(
+          create: (context) => EmployeeRepository(),
         ),
         Provider<SearchEditUserRepository>(
           create: (context) => SearchEditUserRepository(),
@@ -116,6 +120,11 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<ToggleScreenProvider>(
           create: (context) => ToggleScreenProvider(),
+        ),
+        ChangeNotifierProvider<EmployeeProvider>(
+          create: (context) => EmployeeProvider(
+            employeeRepository: context.read<EmployeeRepository>(),
+          ),
         ),
       ],
       child: Builder(builder: (context) {

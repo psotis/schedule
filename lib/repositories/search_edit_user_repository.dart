@@ -106,29 +106,4 @@ class SearchEditUserRepository {
       );
     }
   }
-
-  // Future<AppointMent> seeUser(
-  //     {required String userUid,
-  //     required String name,
-  //     required String surname}) async {
-  //   try {
-  //     appointMentsFromFirebase = await firestore
-  //         .collection(userUid)
-  //         .where('name', isEqualTo: name)
-  //         .where('surname', isEqualTo: surname)
-  //         .get();
-
-  //     appointMent = appointMentsFromFirebase!.docs
-  //         .map((e) => AppointMent.fromDoc(e))
-  //         .first;
-  //     print(appointMent);
-  //     return appointMent!;
-  //   } catch (e) {
-  //     throw CustomError(
-  //       code: 'Exception',
-  //       message: e.toString(),
-  //       plugin: 'flutter_error/server_error',
-  //     );
-  //   }
-  // }
 }
