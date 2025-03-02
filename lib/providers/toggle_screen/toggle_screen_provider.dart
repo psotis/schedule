@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:scheldule/models/appointment_model.dart';
+import 'package:scheldule/models/employee.dart';
 import 'package:scheldule/providers/toggle_screen/toggle_screen_state.dart';
 
 class ToggleScreenProvider with ChangeNotifier {
@@ -20,6 +21,23 @@ class ToggleScreenProvider with ChangeNotifier {
 
     _toggleState = _toggleState!
         .copyWith(customer: customer, toggleStatus: ToggleStatus.yes);
+    notifyListeners();
+  }
+
+  void showInitialEmployeeScreen() {
+    _toggleState = _toggleState!
+        .copyWith(employee: Employee.initial(), toggleStatus: ToggleStatus.no);
+    notifyListeners();
+  }
+
+  void showEmployeeScreen(Employee employee) async {
+    _toggleState = _toggleState!
+        .copyWith(employee: Employee.initial(), toggleStatus: ToggleStatus.no);
+    notifyListeners();
+    await Future.delayed(Duration(milliseconds: 100));
+
+    _toggleState = _toggleState!
+        .copyWith(employee: employee, toggleStatus: ToggleStatus.yes);
     notifyListeners();
   }
 }

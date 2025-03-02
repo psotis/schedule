@@ -1,23 +1,23 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scheldule/models/appointment_model.dart';
-import 'package:scheldule/providers/providers.dart';
+import 'package:scheldule/providers/toggle_screen/toggle_screen_provider.dart';
+import 'package:scheldule/repositories/employee_repository.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 
-import '../../../../../repositories/search_edit_user_repository.dart';
+import '../../../../../models/employee.dart';
 
-class CustomerList extends StatefulWidget {
+class EmployeeList extends StatefulWidget {
   final User? user;
-  const CustomerList({super.key, this.user});
+  const EmployeeList({super.key, this.user});
 
   @override
-  State<CustomerList> createState() => _CustomerListState();
+  State<EmployeeList> createState() => _EmployeeListState();
 }
 
-class _CustomerListState extends State<CustomerList> {
+class _EmployeeListState extends State<EmployeeList> {
   String? userId;
-  late final stream = SearchEditUserRepository().streamUser(userId: userId!);
+  late final stream = EmployeeRepository().streamEmployee(userId: userId!);
   String _searchTerm = '';
   bool isListView = true;
 
@@ -36,7 +36,7 @@ class _CustomerListState extends State<CustomerList> {
           width: 400,
           child: CustomTextForm(
             labelText: 'Αναζήτηση',
-            hintText: 'Ονοματεπώνυμο πελάτη',
+            hintText: 'Ονοματεπώνυμο εργαζομένου',
             prefixIcon: Icons.search,
             onChanged: (value) {
               setState(() {
@@ -53,15 +53,15 @@ class _CustomerListState extends State<CustomerList> {
                   return Center(child: CircularProgressIndicator());
                 }
 
-                final filteredCustomer = snapshot.data!.where((appointment) {
-                  final fullName = '${appointment.name} ${appointment.surname}'
-                      .toLowerCase();
+                final filteredEmployee = snapshot.data!.where((employee) {
+                  final fullName =
+                      '${employee.name} ${employee.surname}'.toLowerCase();
                   return fullName.contains(_searchTerm.toLowerCase());
                 }).toList();
 
                 return isListView
-                    ? _buildListView(filteredCustomer)
-                    : _buildGridView(filteredCustomer);
+                    ? _buildListView(filteredEmployee)
+                    : _buildGridView(filteredEmployee);
               }),
         ),
       ],
@@ -93,18 +93,19 @@ class _CustomerListState extends State<CustomerList> {
     );
   }
 
-  ListView _buildListView(List<AppointMent> appointment) {
+  ListView _buildListView(List<Employee> employee) {
     return ListView.builder(
       padding: EdgeInsets.all(8),
       // shrinkWrap: true,
-      itemCount: appointment.length,
+      itemCount: employee.length,
       itemBuilder: (BuildContext context, int index) {
-        var customer = appointment[index];
+        var employe = employee[index];
 
         return Center(
           child: GestureDetector(
-            onTap: () =>
-                context.read<ToggleScreenProvider>().showScreen(customer),
+            onTap: () => context
+                .read<ToggleScreenProvider>()
+                .showEmployeeScreen(employe),
             child: Card(
               elevation: 4,
               margin: EdgeInsets.symmetric(vertical: 8),
@@ -127,7 +128,7 @@ class _CustomerListState extends State<CustomerList> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${customer.name} ${customer.surname}',
+                            '${employe.name} ${employe.surname}',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -141,7 +142,7 @@ class _CustomerListState extends State<CustomerList> {
                               SizedBox(width: 6),
                               Flexible(
                                 child: Text(
-                                  customer.email,
+                                  employe.email,
                                   style: TextStyle(color: Colors.grey[800]),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -154,11 +155,9 @@ class _CustomerListState extends State<CustomerList> {
                               Icon(Icons.phone,
                                   size: 16, color: Colors.grey[600]),
                               SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  customer.phone,
-                                  style: TextStyle(color: Colors.grey[800]),
-                                ),
+                              Text(
+                                employe.phone,
+                                style: TextStyle(color: Colors.grey[800]),
                               ),
                             ],
                           ),
@@ -176,7 +175,7 @@ class _CustomerListState extends State<CustomerList> {
     );
   }
 
-  Widget _buildGridView(List<AppointMent> appointment) {
+  Widget _buildGridView(List<Employee> employee) {
     return GridView.builder(
       padding: EdgeInsets.all(30),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -186,61 +185,56 @@ class _CustomerListState extends State<CustomerList> {
         childAspectRatio: 1.2,
         mainAxisExtent: 180,
       ),
-      itemCount: appointment.length,
+      itemCount: employee.length,
       itemBuilder: (context, index) {
-        var customer = appointment[index];
+        var employe = employee[index];
         return GestureDetector(
           onTap: () =>
-              context.read<ToggleScreenProvider>().showScreen(customer),
+              context.read<ToggleScreenProvider>().showEmployeeScreen(employe),
           child: Card(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: SizedBox(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(child: Icon(Icons.person)),
+                SizedBox(height: 12),
+                Text(
+                  '${employe.name} ${employe.surname}',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 12),
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleAvatar(child: Icon(Icons.person)),
-                    SizedBox(height: 12),
-                    Text(
-                      '${customer.name} ${customer.surname}',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.email, size: 16, color: Colors.grey[600]),
-                        SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            customer.email,
-                            style: TextStyle(color: Colors.grey[800]),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.phone, size: 16, color: Colors.grey[600]),
-                        SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            customer.phone,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: Colors.grey[800]),
-                          ),
-                        ),
-                      ],
+                    Icon(Icons.email, size: 16, color: Colors.grey[600]),
+                    SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        employe.email,
+                        style: TextStyle(color: Colors.grey[800]),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
-              ),
+                SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.phone, size: 16, color: Colors.grey[600]),
+                    SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        employe.phone,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: Colors.grey[800]),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         );
