@@ -7,12 +7,12 @@ class EmployeeRepository {
   QuerySnapshot<Map<String, dynamic>>? appointMentsFromFirebase;
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
-  List<Employee>? mployee;
+  List<Employee>? employee;
 
   Stream<List<Employee>> streamEmployee({required String userId}) {
     return FirebaseFirestore.instance
         .collection(userId)
-        .where('specialization', isNull: false)
+        .where('specialiazation', isNull: false)
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => Employee.fromDoc(doc)).toList());
@@ -27,14 +27,11 @@ class EmployeeRepository {
     required String address,
     required String amka,
     required String afm,
-    required String specialization,
+    required String specialiazation,
     required String contractType,
   }) async {
     try {
-      FirebaseFirestore.instance
-          .collection(userUid)
-          .doc('Employee $name $surname')
-          .set({
+      FirebaseFirestore.instance.collection(userUid).add({
         'name': name,
         'surname': surname,
         'phone': phone,
@@ -42,7 +39,7 @@ class EmployeeRepository {
         'address': address,
         'amka': amka,
         'afm': afm,
-        'specialiazation': specialization,
+        'specialiazation': specialiazation,
         'contract_type': contractType,
       }).then((_) {
         print("collection created");
@@ -59,9 +56,9 @@ class EmployeeRepository {
   }
 
   Future<void> removeEmployee(
-      {required String userId, required String userDoc}) async {
+      {required String employeeId, required String userDoc}) async {
     try {
-      firestore.collection(userId).doc(userDoc).delete();
+      firestore.collection(employeeId).doc(userDoc).delete();
     } catch (e) {
       throw CustomError(
         code: 'Exception',
@@ -77,12 +74,11 @@ class EmployeeRepository {
     required String phone,
     required String email,
     required String address,
-    required String description,
     required String amka,
     required String userUid,
     required String docId,
     required String afm,
-    required String specialization,
+    required String specialiazation,
     required String contractType,
   }) async {
     try {
@@ -92,10 +88,9 @@ class EmployeeRepository {
         'phone': phone,
         'email': email,
         'address': address,
-        'description': description,
         'amka': amka,
         'afm': afm,
-        'specialiazation': specialization,
+        'specialiazation': specialiazation,
         'contract_type': contractType,
       }).then((_) {
         print("collection created");

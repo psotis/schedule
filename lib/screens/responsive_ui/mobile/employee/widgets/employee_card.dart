@@ -4,13 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:scheldule/models/employee.dart';
+import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/get%20layout/get_layout.dart';
 import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
 
-import '../../../../../providers/search user/search_user_provider.dart';
-import '../../../../../repositories/search_edit_user_repository.dart';
 import '../../../../../utils/cutom_text.dart';
 
 class EmployeeCard extends StatefulWidget {
@@ -29,7 +28,15 @@ class EmployeeCard extends StatefulWidget {
 }
 
 class _EmployeeCardState extends State<EmployeeCard> {
-  String? name, surname, email, phone, address, description, amka;
+  String? name,
+      surname,
+      email,
+      phone,
+      address,
+      afm,
+      amka,
+      specialiazation,
+      contractType;
   int appointmentLength = 0;
   final _formKey = GlobalKey<FormState>();
 
@@ -46,40 +53,30 @@ class _EmployeeCardState extends State<EmployeeCard> {
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
 
-    // context.read<SearchUserProvider>().editUser(
-    //       name: name!,
-    //       surname: surname!,
-    //       phone: phone!,
-    //       email: email!,
-    //       address: address!,
-    //       description: description!,
-    //       amka: amka!,
-    //       userUid: widget.user!.uid,
-    //       docId: widget.employee.id,
-    //     );
+    context.read<EmployeeProvider>().editEmployee(
+          name: name!,
+          surname: surname!,
+          phone: phone!,
+          email: email!,
+          address: address!,
+          afm: afm!,
+          amka: amka!,
+          specialiazation: specialiazation!,
+          contractType: contractType!,
+          userUid: widget.user!.uid,
+          docId: widget.employe.id,
+        );
   }
 
   void _removeEmployee(
-      {required String userId, required String userDoc}) async {
+      {required String employeeId, required String userDoc}) async {
     await context
-        .read<SearchUserProvider>()
-        .deleteUsers(userId: userId, userDoc: userDoc);
-  }
-
-  void seeApp() async {
-    var length = await SearchEditUserRepository().patientAppointmentLength(
-      userId: widget.user!.uid,
-      name: widget.employe.name,
-      surename: widget.employe.surname,
-    );
-    setState(() {
-      appointmentLength = length;
-    });
+        .read<EmployeeProvider>()
+        .deleteEmployee(employeeId: employeeId, userDoc: userDoc);
   }
 
   @override
   void initState() {
-    seeApp();
     super.initState();
   }
 
@@ -116,7 +113,6 @@ class _EmployeeCardState extends State<EmployeeCard> {
           child: Column(
             children: [
               SizedBox(height: 10),
-              Text(appointmentLength.toString()),
               _form(context, layoutWidth),
             ],
           ),
@@ -136,10 +132,10 @@ class _EmployeeCardState extends State<EmployeeCard> {
         children: [
           SendButton(
             onPressed: () {
-              // _removeEmployee(
-              //   userId: widget.user!.uid,
-              //   userDoc: widget.employee.id,
-              // );
+              _removeEmployee(
+                employeeId: widget.user!.uid,
+                userDoc: widget.employe.id,
+              );
 
               Navigator.pop(context);
               snackBarDialog(context,
@@ -242,12 +238,30 @@ class _EmployeeCardState extends State<EmployeeCard> {
                   },
                 ),
                 CustomTextForm(
-                  labelText: 'Περιγραφή',
-                  hintText: '...........',
+                  labelText: 'ΑΦΜ',
+                  hintText: '800000000',
                   prefixIcon: Icons.description,
-                  // initial: widget.employee.description,
+                  initial: widget.employe.afm,
                   onSaved: (val) {
-                    description = val;
+                    afm = val;
+                  },
+                ),
+                CustomTextForm(
+                  labelText: 'Τύπος συμβολαίου',
+                  hintText: 'Πλήρης απασχόλησης',
+                  prefixIcon: Icons.work_history,
+                  initial: widget.employe.contractType,
+                  onSaved: (value) {
+                    contractType = value;
+                  },
+                ),
+                CustomTextForm(
+                  labelText: 'Ειδικότητα',
+                  hintText: 'Κομμωτής',
+                  prefixIcon: Icons.work,
+                  initial: widget.employe.specialiazation,
+                  onSaved: (value) {
+                    specialiazation = value;
                   },
                 ),
                 // Spacer(),

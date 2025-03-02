@@ -31,7 +31,7 @@ class EmployeeProvider with ChangeNotifier {
     required String address,
     required String afm,
     required String amka,
-    required String specialization,
+    required String specialiazation,
     required String contractType,
   }) async {
     _employeeState =
@@ -49,7 +49,7 @@ class EmployeeProvider with ChangeNotifier {
         address: address,
         afm: afm,
         amka: amka,
-        specialization: specialization,
+        specialiazation: specialiazation,
         contractType: contractType,
       );
 
@@ -78,10 +78,9 @@ class EmployeeProvider with ChangeNotifier {
     required String phone,
     required String email,
     required String address,
-    required String description,
     required String amka,
     required String afm,
-    required String specialization,
+    required String specialiazation,
     required String contractType,
     required String userUid,
     required String docId,
@@ -100,11 +99,10 @@ class EmployeeProvider with ChangeNotifier {
         phone: phone,
         email: email,
         address: address,
-        description: description,
         amka: amka,
         userUid: userUid,
         afm: afm,
-        specialization: specialization,
+        specialiazation: specialiazation,
         contractType: contractType,
         docId: docId,
       );
@@ -127,8 +125,10 @@ class EmployeeProvider with ChangeNotifier {
     }
   }
 
-  Future<void> deleteEmployee(String userId, String userDoc) async {
-    await employeeRepository.removeEmployee(userId: userId, userDoc: userDoc);
+  Future<void> deleteEmployee(
+      {required String employeeId, required String userDoc}) async {
+    await employeeRepository.removeEmployee(
+        employeeId: employeeId, userDoc: userDoc);
 
     _employeeState =
         _employeeState?.copyWith(employeeStatus: EmployeeStatus.delete);

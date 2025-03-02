@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:scheldule/providers/employee/employee_state.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/send_button.dart';
 
 import '../../../../../constants/logos/photos_gifs.dart';
-import '../../../../../providers/add user/add_user_status.dart';
 
 class EmployeeAdd extends StatefulWidget {
   final User? user;
@@ -24,7 +24,7 @@ class _EmployeeAddState extends State<EmployeeAdd> {
       address,
       amka,
       afm,
-      specialization,
+      specialiazation,
       contractType;
   final _formKey = GlobalKey<FormState>();
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
@@ -61,7 +61,7 @@ class _EmployeeAddState extends State<EmployeeAdd> {
           afm: afm!,
           amka: amka!,
           contractType: contractType!,
-          specialization: specialization!,
+          specialiazation: specialiazation!,
         );
   }
 
@@ -75,18 +75,18 @@ class _EmployeeAddState extends State<EmployeeAdd> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AddUserProvider>(builder: (context, state, child) {
-      if (state.addUserState.addUserStatus == AddUserStatus.loading) {
+    return Consumer<EmployeeProvider>(builder: (context, state, child) {
+      if (state.employeeState?.employeeStatus == EmployeeStatus.loading) {
         return Center(
           child: CircularProgressIndicator(),
         );
       }
-      if (state.addUserState.addUserStatus == AddUserStatus.sent) {
+      if (state.employeeState?.employeeStatus == EmployeeStatus.send) {
         return Center(
           child: Text('User was added'),
         );
       }
-      if (state.addUserState.addUserStatus == AddUserStatus.error) {
+      if (state.employeeState?.employeeStatus == EmployeeStatus.error) {
         return Center(
           child: Text('Something happened try again'),
         );
@@ -207,12 +207,39 @@ class _EmployeeAddState extends State<EmployeeAdd> {
             ),
           ],
         ),
+        Row(
+          spacing: 20,
+          children: [
+            Flexible(
+              flex: 1,
+              child: CustomTextForm(
+                labelText: 'ΑΦΜ',
+                hintText: '800000000',
+                prefixIcon: Icons.numbers_outlined,
+                onSaved: (value) {
+                  afm = value;
+                },
+              ),
+            ),
+            Flexible(
+              flex: 1,
+              child: CustomTextForm(
+                labelText: 'Τύπος συμβολαίου',
+                hintText: 'Πλήρης απασχόλησης',
+                prefixIcon: Icons.work_history,
+                onSaved: (value) {
+                  contractType = value;
+                },
+              ),
+            ),
+          ],
+        ),
         CustomTextForm(
-          labelText: 'Περιγραφή',
-          hintText: '...........',
-          prefixIcon: Icons.description,
+          labelText: 'Ειδικότητα',
+          hintText: 'Κομμωτής',
+          prefixIcon: Icons.work,
           onSaved: (value) {
-            specialization = value;
+            specialiazation = value;
           },
         ),
         SizedBox(height: MediaQuery.of(context).size.height * .15),

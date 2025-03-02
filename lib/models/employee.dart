@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 class Employee extends Equatable {
+  final String id;
   final String name;
   final String surname;
   final String email;
@@ -10,9 +11,10 @@ class Employee extends Equatable {
   final String address;
   final String afm;
   final String amka;
-  final String specialization;
+  final String specialiazation;
   final String contractType;
   Employee({
+    required this.id,
     required this.name,
     required this.surname,
     required this.email,
@@ -20,13 +22,14 @@ class Employee extends Equatable {
     required this.address,
     required this.afm,
     required this.amka,
-    required this.specialization,
+    required this.specialiazation,
     required this.contractType,
   });
 
   factory Employee.fromDoc(DocumentSnapshot doc) {
     final userData = doc.data() as Map<String, dynamic>;
     return Employee(
+      id: doc.id,
       name: userData['name'],
       surname: userData['surname'],
       phone: userData['phone'],
@@ -34,13 +37,14 @@ class Employee extends Equatable {
       address: userData['address'],
       afm: userData['afm'],
       amka: userData['amka'],
-      specialization: userData['specialization'],
-      contractType: userData['contractType'],
+      specialiazation: userData['specialiazation'],
+      contractType: userData['contract_type'],
     );
   }
 
   factory Employee.initial() {
     return Employee(
+      id: '',
       name: '',
       surname: '',
       email: '',
@@ -48,12 +52,13 @@ class Employee extends Equatable {
       address: '',
       afm: '',
       amka: '',
-      specialization: '',
+      specialiazation: '',
       contractType: '',
     );
   }
 
   Employee copyWith({
+    String? id,
     String? name,
     String? surname,
     String? email,
@@ -61,10 +66,11 @@ class Employee extends Equatable {
     String? address,
     String? afm,
     String? amka,
-    String? specialization,
+    String? specialiazation,
     String? contractType,
   }) {
     return Employee(
+      id: id ?? this.id,
       name: name ?? this.name,
       surname: surname ?? this.surname,
       email: email ?? this.email,
@@ -72,7 +78,7 @@ class Employee extends Equatable {
       address: address ?? this.address,
       afm: afm ?? this.afm,
       amka: amka ?? this.amka,
-      specialization: specialization ?? this.specialization,
+      specialiazation: specialiazation ?? this.specialiazation,
       contractType: contractType ?? this.contractType,
     );
   }
@@ -82,6 +88,7 @@ class Employee extends Equatable {
 
   @override
   List<Object?> get props => [
+        id,
         name,
         surname,
         email,
@@ -89,7 +96,7 @@ class Employee extends Equatable {
         address,
         afm,
         amka,
-        specialization,
+        specialiazation,
         contractType
       ];
 }
