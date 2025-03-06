@@ -25,10 +25,11 @@ class Appointments extends StatefulWidget {
 }
 
 class _AppointmentsState extends State<Appointments> {
-  String? name, surname;
+  String? name, surname, employee, position;
 
   TextEditingController nameController = TextEditingController();
   TextEditingController surnameController = TextEditingController();
+  TextEditingController positionController = TextEditingController();
   DateTime selectedDateTime = DateTime.now();
   late Timestamp timestampday;
 
@@ -53,6 +54,8 @@ class _AppointmentsState extends State<Appointments> {
           name: name!,
           surname: surname!,
           date: timestampday,
+          employee: employee,
+          position: position,
         );
   }
 
@@ -110,6 +113,7 @@ class _AppointmentsState extends State<Appointments> {
   void initState() {
     nameController = TextEditingController();
     surnameController = TextEditingController();
+    positionController = TextEditingController();
     super.initState();
   }
 
@@ -117,6 +121,7 @@ class _AppointmentsState extends State<Appointments> {
   void dispose() {
     nameController.dispose();
     surnameController.dispose();
+    positionController.dispose();
     super.dispose();
   }
 
@@ -124,6 +129,12 @@ class _AppointmentsState extends State<Appointments> {
     setState(() {
       nameController.text = name;
       surnameController.text = surename;
+    });
+  }
+
+  void setEmployee(String name, String surename) {
+    setState(() {
+      employee = '$name $surename';
     });
   }
 
@@ -145,7 +156,7 @@ class _AppointmentsState extends State<Appointments> {
               setAppointment: (p0, p1) => setCustomer(p0, p1),
             ),
             _form(),
-            SizedBox(height: MediaQuery.of(context).size.height * .15),
+            SizedBox(height: MediaQuery.of(context).size.height * .1),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -206,8 +217,35 @@ class _AppointmentsState extends State<Appointments> {
           ),
           _pickDate(),
           _assignTo(),
+          _position(),
         ],
       ),
+    );
+  }
+
+  Row _position() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Text('Position:'),
+        SizedBox(
+          width: 250,
+          child: CustomTextForm(
+            controller: positionController,
+            labelText: 'Position',
+            hintText: 'Room/seat',
+            prefixIcon: Icons.room,
+            onChanged: (value) {
+              setState(() {
+                positionController.text == value;
+              });
+            },
+            onSaved: (value) {
+              position = value;
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -241,6 +279,7 @@ class _AppointmentsState extends State<Appointments> {
                       _submit();
                       nameController.clear();
                       surnameController.clear();
+                      positionController.clear();
                       formattedTime = null;
                     }
                   : null,
@@ -262,7 +301,7 @@ class _AppointmentsState extends State<Appointments> {
             user: widget.user,
             width: ScreenSize.screenWidth * .5,
             selectSearch: SelectSearch.employee,
-            // setAppointment: (p0, p1) => setCustomer(p0, p1),
+            setAppointment: (p0, p1) => setEmployee(p0, p1),
           ),
         ],
       ),

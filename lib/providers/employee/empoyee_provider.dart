@@ -2,6 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 import 'package:scheldule/models/employee.dart';
 import 'package:scheldule/providers/employee/employee_state.dart';
@@ -58,6 +59,7 @@ class EmployeeProvider with ChangeNotifier {
     required String amka,
     required String specialiazation,
     required String contractType,
+    Color? color,
   }) async {
     _employeeState =
         _employeeState?.copyWith(employeeStatus: EmployeeStatus.loading);
@@ -92,6 +94,9 @@ class EmployeeProvider with ChangeNotifier {
     } catch (e) {
       _employeeState =
           _employeeState?.copyWith(employeeStatus: EmployeeStatus.error);
+      notifyListeners();
+      _employeeState =
+          _employeeState?.copyWith(employeeStatus: EmployeeStatus.initial);
       notifyListeners();
       throw Exception();
     }

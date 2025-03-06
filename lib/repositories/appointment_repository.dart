@@ -9,10 +9,24 @@ class AppointmentRepository {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   List<AppointMent>? appointment;
 
-  Stream<List<AppointMent>> streamAppointment({required String userId}) {
+  Stream<List<AppointMent>>? streamAppointment({required String userId}) {
     return FirebaseFirestore.instance
         .collection(userId)
         .where('date', isGreaterThanOrEqualTo: DateTime(2020))
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => AppointMent.fromDoc(doc)).toList());
+  }
+
+  Stream<List<AppointMent>>? streamTodayAppointment({required String userId}) {
+    DateTime now = DateTime.now();
+    DateTime startOfDay = DateTime(now.year, now.month, now.day);
+    DateTime endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
+
+    return FirebaseFirestore.instance
+        .collection(userId)
+        .where('date', isGreaterThanOrEqualTo: startOfDay)
+        .where('date', isLessThanOrEqualTo: endOfDay)
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => AppointMent.fromDoc(doc)).toList());

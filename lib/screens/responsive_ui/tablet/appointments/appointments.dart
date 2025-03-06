@@ -27,7 +27,7 @@ class Appointments extends StatefulWidget {
 }
 
 class _AppointmentsState extends State<Appointments> {
-  String? name, surname;
+  String? name, surname, employee;
 
   TextEditingController nameController = TextEditingController();
   TextEditingController surnameController = TextEditingController();
@@ -126,6 +126,12 @@ class _AppointmentsState extends State<Appointments> {
     setState(() {
       nameController.text = name;
       surnameController.text = surename;
+    });
+  }
+
+  void setEmployee(String name, String surename) {
+    setState(() {
+      employee = '$name $surename';
     });
   }
 
@@ -279,7 +285,7 @@ class _AppointmentsState extends State<Appointments> {
             user: widget.user,
             width: ScreenSize.screenWidth * .3,
             selectSearch: SelectSearch.employee,
-            // setAppointment: (p0, p1) => setCustomer(p0, p1),
+            setAppointment: (p0, p1) => setEmployee(p0, p1),
           ),
         ],
       ),

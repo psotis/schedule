@@ -248,8 +248,8 @@ class _EmployeeAddState extends State<EmployeeAdd> {
           children: [
             Image.asset(
               Media.addCustomer,
-              width: 150,
-              height: 150,
+              width: 200,
+              height: 200,
             ),
             Flexible(child: _sendButton()),
           ],

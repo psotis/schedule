@@ -9,11 +9,14 @@ class AddAppointmentRepository {
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   List<AppointMent>? appointment;
 
-  Future<void> sendAppointments(
-      {required String userUid,
-      required String surname,
-      required Timestamp date,
-      required String name}) async {
+  Future<void> sendAppointments({
+    required String userUid,
+    required String surname,
+    required Timestamp date,
+    required String name,
+    String? employee,
+    String? position,
+  }) async {
     try {
       FirebaseFirestore.instance.collection(userUid).add({
         'name': name,
@@ -24,6 +27,8 @@ class AddAppointmentRepository {
         'description': '',
         'amka': '',
         'date': date,
+        'position': position,
+        'employee': employee,
       }).then((_) {
         print("collection created");
       }).catchError((error) {

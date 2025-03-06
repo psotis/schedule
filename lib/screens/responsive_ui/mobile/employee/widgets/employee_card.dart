@@ -83,7 +83,7 @@ class _EmployeeCardState extends State<EmployeeCard> {
   @override
   Widget build(BuildContext context) {
     var layoutWidth = getLayout(context);
-    print(layoutWidth);
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(

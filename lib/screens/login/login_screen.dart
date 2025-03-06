@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:scheldule/constants/device_sizes.dart';
 import 'package:scheldule/providers/login%20to%20sign%20up/change_page_state.dart';
 import 'package:scheldule/providers/providers.dart';
-import 'package:scheldule/screens/signup/widgets/signup_widget.dart';
+import 'package:scheldule/screens/signup/signup_widget.dart';
 import 'package:sign_in_button/sign_in_button.dart';
 
 import '../../constants/logos/photos_gifs.dart';

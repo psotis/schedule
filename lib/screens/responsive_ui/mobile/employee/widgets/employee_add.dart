@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:scheldule/providers/employee/employee_state.dart';
@@ -40,6 +41,13 @@ class _EmployeeAddState extends State<EmployeeAdd> {
     super.initState();
   }
 
+  Color pickerColor = Colors.transparent;
+  Color currentColor = Color(0xff443a49);
+
+  void changeColor(Color color) {
+    setState(() => pickerColor = color);
+  }
+
   void _submit() async {
     if (mounted) {
       setState(() {
@@ -62,6 +70,7 @@ class _EmployeeAddState extends State<EmployeeAdd> {
           amka: amka!,
           contractType: contractType!,
           specialiazation: specialiazation!,
+          color: pickerColor,
         );
   }
 
@@ -241,6 +250,41 @@ class _EmployeeAddState extends State<EmployeeAdd> {
           onSaved: (value) {
             specialiazation = value;
           },
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('Διάλεξε χρώμα'),
+                        content: SingleChildScrollView(
+                          child: BlockPicker(
+                            pickerColor: currentColor,
+                            onColorChanged: changeColor,
+                          ),
+                        ),
+                        actions: <Widget>[
+                          ElevatedButton(
+                            child: const Text('Got it'),
+                            onPressed: () {
+                              setState(() => currentColor = pickerColor);
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: Text('Pick a color')),
+            CircleAvatar(
+              backgroundColor: pickerColor,
+            ),
+          ],
         ),
         SizedBox(height: MediaQuery.of(context).size.height * .15),
         Row(

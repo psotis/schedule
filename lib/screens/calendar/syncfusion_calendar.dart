@@ -1,9 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/appointment/appointment_provider.dart';
 import 'package:scheldule/styling/fonts/textstyle.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
+import 'package:scheldule/models/appointment_model.dart' as app;
 
 import '../../repositories/appointment_repository.dart';
 
@@ -20,13 +22,16 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
   List<AppointMent> appointment = [];
   String? userId;
 
-  late final stream =
-      AppointmentRepository().streamAppointment(userId: userId!);
+  Stream<List<app.AppointMent>>? stream;
+  Stream<List<app.AppointMent>>? streamToday;
 
   @override
   void initState() {
-    userId = widget.user.uid;
     super.initState();
+    userId = widget.user.uid;
+    stream = AppointmentRepository().streamAppointment(userId: userId!);
+    streamToday =
+        AppointmentRepository().streamTodayAppointment(userId: userId!);
   }
 
   void calendarPicker(CalendarTapDetails details) async {
@@ -42,17 +47,17 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      // Column(
-                      //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      //   crossAxisAlignment: CrossAxisAlignment.center,
-                      //   children: [
-                      //     IconButton(
-                      //       onPressed: null,
-                      //       icon: Icon(Icons.edit),
-                      //     ),
-                      //     Text('Επεξεργασία'),
-                      //   ],
-                      // ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: null,
+                            icon: Icon(Icons.edit),
+                          ),
+                          Text('Επεξεργασία'),
+                        ],
+                      ),
                       Column(
                         children: [
                           IconButton(
@@ -132,71 +137,118 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: stream,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        return Card(
-          child: SfCalendar(
-            allowDragAndDrop: true,
-            controller: _controller,
-            showNavigationArrow: true,
-            showDatePickerButton: true,
-            allowViewNavigation: true,
-            view: CalendarView.week,
-            firstDayOfWeek: DateTime.monday,
-            timeSlotViewSettings: TimeSlotViewSettings(
-              timeIntervalHeight: 50,
-              startHour: 7,
-              endHour: 23,
-              timeFormat: 'HH:mm',
-              nonWorkingDays: <int>[DateTime.saturday, DateTime.sunday],
-            ),
-            headerDateFormat: 'y MMMM',
-            minDate: DateTime(2022, 1, 1, 10, 0, 00, 000),
-            maxDate: DateTime(2100, 1, 1, 10, 0, 00, 000),
-            allowedViews: [
-              CalendarView.workWeek,
-              CalendarView.week,
-              CalendarView.day,
-            ],
-            appointmentBuilder: (context, calendarAppointmentDetails) {
-              final List appointments =
-                  calendarAppointmentDetails.appointments.toList();
-              final AppointMent appointment = appointments[0];
-              return Container(
-                  decoration: BoxDecoration(
-                      color: Colors.blue.shade400,
-                      borderRadius: BorderRadius.all(Radius.circular(10))),
-                  child: Center(
-                      child: Text(appointment.eventName,
-                          textAlign: TextAlign.center,
-                          style: TextStyles().appointments)));
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          StreamBuilder(
+            stream: stream,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+              return SizedBox(
+                height: 400,
+                child: Card(
+                  child: SfCalendar(
+                    allowDragAndDrop: true,
+                    controller: _controller,
+                    showNavigationArrow: true,
+                    showDatePickerButton: true,
+                    allowViewNavigation: true,
+                    view: CalendarView.week,
+                    firstDayOfWeek: DateTime.monday,
+                    timeSlotViewSettings: TimeSlotViewSettings(
+                      timeIntervalHeight: 50,
+                      startHour: 7,
+                      endHour: 23,
+                      timeFormat: 'HH:mm',
+                      nonWorkingDays: <int>[DateTime.saturday, DateTime.sunday],
+                    ),
+                    headerDateFormat: 'y MMMM',
+                    minDate: DateTime(2022, 1, 1, 10, 0, 00, 000),
+                    maxDate: DateTime(2100, 1, 1, 10, 0, 00, 000),
+                    allowedViews: [
+                      CalendarView.workWeek,
+                      CalendarView.week,
+                      CalendarView.day,
+                    ],
+                    appointmentBuilder: (context, calendarAppointmentDetails) {
+                      final List appointments =
+                          calendarAppointmentDetails.appointments.toList();
+                      final AppointMent appointment = appointments[0];
+                      return Container(
+                          decoration: BoxDecoration(
+                              color: Colors.blue.shade400,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10))),
+                          child: Center(
+                              child: Text(appointment.eventName,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyles().appointments)));
+                    },
+                    onTap: calendarPicker,
+                    monthViewSettings: const MonthViewSettings(
+                      appointmentDisplayMode:
+                          MonthAppointmentDisplayMode.appointment,
+                    ),
+                    dataSource: MeetingDataSource(snapshot.data!
+                        .map((e) => AppointMent(
+                              '${e.name} ${e.surname}',
+                              e.id,
+                              e.date!.toDate(),
+                              e.date!.toDate().add(Duration(hours: 1)),
+                              Colors.blueAccent,
+                              e.surname,
+                              e.phone,
+                              e.email,
+                              e.address,
+                              e.description,
+                              e.amka,
+                            ))
+                        .toList()),
+                  ),
+                ),
+              );
             },
-            onTap: calendarPicker,
-            monthViewSettings: const MonthViewSettings(
-              appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
-            ),
-            dataSource: MeetingDataSource(snapshot.data!
-                .map((e) => AppointMent(
-                      '${e.name} ${e.surname}',
-                      e.id,
-                      e.date!.toDate(),
-                      e.date!.toDate().add(Duration(hours: 1)),
-                      Colors.blueAccent,
-                      e.surname,
-                      e.phone,
-                      e.email,
-                      e.address,
-                      e.description,
-                      e.amka,
-                    ))
-                .toList()),
           ),
-        );
-      },
+          StreamBuilder(
+            stream: streamToday,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('No appointments found'));
+              }
+              return SizedBox(
+                height: 500,
+                child: ListView.builder(
+                  padding: EdgeInsets.all(10),
+                  shrinkWrap: true,
+                  itemCount: snapshot.data?.length,
+                  itemBuilder: (context, index) {
+                    var appoint = snapshot.data?[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text('${appoint!.name} ${appoint.surname}'),
+                        leading: Text(DateFormat('dd-MM-yyyy HH:mm')
+                            .format(appoint.date!.toDate())),
+                        subtitle: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text(appoint.employee ?? ''),
+                            Text(appoint.position ?? '')
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          )
+        ],
+      ),
     );
   }
 }

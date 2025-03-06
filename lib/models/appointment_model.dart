@@ -12,6 +12,8 @@ class AppointMent extends Equatable {
   final String description;
   final String amka;
   final Timestamp? date;
+  String? employee;
+  String? position;
   AppointMent({
     required this.id,
     required this.name,
@@ -22,20 +24,25 @@ class AppointMent extends Equatable {
     required this.description,
     required this.amka,
     this.date,
+    this.employee,
+    this.position,
   });
 
   factory AppointMent.fromDoc(DocumentSnapshot doc) {
     final userData = doc.data() as Map<String, dynamic>;
     return AppointMent(
-        id: doc.id,
-        name: userData['name'],
-        surname: userData['surname'],
-        phone: userData['phone'],
-        email: userData['email'],
-        address: userData['address'],
-        description: userData['description'],
-        amka: userData['amka'],
-        date: userData['date']);
+      id: doc.id,
+      name: userData['name'],
+      surname: userData['surname'],
+      phone: userData['phone'],
+      email: userData['email'],
+      address: userData['address'],
+      description: userData['description'],
+      amka: userData['amka'],
+      date: userData['date'],
+      employee: userData['employee'],
+      position: userData['position'],
+    );
   }
 
   factory AppointMent.initial() {
@@ -49,6 +56,8 @@ class AppointMent extends Equatable {
       description: '',
       amka: '',
       date: Timestamp.now(),
+      employee: '',
+      position: '',
     );
   }
 
@@ -64,6 +73,8 @@ class AppointMent extends Equatable {
       description,
       amka,
       date ?? Timestamp.now(),
+      employee ?? '',
+      position ?? '',
     ];
   }
 
@@ -80,6 +91,8 @@ class AppointMent extends Equatable {
     String? description,
     String? amka,
     Timestamp? date,
+    String? employee,
+    String? position,
   }) {
     return AppointMent(
       id: id ?? this.id,
@@ -91,6 +104,8 @@ class AppointMent extends Equatable {
       description: description ?? this.description,
       amka: amka ?? this.amka,
       date: date ?? this.date,
+      employee: employee ?? this.employee,
+      position: position ?? this.position,
     );
   }
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../constants/screen%20sizes/screen_sizes.dart';
-import '../../../providers/providers.dart';
-import '../../../providers/sign_up/signup_state.dart';
+import '../../constants/screen%20sizes/screen_sizes.dart';
+import '../../providers/providers.dart';
+import '../../providers/sign_up/signup_state.dart';
 
 class SignupWidget extends StatefulWidget {
   final bool isMobile;
