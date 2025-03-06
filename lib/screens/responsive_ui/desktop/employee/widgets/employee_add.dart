@@ -7,6 +7,7 @@ import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/send_button.dart';
 
 import '../../../../../constants/logos/photos_gifs.dart';
+import '../../../../../utils/snackbar.dart';
 
 class EmployeeAdd extends StatefulWidget {
   final User? user;
@@ -83,12 +84,12 @@ class _EmployeeAddState extends State<EmployeeAdd> {
       }
       if (state.employeeState?.employeeStatus == EmployeeStatus.send) {
         return Center(
-          child: Text('User was added'),
+          child: Text('Ο εργαζόμενος προστέθηκε'),
         );
       }
       if (state.employeeState?.employeeStatus == EmployeeStatus.error) {
         return Center(
-          child: Text('Something happened try again'),
+          child: Text('Προσπάθησε ξανά'),
         );
       }
 
@@ -268,12 +269,9 @@ class _EmployeeAddState extends State<EmployeeAdd> {
         child: GestureDetector(
           onTap: () {
             if (!isEnabled) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Please fill all fields before sending.'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
+              snackBarDialog(context,
+                  color: Colors.blueGrey,
+                  message: 'Συμπλήρωσε Όνομα, Επώνυμο, Τηλέφωνο');
             }
           },
           child: AbsorbPointer(

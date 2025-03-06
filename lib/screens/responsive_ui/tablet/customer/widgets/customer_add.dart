@@ -7,6 +7,7 @@ import 'package:scheldule/utils/send_button.dart';
 
 import '../../../../../constants/logos/photos_gifs.dart';
 import '../../../../../providers/add user/add_user_status.dart';
+import '../../../../../utils/snackbar.dart';
 
 class CustomerAdd extends StatefulWidget {
   final User? user;
@@ -72,12 +73,12 @@ class _CustomerAddState extends State<CustomerAdd> {
       }
       if (state.addUserState.addUserStatus == AddUserStatus.sent) {
         return Center(
-          child: Text('User was added'),
+          child: Text('Ο πελάτης προστέθηκε'),
         );
       }
       if (state.addUserState.addUserStatus == AddUserStatus.error) {
         return Center(
-          child: Text('Something happened try again'),
+          child: Text('Προσπάθησε ξανά'),
         );
       }
 
@@ -230,12 +231,9 @@ class _CustomerAddState extends State<CustomerAdd> {
         child: GestureDetector(
           onTap: () {
             if (!isEnabled) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Please fill all fields before sending.'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
+              snackBarDialog(context,
+                  color: Colors.blueGrey,
+                  message: 'Συμπλήρωσε Όνομα, Επώνυμο, Τηλέφωνο');
             }
           },
           child: AbsorbPointer(

@@ -117,7 +117,7 @@ class _EmployeeCardState extends State<EmployeeCard> {
               snackBarDialog(context,
                   color: Colors.red,
                   message:
-                      'User ${widget.employe.name} ${widget.employe.surname} was deleted');
+                      'Ο εργαζόμενος ${widget.employe.name} ${widget.employe.surname} διαγράφθηκε');
             },
             text: 'Διαγραφή',
             backgroundColor: Colors.red,
@@ -131,7 +131,7 @@ class _EmployeeCardState extends State<EmployeeCard> {
               snackBarDialog(context,
                   color: Colors.orange,
                   message:
-                      'User ${widget.employe.name} ${widget.employe.surname} was edited');
+                      'Ο εργαζόμενος ${widget.employe.name} ${widget.employe.surname} ανανεώθηκε');
             },
             text: 'Αποστολή',
             icon: Icons.edit,
@@ -237,7 +237,6 @@ class _EmployeeCardState extends State<EmployeeCard> {
                     specialiazation = value;
                   },
                 ),
-                // Spacer(),
               ],
             ),
           ),

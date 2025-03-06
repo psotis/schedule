@@ -144,7 +144,7 @@ class _CustomerCardState extends State<CustomerCard> {
               snackBarDialog(context,
                   color: Colors.red,
                   message:
-                      'User ${widget.customer.name} ${widget.customer.surname} was deleted');
+                      'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
             },
             text: 'Διαγραφή',
             backgroundColor: Colors.red,
@@ -158,7 +158,7 @@ class _CustomerCardState extends State<CustomerCard> {
               snackBarDialog(context,
                   color: Colors.orange,
                   message:
-                      'User ${widget.customer.name} ${widget.customer.surname} was edited');
+                      'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
             },
             text: 'Αποστολή',
             icon: Icons.edit,

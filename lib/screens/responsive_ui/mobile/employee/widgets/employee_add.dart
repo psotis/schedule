@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:scheldule/providers/employee/employee_state.dart';
@@ -8,6 +7,7 @@ import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/send_button.dart';
 
 import '../../../../../constants/logos/photos_gifs.dart';
+import '../../../../../utils/snackbar.dart';
 
 class EmployeeAdd extends StatefulWidget {
   final User? user;
@@ -92,12 +92,12 @@ class _EmployeeAddState extends State<EmployeeAdd> {
       }
       if (state.employeeState?.employeeStatus == EmployeeStatus.send) {
         return Center(
-          child: Text('User was added'),
+          child: Text('Ο εργαζόμενος προστέθηκε'),
         );
       }
       if (state.employeeState?.employeeStatus == EmployeeStatus.error) {
         return Center(
-          child: Text('Something happened try again'),
+          child: Text('Προσπάθησε ξανά'),
         );
       }
 
@@ -251,41 +251,41 @@ class _EmployeeAddState extends State<EmployeeAdd> {
             specialiazation = value;
           },
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('Διάλεξε χρώμα'),
-                        content: SingleChildScrollView(
-                          child: BlockPicker(
-                            pickerColor: currentColor,
-                            onColorChanged: changeColor,
-                          ),
-                        ),
-                        actions: <Widget>[
-                          ElevatedButton(
-                            child: const Text('Got it'),
-                            onPressed: () {
-                              setState(() => currentColor = pickerColor);
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                child: Text('Pick a color')),
-            CircleAvatar(
-              backgroundColor: pickerColor,
-            ),
-          ],
-        ),
+        // Row(
+        //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        //   children: [
+        //     ElevatedButton(
+        //         onPressed: () {
+        //           showDialog(
+        //             context: context,
+        //             builder: (context) {
+        //               return AlertDialog(
+        //                 title: const Text('Διάλεξε χρώμα'),
+        //                 content: SingleChildScrollView(
+        //                   child: BlockPicker(
+        //                     pickerColor: currentColor,
+        //                     onColorChanged: changeColor,
+        //                   ),
+        //                 ),
+        //                 actions: <Widget>[
+        //                   ElevatedButton(
+        //                     child: const Text('Got it'),
+        //                     onPressed: () {
+        //                       setState(() => currentColor = pickerColor);
+        //                       Navigator.of(context).pop();
+        //                     },
+        //                   ),
+        //                 ],
+        //               );
+        //             },
+        //           );
+        //         },
+        //         child: Text('Pick a color')),
+        //     CircleAvatar(
+        //       backgroundColor: pickerColor,
+        //     ),
+        //   ],
+        // ),
         SizedBox(height: MediaQuery.of(context).size.height * .15),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -312,12 +312,9 @@ class _EmployeeAddState extends State<EmployeeAdd> {
         child: GestureDetector(
           onTap: () {
             if (!isEnabled) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Please fill all fields before sending.'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
+              snackBarDialog(context,
+                  color: Colors.blueGrey,
+                  message: 'Συμπλήρωσε Όνομα, Επώνυμο, Τηλέφωνο');
             }
           },
           child: AbsorbPointer(

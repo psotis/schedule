@@ -228,7 +228,8 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                       return Center(child: CircularProgressIndicator());
                     }
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(child: Text('No appointments found'));
+                      return Center(
+                          child: Text('Δεν βρέθηκαν σημερινά ραντεβού'));
                     }
                     return Padding(
                       padding: EdgeInsets.only(top: 20),
@@ -364,7 +365,8 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                       return Center(child: CircularProgressIndicator());
                     }
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(child: Text('No appointments found'));
+                      return Center(
+                          child: Text('Δεν βρέθηκαν σημερινά ραντεβού'));
                     }
                     return Padding(
                       padding: const EdgeInsets.only(top: 10),
