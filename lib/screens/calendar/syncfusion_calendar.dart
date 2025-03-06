@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/appointment/appointment_provider.dart';
 import 'package:scheldule/styling/fonts/textstyle.dart';
+import 'package:scheldule/utils/cutom_text.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:scheldule/models/appointment_model.dart' as app;
 
@@ -229,36 +230,45 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return Center(child: Text('No appointments found'));
                     }
-                    return SizedBox(
-                      height: 500,
-                      child: Column(
-                        children: [
-                          Text('Todays appointments'),
-                          ListView.builder(
-                            padding: EdgeInsets.all(10),
-                            shrinkWrap: true,
-                            itemCount: snapshot.data?.length,
-                            itemBuilder: (context, index) {
-                              var appoint = snapshot.data?[index];
-                              return Card(
-                                child: ListTile(
-                                  title: Text(
-                                      '${appoint!.name} ${appoint.surname}'),
-                                  leading: Text(DateFormat('dd-MM-yyyy HH:mm')
-                                      .format(appoint.date!.toDate())),
-                                  subtitle: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Text(appoint.employee ?? ''),
-                                      Text(appoint.position ?? '')
-                                    ],
+                    return Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: SizedBox(
+                        height: 500,
+                        child: Column(
+                          spacing: 10,
+                          children: [
+                            CustomText(
+                              text: 'Σημερινά Ραντεβού',
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            ListView.builder(
+                              padding: EdgeInsets.all(10),
+                              shrinkWrap: true,
+                              itemCount: snapshot.data?.length,
+                              itemBuilder: (context, index) {
+                                var appoint = snapshot.data?[index];
+                                return Card(
+                                  child: ListTile(
+                                    title: Text(
+                                        '${appoint!.name} ${appoint.surname}'),
+                                    leading: Text(DateFormat('dd-MM-yyyy HH:mm')
+                                        .format(appoint.date!.toDate())),
+                                    subtitle: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Text(appoint.employee ?? ''),
+                                        Text(appoint.position ?? '')
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -356,49 +366,57 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return Center(child: Text('No appointments found'));
                     }
-                    return Column(
-                      children: [
-                        Text('Todays appointments'),
-                        ListView.builder(
-                          padding: EdgeInsets.all(10),
-                          shrinkWrap: true,
-                          itemCount: snapshot.data?.length,
-                          itemBuilder: (context, index) {
-                            var appoint = snapshot.data?[index];
-                            return Card(
-                              child: ListTile(
-                                title: Text(
-                                  '${appoint!.name} ${appoint.surname}',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                leading: Text(
-                                  DateFormat('dd-MM-yyyy HH:mm')
-                                      .format(appoint.date!.toDate()),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                subtitle: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        appoint.employee ?? '',
-                                        overflow: TextOverflow.ellipsis,
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Column(
+                        children: [
+                          CustomText(
+                            text: 'Σημερινά Ραντεβού',
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          ListView.builder(
+                            padding: EdgeInsets.all(10),
+                            shrinkWrap: true,
+                            itemCount: snapshot.data?.length,
+                            itemBuilder: (context, index) {
+                              var appoint = snapshot.data?[index];
+                              return Card(
+                                child: ListTile(
+                                  title: Text(
+                                    '${appoint!.name} ${appoint.surname}',
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  leading: Text(
+                                    DateFormat('dd-MM-yyyy HH:mm')
+                                        .format(appoint.date!.toDate()),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  subtitle: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          appoint.employee ?? '',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        appoint.position ?? '',
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    )
-                                  ],
+                                      Expanded(
+                                        child: Text(
+                                          appoint.position ?? '',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      )
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     );
                   },
                 ),

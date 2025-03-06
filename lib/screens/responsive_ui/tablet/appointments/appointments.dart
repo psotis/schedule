@@ -185,7 +185,7 @@ class _AppointmentsState extends State<Appointments> {
             width: ScreenSize.screenWidth * .5,
             child: CustomTextForm(
               controller: nameController,
-              labelText: 'Name',
+              labelText: 'Όνομα',
               hintText: 'John',
               prefixIcon: Icons.person,
               onChanged: (value) {
@@ -202,7 +202,7 @@ class _AppointmentsState extends State<Appointments> {
             width: ScreenSize.screenWidth * .5,
             child: CustomTextForm(
               controller: surnameController,
-              labelText: 'Surname',
+              labelText: 'Επώνυμο',
               hintText: 'Doe',
               prefixIcon: Icons.person_2,
               onChanged: (value) {
@@ -230,13 +230,13 @@ class _AppointmentsState extends State<Appointments> {
         spacing: 50,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Position:'),
+          Text('Θέση:'),
           SizedBox(
             width: 250,
             child: CustomTextForm(
               controller: positionController,
-              labelText: 'Position',
-              hintText: 'Room/seat',
+              labelText: 'Θέση',
+              hintText: 'Γραφείο/Καρέκλα/Δωμάτιο',
               prefixIcon: Icons.room,
               onChanged: (value) {
                 setState(() {
@@ -253,15 +253,6 @@ class _AppointmentsState extends State<Appointments> {
     );
   }
 
-  void show() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Please fill all fields before sending.'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
   Padding _sendButton() {
     bool isEnabled = nameController.text.isNotEmpty &&
         surnameController.text.isNotEmpty &&
@@ -272,12 +263,9 @@ class _AppointmentsState extends State<Appointments> {
         child: GestureDetector(
           onTap: () {
             if (!isEnabled) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Please fill all fields before sending.'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
+              snackBarDialog(context,
+                  color: Colors.blueGrey,
+                  message: 'Συμπλήρωσε Όνομα, Επώνυμο, Ημερομηνία');
             }
           },
           child: AbsorbPointer(
@@ -290,16 +278,12 @@ class _AppointmentsState extends State<Appointments> {
               onPressed: isEnabled
                   ? () {
                       _submit();
-                      snackBarDialog(
-                        context,
-                        color: Colors.blueGrey,
-                        message:
-                            'Appointment with customer ${nameController.text} ${surnameController.text} was added',
-                      );
                       nameController.clear();
                       surnameController.clear();
                       positionController.clear();
                       formattedTime = null;
+                      snackBarDialog(context,
+                          color: Colors.blueGrey, message: 'Επιτυχής αποστολή');
                     }
                   : null,
             ),
@@ -316,7 +300,7 @@ class _AppointmentsState extends State<Appointments> {
         spacing: 50,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Assign to: '),
+          Text('Ανάθεση σε: '),
           Search(
             user: widget.user,
             width: ScreenSize.screenWidth * .3,
@@ -334,7 +318,7 @@ class _AppointmentsState extends State<Appointments> {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text('Pick a date'),
+        Text('Διάλεξε ημερομηνία'),
         OutlinedButton(
             onPressed: pickDateTime,
             child: formattedTime == null
