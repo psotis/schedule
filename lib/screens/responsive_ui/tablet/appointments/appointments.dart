@@ -27,10 +27,11 @@ class Appointments extends StatefulWidget {
 }
 
 class _AppointmentsState extends State<Appointments> {
-  String? name, surname, employee;
+  String? name, surname, employee, position;
 
   TextEditingController nameController = TextEditingController();
   TextEditingController surnameController = TextEditingController();
+  TextEditingController positionController = TextEditingController();
   DateTime selectedDateTime = DateTime.now();
   late Timestamp timestampday;
 
@@ -51,10 +52,13 @@ class _AppointmentsState extends State<Appointments> {
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
     await context.read<AddAppointmentProvider>().addAppointment(
-        userUid: widget.user!.uid,
-        name: name!,
-        surname: surname!,
-        date: timestampday);
+          userUid: widget.user!.uid,
+          name: name!,
+          surname: surname!,
+          date: timestampday,
+          employee: employee,
+          position: position,
+        );
   }
 
   Future pickDateTime() async {
@@ -111,7 +115,7 @@ class _AppointmentsState extends State<Appointments> {
   void initState() {
     nameController = TextEditingController();
     surnameController = TextEditingController();
-
+    positionController = TextEditingController();
     super.initState();
   }
 
@@ -119,6 +123,7 @@ class _AppointmentsState extends State<Appointments> {
   void dispose() {
     nameController.dispose();
     surnameController.dispose();
+    positionController.dispose();
     super.dispose();
   }
 
@@ -210,10 +215,39 @@ class _AppointmentsState extends State<Appointments> {
               },
             ),
           ),
-          SizedBox(height: 20),
           _pickDate(),
-          SizedBox(height: 10),
           _assignTo(),
+          _position(),
+        ],
+      ),
+    );
+  }
+
+  SizedBox _position() {
+    return SizedBox(
+      width: double.infinity,
+      child: Row(
+        spacing: 50,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text('Position:'),
+          SizedBox(
+            width: 250,
+            child: CustomTextForm(
+              controller: positionController,
+              labelText: 'Position',
+              hintText: 'Room/seat',
+              prefixIcon: Icons.room,
+              onChanged: (value) {
+                setState(() {
+                  positionController.text == value;
+                });
+              },
+              onSaved: (value) {
+                position = value;
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -264,6 +298,7 @@ class _AppointmentsState extends State<Appointments> {
                       );
                       nameController.clear();
                       surnameController.clear();
+                      positionController.clear();
                       formattedTime = null;
                     }
                   : null,
@@ -278,7 +313,8 @@ class _AppointmentsState extends State<Appointments> {
     return SizedBox(
       width: double.infinity,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        spacing: 50,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text('Assign to: '),
           Search(
