@@ -57,6 +57,7 @@ class _SearchState extends State<Search> {
             label: Text('Αναζήτηση πελάτη'),
             enableFilter: true,
             enableSearch: true,
+            menuHeight: 250,
             dropdownMenuEntries: searchUser.map((e) {
               return DropdownMenuEntry(
                 value: e,
@@ -82,6 +83,7 @@ class _SearchState extends State<Search> {
             label: Text('Επέλεξε εργαζόμενο'),
             enableFilter: true,
             enableSearch: true,
+            menuHeight: 250,
             dropdownMenuEntries: employee.map((e) {
               return DropdownMenuEntry(
                 value: e,

@@ -93,7 +93,7 @@ class _AppointmentsState extends State<Appointments> {
 
   Future<TimeOfDay?> pickTime() {
     return showTimePicker(
-      initialEntryMode: TimePickerEntryMode.inputOnly,
+      initialEntryMode: TimePickerEntryMode.dialOnly,
       context: context,
       initialTime: TimeOfDay(
         hour: selectedDateTime.hour,
