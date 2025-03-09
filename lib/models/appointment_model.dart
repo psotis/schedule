@@ -11,7 +11,9 @@ class AppointMent extends Equatable {
   final String address;
   final String description;
   final String amka;
-  Timestamp? date;
+  final Timestamp? date;
+  String? employee;
+  String? position;
   AppointMent({
     required this.id,
     required this.name,
@@ -22,20 +24,25 @@ class AppointMent extends Equatable {
     required this.description,
     required this.amka,
     this.date,
+    this.employee,
+    this.position,
   });
 
   factory AppointMent.fromDoc(DocumentSnapshot doc) {
     final userData = doc.data() as Map<String, dynamic>;
     return AppointMent(
-        id: doc.id,
-        name: userData['name'],
-        surname: userData['surname'],
-        phone: userData['phone'],
-        email: userData['email'],
-        address: userData['address'],
-        description: userData['description'],
-        amka: userData['amka'],
-        date: userData['date']);
+      id: doc.id,
+      name: userData['name'],
+      surname: userData['surname'],
+      phone: userData['phone'],
+      email: userData['email'],
+      address: userData['address'],
+      description: userData['description'],
+      amka: userData['amka'],
+      date: userData['date'],
+      employee: userData['employee'],
+      position: userData['position'],
+    );
   }
 
   factory AppointMent.initial() {
@@ -49,6 +56,8 @@ class AppointMent extends Equatable {
       description: '',
       amka: '',
       date: Timestamp.now(),
+      employee: '',
+      position: '',
     );
   }
 
@@ -64,6 +73,8 @@ class AppointMent extends Equatable {
       description,
       amka,
       date ?? Timestamp.now(),
+      employee ?? '',
+      position ?? '',
     ];
   }
 
@@ -80,6 +91,8 @@ class AppointMent extends Equatable {
     String? description,
     String? amka,
     Timestamp? date,
+    String? employee,
+    String? position,
   }) {
     return AppointMent(
       id: id ?? this.id,
@@ -91,37 +104,8 @@ class AppointMent extends Equatable {
       description: description ?? this.description,
       amka: amka ?? this.amka,
       date: date ?? this.date,
+      employee: employee ?? this.employee,
+      position: position ?? this.position,
     );
   }
-
-  // Map<String, dynamic> toMap() {
-  //   return <String, dynamic>{
-  //     'id': id,
-  //     'name': name,
-  //     'surname': surname,
-  //     'phone': phone,
-  //     'email': email,
-  //     'address': address,
-  //     'description': description,
-  //     'date': date?.millisecondsSinceEpoch,
-  //   };
-  // }
-
-  // factory AppointMent.fromMap(Map<String, dynamic> map) {
-  //   return AppointMent(
-  //     id: map['id'] != null ? map['id'] as String : '',
-  //     name: map['name'] as String,
-  //     surname: map['surname'] as String,
-  //     phone: map['phone'] as String,
-  //     email: map['email'] as String,
-  //     address: map['address'] as String,
-  //     description: map['description'] as String,
-  //     date: map['date'] != null ? map['date'] as Timestamp : null,
-  //   );
-  // }
-
-  // String toJson() => json.encode(toMap());
-
-  // factory AppointMent.fromJson(String source) =>
-  //     AppointMent.fromMap(json.decode(source) as Map<String, dynamic>);
 }

@@ -10,6 +10,7 @@ import 'appointment_status.dart';
 
 class AppointmentProvider extends ChangeNotifier {
   List<AppointMent> appointment = [];
+  List<AppointMent> appointments = [];
   AppointmentState _appointmentState = AppointmentState.initial();
   AppointmentState get appointmentState => _appointmentState;
   late DocumentReference documentReference;

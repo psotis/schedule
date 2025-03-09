@@ -1,14 +1,13 @@
 // ignore: depend_on_referenced_packages
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fbAuth;
+import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:flutterfire_ui/i10n.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/firebase_options.dart';
 import 'package:scheldule/keys/material_key.dart';
@@ -18,11 +17,11 @@ import 'package:scheldule/repositories/appointment_repository.dart';
 import 'package:scheldule/repositories/auth_repository.dart';
 import 'package:scheldule/repositories/search_edit_user_repository.dart';
 import 'package:scheldule/routes/route_generator.dart';
-import 'package:scheldule/styling/themes/themes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'repositories/add_appointment_repository.dart';
+import 'repositories/employee_repository.dart';
 
 SharedPreferences? prefs;
 
@@ -45,15 +44,6 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-class MyCustomScrollBehavior extends MaterialScrollBehavior {
-  // Override behavior methods and getters like dragDevices
-  @override
-  Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-      };
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -62,13 +52,10 @@ class MyApp extends StatelessWidget {
     // final Future<FirebaseApp> _fbApp = Firebase.initializeApp();
     return MultiProvider(
       providers: [
-        // ChangeNotifierProvider<ThemeProvider>(
-        //   create: (context) => ThemeProvider(),
-        // ),
         Provider<AuthRepository>(
           create: (context) => AuthRepository(
             firebaseFirestore: FirebaseFirestore.instance,
-            firebaseAuth: fbAuth.FirebaseAuth.instance,
+            firebaseAuth: fb_auth.FirebaseAuth.instance,
           ),
         ),
         Provider<AppointmentRepository>(
@@ -77,18 +64,21 @@ class MyApp extends StatelessWidget {
         Provider<AddAppointmentRepository>(
           create: (context) => AddAppointmentRepository(),
         ),
+        Provider<EmployeeRepository>(
+          create: (context) => EmployeeRepository(),
+        ),
         Provider<SearchEditUserRepository>(
           create: (context) => SearchEditUserRepository(),
         ),
-        StreamProvider<fbAuth.User?>(
+        StreamProvider<fb_auth.User?>(
           create: (context) => context.read<AuthRepository>().user,
           initialData: null,
         ),
-        ChangeNotifierProxyProvider<fbAuth.User?, AuthProvider>(
+        ChangeNotifierProxyProvider<fb_auth.User?, AuthProvider>(
           create: (context) => AuthProvider(
             authRepository: context.read<AuthRepository>(),
           ),
-          update: (BuildContext context, fbAuth.User? userStream,
+          update: (BuildContext context, fb_auth.User? userStream,
                   AuthProvider? authProvider) =>
               authProvider!..update(userStream),
         ),
@@ -120,16 +110,28 @@ class MyApp extends StatelessWidget {
                   context.read<AddAppointmentRepository>()),
         ),
         ChangeNotifierProvider<ChangePageProvider>(
-            create: (context) => ChangePageProvider()),
+          create: (context) => ChangePageProvider(),
+        ),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (context) => ThemeProvider(),
+        ),
+        ChangeNotifierProvider<DrawerProvider>(
+          create: (context) => DrawerProvider(),
+        ),
+        ChangeNotifierProvider<ToggleScreenProvider>(
+          create: (context) => ToggleScreenProvider(),
+        ),
+        ChangeNotifierProvider<EmployeeProvider>(
+          create: (context) => EmployeeProvider(
+            employeeRepository: context.read<EmployeeRepository>(),
+          ),
+        ),
       ],
       child: Builder(builder: (context) {
         return MaterialApp(
           title: 'My Schedule',
           debugShowCheckedModeBanner: false,
-          theme: Themes().darkTheme,
-          scrollBehavior: MyCustomScrollBehavior(),
-          // darkTheme: Themes().darkTheme,
-          themeMode: ThemeMode.system,
+          theme: context.watch<ThemeProvider>().state?.themeData,
           onGenerateRoute: RouteGenerator.generateRoute,
           navigatorKey: AppMaterialKey.materialKey,
           initialRoute: '/',

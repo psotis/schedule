@@ -1,27 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:scheldule/providers/themes/theme_status.dart';
+import 'package:scheldule/styling/themes/dark_theme.dart';
+import 'package:scheldule/styling/themes/light_theme.dart';
 
 import '../../main.dart';
-import '../../models/theme_model.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  bool loading = false;
-  ThemeModel? _state = ThemeModel.initial();
-  ThemeModel? get state => _state;
+  ThemeState? _state = ThemeState.initial();
+  ThemeState? get state => _state;
 
-  void changeTheme(bool checked) async {
-    loading = true;
-    prefs = await SharedPreferences.getInstance();
-    if (_state?.isChecked == checked) {
-      _state = _state?.copyWith(themeStatus: ThemeStatus.dark);
-      prefs?.setBool('isDarkTheme', false);
+  void changeTheme() async {
+    if (state?.themeStatus == ThemeStatus.dark) {
+      _state = _state?.copyWith(
+          themeData: lightTheme, themeStatus: ThemeStatus.light);
+      prefs?.setString('theme', 'light');
+      notifyListeners();
     } else {
-      _state = _state?.copyWith(themeStatus: ThemeStatus.light);
-      prefs?.setBool('isDarkTheme', true);
+      _state =
+          _state?.copyWith(themeData: darkTheme, themeStatus: ThemeStatus.dark);
+      prefs?.setString('theme', 'dark');
+      notifyListeners();
     }
-    await Future.delayed(Duration(milliseconds: 500));
-    loading = false;
-
-    notifyListeners();
   }
 }

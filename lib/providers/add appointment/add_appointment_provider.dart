@@ -20,6 +20,8 @@ class AddAppointmentProvider extends ChangeNotifier {
     required String surname,
     required Timestamp date,
     required String userUid,
+    String? position,
+    String? employee,
   }) async {
     _appointmentState = _appointmentState.copyWith(
         appointmentStatus: AddAppointmentStatus.loading);
@@ -28,7 +30,13 @@ class AddAppointmentProvider extends ChangeNotifier {
 
     try {
       await addAppointmentRepository.sendAppointments(
-          userUid: userUid, surname: surname, date: date, name: name);
+        userUid: userUid,
+        surname: surname,
+        date: date,
+        name: name,
+        position: position,
+        employee: employee,
+      );
 
       _appointmentState = _appointmentState.copyWith(
           appointmentStatus: AddAppointmentStatus.loaded);
