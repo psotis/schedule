@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class CustomTextForm extends StatelessWidget {
   final String labelText;
   final String hintText;
-  final IconData prefixIcon;
+  final IconData? prefixIcon;
   final IconData? suffixIcon;
   final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onChanged;
@@ -17,7 +17,7 @@ class CustomTextForm extends StatelessWidget {
     super.key,
     required this.labelText,
     required this.hintText,
-    required this.prefixIcon,
+    this.prefixIcon,
     this.suffixIcon,
     this.validator,
     this.onChanged,
@@ -44,10 +44,12 @@ class CustomTextForm extends StatelessWidget {
         hintStyle: TextStyle(
           color: Colors.grey[400],
         ),
-        prefixIcon: Icon(
-          prefixIcon,
-          color: Color(0xFFf1b24b),
-        ),
+        prefixIcon: prefixIcon != null
+            ? Icon(
+                prefixIcon,
+                color: Color(0xFFf1b24b),
+              )
+            : null,
         suffixIcon: suffixIcon != null
             ? Icon(
                 suffixIcon,

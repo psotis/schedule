@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/providers/themes/theme_status.dart';
 import 'package:scheldule/screens/calendar/syncfusion_calendar.dart';
+import 'package:scheldule/screens/gemini%20chat/gemini_chat.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/appointments/appointments.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/customer/customer.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/employee/employee.dart';
@@ -22,6 +23,14 @@ class DesktopHomepage extends StatefulWidget {
 class _DesktopHomepageState extends State<DesktopHomepage> {
   int _selectedIndex = 0;
   User? user;
+
+  bool isChatOpen = false;
+
+  void toggleChat() {
+    setState(() {
+      isChatOpen = !isChatOpen;
+    });
+  }
 
   @override
   void initState() {
@@ -44,26 +53,49 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
   @override
   Widget build(BuildContext context) {
     var checkTheme = context.watch<ThemeProvider>().state?.themeStatus;
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          stops: [0.1, 0.5, 0.7, 0.9],
-          colors: [
-            Color(0xFF005448),
-            Color(0xFF007a6b),
-            Color(0xFF00a190),
-            Color(0xFF00c9b7),
-          ],
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            stops: [0.1, 0.5, 0.7, 0.9],
+            colors: [
+              Color(0xFF005448),
+              Color(0xFF007a6b),
+              Color(0xFF00a190),
+              Color(0xFF00c9b7),
+            ],
+          ),
         ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Row(
+        child: Row(
           children: [
+            // Navigation Rail
             _navigationRail(context, checkTheme),
-            Expanded(child: _screens[_selectedIndex]),
+
+            // Main Content
+            Expanded(
+              child: Stack(
+                children: [
+                  _screens[_selectedIndex],
+                  if (isChatOpen)
+                    Positioned(
+                      right: 16,
+                      bottom: 16,
+                      child: GeminiChat(onClose: toggleChat),
+                    ),
+                  if (!isChatOpen)
+                    Positioned(
+                      right: 16,
+                      bottom: 16,
+                      child: FloatingActionButton(
+                        onPressed: toggleChat,
+                        child: Icon(Icons.chat),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

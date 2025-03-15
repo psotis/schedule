@@ -39,62 +39,65 @@ class _EmployeeState extends State<Employee>
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Flexible(
-          child: Column(
-            children: [
-              TabBar(controller: _tabController, tabs: [
-                SizedBox(
-                  height: ScreenSize.screenHeight * .08,
-                  width: ScreenSize.screenWidth * .2,
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Λίστα εργαζομένων',
+    return GestureDetector(
+      onTap: () => context.read<ToggleScreenProvider>().showInitialScreen(),
+      child: Row(
+        children: [
+          Flexible(
+            child: Column(
+              children: [
+                TabBar(controller: _tabController, tabs: [
+                  SizedBox(
+                    height: ScreenSize.screenHeight * .08,
+                    width: ScreenSize.screenWidth * .2,
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Λίστα εργαζομένων',
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(
-                  height: ScreenSize.screenHeight * .08,
-                  width: ScreenSize.screenWidth * .2,
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Προσθήκη εργαζόμενου',
+                  SizedBox(
+                    height: ScreenSize.screenHeight * .08,
+                    width: ScreenSize.screenWidth * .2,
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Προσθήκη εργαζόμενου',
+                      ),
                     ),
                   ),
+                ]),
+                Flexible(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      Tab(
+                        child: EmployeeList(user: widget.user),
+                      ),
+                      Tab(
+                        child: EmployeeAdd(user: widget.user),
+                      )
+                    ],
+                  ),
                 ),
-              ]),
-              Flexible(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    Tab(
-                      child: EmployeeList(user: widget.user),
-                    ),
-                    Tab(
-                      child: EmployeeAdd(user: widget.user),
-                    )
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        VerticalDivider(),
-        Flexible(child: Consumer<ToggleScreenProvider>(
-          builder: (context, state, child) {
-            if (state.toggleState?.toggleStatus == ToggleStatus.yes) {
-              return EmployeeCard(
-                employe: state.toggleState!.employee,
-                user: widget.user,
-              );
-            }
-            return Container();
-          },
-        )),
-      ],
+          VerticalDivider(),
+          Flexible(child: Consumer<ToggleScreenProvider>(
+            builder: (context, state, child) {
+              if (state.toggleState?.toggleStatus == ToggleStatus.yes) {
+                return EmployeeCard(
+                  employe: state.toggleState!.employee,
+                  user: widget.user,
+                );
+              }
+              return Container();
+            },
+          )),
+        ],
+      ),
     );
   }
 }
