@@ -82,7 +82,8 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
                     Positioned(
                       right: 16,
                       bottom: 16,
-                      child: GeminiChat(onClose: toggleChat),
+                      child:
+                          GeminiChat(onClose: toggleChat, user: widget.user!),
                     ),
                   if (!isChatOpen)
                     Positioned(

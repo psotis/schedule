@@ -20,11 +20,71 @@ class _CustomerListState extends State<CustomerList> {
   late final stream = SearchEditUserRepository().streamUser(userId: userId!);
   String _searchTerm = '';
   bool isListView = true;
+  final int _itemsPerPage = 10;
+  final List<AppointMent> _allCustomers = [];
+  final List<AppointMent> _visibleCustomers = [];
+  bool _isLoading = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     userId = widget.user!.uid;
     super.initState();
+
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _loadMoreItems() {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    Future.delayed(Duration(seconds: 2), () {
+      final filteredCustomers = _allCustomers.where((customer) {
+        final fullName = '${customer.name} ${customer.surname}'.toLowerCase();
+        return fullName.contains(_searchTerm.toLowerCase());
+      }).toList();
+
+      int startIndex = _visibleCustomers.length;
+      int endIndex = startIndex + _itemsPerPage;
+
+      if (endIndex > _allCustomers.length) {
+        endIndex = _allCustomers.length;
+      }
+
+      setState(() {
+        _visibleCustomers
+            .addAll(filteredCustomers.sublist(startIndex, endIndex));
+        _isLoading = false;
+      });
+    });
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      _loadMoreItems();
+    }
+  }
+
+  void _updateVisibleCustomers() {
+    final filteredCustomers = _allCustomers.where((customer) {
+      final fullName = '${customer.name} ${customer.surname}'.toLowerCase();
+      return fullName.contains(_searchTerm.toLowerCase());
+    }).toList();
+
+    setState(() {
+      _visibleCustomers.clear();
+      _visibleCustomers.addAll(filteredCustomers.take(_itemsPerPage));
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -42,6 +102,9 @@ class _CustomerListState extends State<CustomerList> {
               setState(() {
                 _searchTerm = value;
               });
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _updateVisibleCustomers();
+              });
             },
           ),
         ),
@@ -53,15 +116,21 @@ class _CustomerListState extends State<CustomerList> {
                   return Center(child: CircularProgressIndicator());
                 }
 
-                final filteredCustomer = snapshot.data!.where((appointment) {
-                  final fullName = '${appointment.name} ${appointment.surname}'
-                      .toLowerCase();
-                  return fullName.contains(_searchTerm.toLowerCase());
-                }).toList();
+                _allCustomers.clear();
+                _allCustomers.addAll(snapshot.data!);
 
-                return isListView
-                    ? _buildListView(filteredCustomer)
-                    : _buildGridView(filteredCustomer);
+                // final filteredCustomers = _allCustomers.where((customer) {
+                //   final fullName =
+                //       '${customer.name} ${customer.surname}'.toLowerCase();
+                //   return fullName.contains(_searchTerm.toLowerCase());
+                // }).toList();
+
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (_visibleCustomers.isEmpty) {
+                    _updateVisibleCustomers();
+                  }
+                });
+                return isListView ? _buildListView() : _buildGridView();
               }),
         ),
       ],
@@ -93,91 +162,104 @@ class _CustomerListState extends State<CustomerList> {
     );
   }
 
-  ListView _buildListView(List<AppointMent> appointment) {
+  ListView _buildListView() {
     return ListView.builder(
+      controller: _scrollController,
       padding: EdgeInsets.all(8),
-      // shrinkWrap: true,
-      itemCount: appointment.length,
+      itemCount: _visibleCustomers.length + 1,
       itemBuilder: (BuildContext context, int index) {
-        var customer = appointment[index];
-
-        return Center(
-          child: GestureDetector(
-            onTap: () =>
-                context.read<ToggleScreenProvider>().showScreen(customer),
-            child: Card(
-              elevation: 4,
-              margin: EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Container(
-                width: 500,
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: Colors.blueAccent,
-                      child: Icon(Icons.person, color: Colors.white, size: 24),
-                    ),
-                    SizedBox(width: 70),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${customer.name} ${customer.surname}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(Icons.email,
-                                  size: 16, color: Colors.grey[600]),
-                              SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  customer.email,
-                                  style: TextStyle(color: Colors.grey[800]),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(Icons.phone,
-                                  size: 16, color: Colors.grey[600]),
-                              SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  customer.phone,
-                                  style: TextStyle(color: Colors.grey[800]),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+        if (index < _visibleCustomers.length) {
+          var customer = _visibleCustomers[index];
+          return Center(
+            child: GestureDetector(
+              onTap: () =>
+                  context.read<ToggleScreenProvider>().showScreen(customer),
+              child: Card(
+                elevation: 4,
+                margin: EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Container(
+                  width: 500,
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: Colors.blueAccent,
+                        child:
+                            Icon(Icons.person, color: Colors.white, size: 24),
                       ),
-                    ),
-                    Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
-                  ],
+                      SizedBox(width: 70),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${customer.name} ${customer.surname}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.email,
+                                    size: 16, color: Colors.grey[600]),
+                                SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    customer.email,
+                                    style: TextStyle(color: Colors.grey[800]),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.phone,
+                                    size: 16, color: Colors.grey[600]),
+                                SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    customer.phone,
+                                    style: TextStyle(color: Colors.grey[800]),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward_ios,
+                          size: 18, color: Colors.grey),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        );
+          );
+        } else {
+          return _isLoading
+              ? Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              : SizedBox();
+        }
       },
     );
   }
 
-  Widget _buildGridView(List<AppointMent> appointment) {
+  Widget _buildGridView() {
     return GridView.builder(
+      controller: _scrollController,
       padding: EdgeInsets.all(30),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
@@ -186,64 +268,75 @@ class _CustomerListState extends State<CustomerList> {
         childAspectRatio: 1.2,
         mainAxisExtent: 180,
       ),
-      itemCount: appointment.length,
+      itemCount: _visibleCustomers.length + 1,
       itemBuilder: (context, index) {
-        var customer = appointment[index];
-        return GestureDetector(
-          onTap: () =>
-              context.read<ToggleScreenProvider>().showScreen(customer),
-          child: Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: SizedBox(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircleAvatar(child: Icon(Icons.person)),
-                    SizedBox(height: 12),
-                    Text(
-                      '${customer.name} ${customer.surname}',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.email, size: 16, color: Colors.grey[600]),
-                        SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            customer.email,
-                            style: TextStyle(color: Colors.grey[800]),
-                            overflow: TextOverflow.ellipsis,
+        if (index < _visibleCustomers.length) {
+          var customer = _visibleCustomers[index];
+          return GestureDetector(
+            onTap: () =>
+                context.read<ToggleScreenProvider>().showScreen(customer),
+            child: Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              child: SizedBox(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircleAvatar(child: Icon(Icons.person)),
+                      SizedBox(height: 12),
+                      Text(
+                        '${customer.name} ${customer.surname}',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.email, size: 16, color: Colors.grey[600]),
+                          SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              customer.email,
+                              style: TextStyle(color: Colors.grey[800]),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.phone, size: 16, color: Colors.grey[600]),
-                        SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            customer.phone,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: Colors.grey[800]),
+                        ],
+                      ),
+                      SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.phone, size: 16, color: Colors.grey[600]),
+                          SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              customer.phone,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: Colors.grey[800]),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        );
+          );
+        } else {
+          return _isLoading
+              ? Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              : SizedBox();
+        }
       },
     );
   }

@@ -106,47 +106,44 @@ class _CustomerCardState extends State<CustomerCard> {
     );
   }
 
-  Padding _buttons(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20, right: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.end,
-        spacing: 20,
-        children: [
-          SendButton(
-            onPressed: () {
-              _removeUser(
-                userId: widget.user!.uid,
-                userDoc: widget.customer.id,
-              );
+  Row _buttons(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      spacing: 20,
+      children: [
+        SendButton(
+          onPressed: () {
+            _removeUser(
+              userId: widget.user!.uid,
+              userDoc: widget.customer.id,
+            );
 
-              Navigator.pop(context);
-              snackBarDialog(context,
-                  color: Colors.red,
-                  message:
-                      'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
-            },
-            text: 'Διαγραφή',
-            backgroundColor: Colors.red,
-            icon: Icons.delete,
-          ),
-          SendButton(
-            onPressed: () {
-              _submit();
+            Navigator.pop(context);
+            snackBarDialog(context,
+                color: Colors.red,
+                message:
+                    'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
+          },
+          text: 'Διαγραφή',
+          backgroundColor: Colors.red,
+          icon: Icons.delete,
+        ),
+        SendButton(
+          onPressed: () {
+            _submit();
 
-              Navigator.pop(context);
-              snackBarDialog(context,
-                  color: Colors.orange,
-                  message:
-                      'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
-            },
-            text: 'Αποστολή',
-            icon: Icons.edit,
-            backgroundColor: Colors.orange,
-          ),
-        ],
-      ),
+            Navigator.pop(context);
+            snackBarDialog(context,
+                color: Colors.orange,
+                message:
+                    'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
+          },
+          text: 'Αποστολή',
+          icon: Icons.edit,
+          backgroundColor: Colors.orange,
+        ),
+      ],
     );
   }
 
