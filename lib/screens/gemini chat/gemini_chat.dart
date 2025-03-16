@@ -78,7 +78,7 @@ class _GeminiChatState extends State<GeminiChat> {
 
   @override
   void dispose() {
-    _scrollController.dispose(); // Dispose the ScrollController
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -121,20 +121,23 @@ class _GeminiChatState extends State<GeminiChat> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: EdgeInsets.all(8),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return ChatBubble(
-                  message: message["message"]!,
-                  isUser: message["role"] == "user",
-                  senderName: message["role"] == "user"
-                      ? widget.user.displayName!
-                      : "Gemini",
-                );
-              },
+            child: SizedBox(
+              width: double.infinity,
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: EdgeInsets.all(8),
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  final message = _messages[index];
+                  return ChatBubble(
+                    message: message["message"]!,
+                    isUser: message["role"] == "user",
+                    senderName: message["role"] == "user"
+                        ? widget.user.displayName!
+                        : "Gemini",
+                  );
+                },
+              ),
             ),
           ),
           Container(
@@ -179,34 +182,40 @@ class ChatBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Column(
-        crossAxisAlignment:
-            isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.only(bottom: 4),
-            child: Text(
-              senderName,
-              style: TextStyle(
-                color: Colors.grey[700],
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.7,
+        ),
+        child: Column(
+          crossAxisAlignment:
+              isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: Text(
+                senderName,
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
-          Container(
-            margin: EdgeInsets.symmetric(vertical: 4),
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isUser ? Colors.blue[100] : Colors.grey[200],
-              borderRadius: BorderRadius.circular(12),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 4),
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isUser ? Colors.blue[100] : Colors.grey[200],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                message,
+                style: TextStyle(color: Colors.black87),
+                softWrap: true,
+              ),
             ),
-            child: Text(
-              message,
-              style: TextStyle(color: Colors.black87),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -78,22 +78,22 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
               child: Stack(
                 children: [
                   _screens[_selectedIndex],
-                  if (isChatOpen)
-                    Positioned(
-                      right: 16,
-                      bottom: 16,
-                      child:
-                          GeminiChat(onClose: toggleChat, user: widget.user!),
-                    ),
-                  if (!isChatOpen)
-                    Positioned(
-                      right: 16,
-                      bottom: 16,
-                      child: FloatingActionButton(
-                        onPressed: toggleChat,
-                        child: Icon(Icons.chat),
-                      ),
-                    ),
+                  // if (isChatOpen)
+                  //   Positioned(
+                  //     right: 16,
+                  //     bottom: 16,
+                  //     child:
+                  //         GeminiChat(onClose: toggleChat, user: widget.user!),
+                  //   ),
+                  // if (!isChatOpen)
+                  //   Positioned(
+                  //     right: 16,
+                  //     bottom: 16,
+                  //     child: FloatingActionButton(
+                  //       onPressed: toggleChat,
+                  //       child: Icon(Icons.chat),
+                  //     ),
+                  //   ),
                 ],
               ),
             ),
