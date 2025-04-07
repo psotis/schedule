@@ -1,6 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 
+enum ChooseText { owes }
+
 class CustomTextForm extends StatelessWidget {
   final String labelText;
   final String hintText;
@@ -13,6 +15,7 @@ class CustomTextForm extends StatelessWidget {
   final bool obscureText;
   final TextEditingController? controller;
   final String? initial;
+  final ChooseText? chooseText;
 
   const CustomTextForm({
     super.key,
@@ -27,6 +30,7 @@ class CustomTextForm extends StatelessWidget {
     this.obscureText = false,
     this.controller,
     this.initial,
+    this.chooseText,
   });
 
   @override
@@ -95,7 +99,11 @@ class CustomTextForm extends StatelessWidget {
         ),
       ),
       style: TextStyle(
-        color: Color(0xFFf1b24b),
+        color: chooseText == ChooseText.owes
+            ? Colors.redAccent
+            : Color(0xFFf1b24b),
+        fontWeight:
+            chooseText == ChooseText.owes ? FontWeight.bold : FontWeight.normal,
         fontSize: 16,
       ),
       validator: validator,
