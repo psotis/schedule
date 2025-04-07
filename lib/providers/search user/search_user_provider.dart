@@ -76,6 +76,7 @@ class SearchUserProvider extends ChangeNotifier {
     required String amka,
     required String userUid,
     required String docId,
+    required String owes,
   }) async {
     await Future.delayed(Duration(milliseconds: 500));
 
@@ -93,6 +94,7 @@ class SearchUserProvider extends ChangeNotifier {
           address: address,
           description: description,
           amka: amka,
+          owes: owes,
           userUid: userUid,
           docId: docId);
       _searchUserState =

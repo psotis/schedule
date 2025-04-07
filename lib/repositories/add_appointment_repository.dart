@@ -16,6 +16,7 @@ class AddAppointmentRepository {
     required String name,
     String? employee,
     String? position,
+    String? owes,
   }) async {
     try {
       FirebaseFirestore.instance.collection(userUid).add({
@@ -24,11 +25,12 @@ class AddAppointmentRepository {
         'phone': '',
         'email': '',
         'address': '',
-        'description': '',
+        'description': [''],
         'amka': '',
         'date': date,
-        'position': position,
-        'employee': employee,
+        'position': position ?? '',
+        'employee': employee ?? '',
+        'owes': '',
       }).then((_) {
         print("collection created");
       }).catchError((error) {

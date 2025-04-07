@@ -78,12 +78,24 @@ class SearchEditUserRepository {
     required String phone,
     required String email,
     required String address,
-    required String description,
+    String? description,
     required String amka,
     required String userUid,
     required String docId,
+    String? owes,
   }) async {
     try {
+      final docRef = firestore.collection(userUid).doc(docId);
+      final docSnapshot = await docRef.get();
+
+      List<String> currentDescriptions = [];
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data() as Map<String, dynamic>;
+        currentDescriptions = List<String>.from(data['description'] ?? []);
+      }
+
+      // Add new description to the list
+      currentDescriptions.add(description ?? '');
       firestore.collection(userUid).doc(docId).update({
         'name': name,
         'surname': surname,
@@ -91,7 +103,8 @@ class SearchEditUserRepository {
         'email': email,
         'address': address,
         'amka': amka,
-        'description': description,
+        'description': currentDescriptions,
+        'owes': owes ?? '',
         // 'date': timestampday,
       }).then((_) {
         print("collection created");

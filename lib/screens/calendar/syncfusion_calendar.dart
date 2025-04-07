@@ -212,7 +212,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                                     e.phone,
                                     e.email,
                                     e.address,
-                                    e.description,
+                                    // e.description,
                                     e.amka,
                                   ))
                               .toList()),
@@ -347,7 +347,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                                   e.phone,
                                   e.email,
                                   e.address,
-                                  e.description,
+                                  // e.description,
                                   e.amka,
                                 ))
                             .toList()),
@@ -456,9 +456,9 @@ class MeetingDataSource extends CalendarDataSource {
     return appointments![index].id;
   }
 
-  String getDescription(int index) {
-    return appointments![index].description;
-  }
+  // String getDescription(int index) {
+  //   return appointments![index].description;
+  // }
 
   @override
   String getRecurrenceRule(int index) {
@@ -482,7 +482,7 @@ class AppointMent extends CalendarDataSource {
     this.phone,
     this.email,
     this.address,
-    this.description,
+    // this.description,
     this.recurrenceRule,
   );
 
@@ -495,7 +495,7 @@ class AppointMent extends CalendarDataSource {
   String phone;
   String email;
   String address;
-  String description;
+  // String description;
   String recurrenceRule;
 
   // bool isAllDay;

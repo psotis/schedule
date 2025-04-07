@@ -9,11 +9,13 @@ class AppointMent extends Equatable {
   final String phone;
   final String email;
   final String address;
-  final String description;
+  final List<String>? description;
   final String amka;
   final Timestamp? date;
-  String? employee;
-  String? position;
+  final String? employee;
+  final String? position;
+  final String? owes;
+
   AppointMent({
     required this.id,
     required this.name,
@@ -21,27 +23,29 @@ class AppointMent extends Equatable {
     required this.phone,
     required this.email,
     required this.address,
-    required this.description,
+    this.description,
     required this.amka,
     this.date,
     this.employee,
     this.position,
+    this.owes,
   });
 
   factory AppointMent.fromDoc(DocumentSnapshot doc) {
     final userData = doc.data() as Map<String, dynamic>;
     return AppointMent(
       id: doc.id,
-      name: userData['name'],
-      surname: userData['surname'],
-      phone: userData['phone'],
-      email: userData['email'],
-      address: userData['address'],
-      description: userData['description'],
-      amka: userData['amka'],
+      name: userData['name'] ?? '',
+      surname: userData['surname'] ?? '',
+      phone: userData['phone'] ?? '',
+      email: userData['email'] ?? '',
+      address: userData['address'] ?? '',
+      description: List<String>.from(userData['description'] ?? []),
+      amka: userData['amka'] ?? '',
       date: userData['date'],
       employee: userData['employee'],
       position: userData['position'],
+      owes: userData['owes'],
     );
   }
 
@@ -53,11 +57,12 @@ class AppointMent extends Equatable {
       phone: '',
       email: '',
       address: '',
-      description: '',
+      description: <String>[],
       amka: '',
       date: Timestamp.now(),
       employee: '',
       position: '',
+      owes: '',
     );
   }
 
@@ -70,11 +75,12 @@ class AppointMent extends Equatable {
       phone,
       email,
       address,
-      description,
+      description ?? [''],
       amka,
       date ?? Timestamp.now(),
       employee ?? '',
       position ?? '',
+      owes ?? ''
     ];
   }
 
@@ -88,11 +94,12 @@ class AppointMent extends Equatable {
     String? phone,
     String? email,
     String? address,
-    String? description,
+    List<String>? description,
     String? amka,
     Timestamp? date,
     String? employee,
     String? position,
+    String? owes,
   }) {
     return AppointMent(
       id: id ?? this.id,
@@ -106,6 +113,7 @@ class AppointMent extends Equatable {
       date: date ?? this.date,
       employee: employee ?? this.employee,
       position: position ?? this.position,
+      owes: owes ?? this.owes,
     );
   }
 }
