@@ -28,7 +28,7 @@ class CustomerCard extends StatefulWidget {
 }
 
 class _CustomerCardState extends State<CustomerCard> {
-  String? name, surname, email, phone, address, description, amka;
+  String? name, surname, email, phone, address, description, amka, owes;
   final _formKey = GlobalKey<FormState>();
 
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
@@ -52,6 +52,7 @@ class _CustomerCardState extends State<CustomerCard> {
           address: address!,
           description: description!,
           amka: amka!,
+          owes: owes!,
           userUid: widget.user!.uid,
           docId: widget.customer.id,
         );
@@ -221,7 +222,7 @@ class _CustomerCardState extends State<CustomerCard> {
                   labelText: 'Περιγραφή',
                   hintText: '...........',
                   prefixIcon: Icons.description,
-                  initial: widget.customer.description,
+                  // initial: widget.customer.description,
                   onSaved: (val) {
                     description = val;
                   },
