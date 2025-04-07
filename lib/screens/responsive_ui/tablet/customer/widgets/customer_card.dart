@@ -136,8 +136,8 @@ class _CustomerCardState extends State<CustomerCard> {
     );
   }
 
-  Expanded _descriptionList(List<String> descriptions) {
-    return Expanded(
+  Flexible _descriptionList(List<String> descriptions) {
+    return Flexible(
         child: SingleChildScrollView(
       child: Column(
         children: [
@@ -158,8 +158,7 @@ class _CustomerCardState extends State<CustomerCard> {
                   height: 50,
                   child: Card(
                       margin: EdgeInsets.only(right: 10, left: 10, top: 10),
-                      child: Center(
-                          child: Expanded(child: Text(desc.toString())))),
+                      child: Center(child: Text(desc.toString()))),
                 ),
               );
             },
