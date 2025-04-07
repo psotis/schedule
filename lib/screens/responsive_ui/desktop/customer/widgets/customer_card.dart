@@ -10,6 +10,7 @@ import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
 
 import '../../../../../providers/search user/search_user_provider.dart';
+import '../../../../../repositories/search_edit_user_repository.dart';
 
 class CustomerCard extends StatefulWidget {
   final AppointMent customer;
@@ -25,10 +26,17 @@ class CustomerCard extends StatefulWidget {
 }
 
 class _CustomerCardState extends State<CustomerCard> {
-  String? name, surname, email, phone, address, description, amka;
+  String? name, surname, email, phone, address, description, amka, owes;
+  int appointmentLength = 0;
   final _formKey = GlobalKey<FormState>();
 
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
+
+  @override
+  void initState() {
+    seeApp();
+    super.initState();
+  }
 
   void _submit() async {
     if (mounted) {
@@ -49,6 +57,7 @@ class _CustomerCardState extends State<CustomerCard> {
           address: address!,
           description: description!,
           amka: amka!,
+          owes: owes!,
           userUid: widget.user!.uid,
           docId: widget.customer.id,
         );
@@ -60,27 +69,89 @@ class _CustomerCardState extends State<CustomerCard> {
         .deleteUsers(userId: userId, userDoc: userDoc);
   }
 
+  void seeApp() async {
+    var length = await SearchEditUserRepository().patientAppointmentLength(
+      userId: widget.user!.uid,
+      name: widget.customer.name,
+      surename: widget.customer.surname,
+    );
+    setState(() {
+      appointmentLength = length;
+    });
+  }
+
   void hideScreen() async {
     context.read<ToggleScreenProvider>().showInitialScreen();
   }
 
   @override
   Widget build(BuildContext context) {
+    final descriptions = (widget.customer.description ?? [])
+        .where((desc) => desc.trim().isNotEmpty)
+        .toList();
     return Material(
       color: Colors.transparent,
-      child: SizedBox(
-        height: 800,
-        child: Center(
-          child: Column(
-            children: [
-              _form(context),
-              // Spacer(),
-              _buttons(context),
-            ],
-          ),
+      child: Center(
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                SizedBox(height: 10),
+                Row(
+                  spacing: 10,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Συνολικά ραντεβού:"),
+                    Text(appointmentLength.toString()),
+                  ],
+                ),
+                _form(context),
+                _descriptionList(descriptions),
+              ],
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 10,
+              child: Center(child: _buttons(context)),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  Expanded _descriptionList(List<String> descriptions) {
+    return Expanded(
+        child: SingleChildScrollView(
+      child: Column(
+        children: [
+          descriptions.isEmpty
+              ? Text('Καμία περιγραφή', style: TextStyle(fontSize: 18))
+              : Text('Προηγούμενες περιγραφές', style: TextStyle(fontSize: 18)),
+          ListView.builder(
+            shrinkWrap: true,
+            reverse: true,
+            itemCount: descriptions.length,
+            itemBuilder: (BuildContext context, int index) {
+              if (descriptions.isEmpty) {
+                return SizedBox();
+              }
+              final desc = descriptions[index];
+              return Center(
+                child: SizedBox(
+                  height: 50,
+                  child: Card(
+                      margin: EdgeInsets.only(right: 10, left: 10, top: 10),
+                      child: Center(
+                          child: Expanded(child: Text(desc.toString())))),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    ));
   }
 
   Row _buttons(BuildContext context) {
@@ -110,6 +181,7 @@ class _CustomerCardState extends State<CustomerCard> {
           onPressed: () async {
             _submit();
             hideScreen();
+
             snackBarDialog(context,
                 color: Colors.orange,
                 message:
@@ -125,81 +197,89 @@ class _CustomerCardState extends State<CustomerCard> {
 
   Padding _form(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 30),
+      padding: EdgeInsets.only(top: 20),
       child: SizedBox(
         width: 400,
-        height: MediaQuery.of(context).size.height * .7,
+        height: MediaQuery.of(context).size.height * .65,
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              spacing: 20,
-              children: [
-                CustomTextForm(
-                  labelText: 'Όνομα',
-                  hintText: 'John',
-                  prefixIcon: Icons.people,
-                  initial: widget.customer.name,
-                  onSaved: (val) {
-                    name = val;
-                  },
-                ),
-                CustomTextForm(
-                  labelText: 'Επώνυμο',
-                  hintText: 'Doe',
-                  prefixIcon: Icons.people_alt,
-                  initial: widget.customer.surname,
-                  onSaved: (val) {
-                    surname = val;
-                  },
-                ),
-                CustomTextForm(
-                  labelText: 'Emal',
-                  hintText: 'example@gmail.com',
-                  prefixIcon: Icons.email,
-                  initial: widget.customer.email,
-                  onSaved: (val) {
-                    email = val;
-                  },
-                ),
-                CustomTextForm(
-                  labelText: 'Τηλέφωνο',
-                  hintText: '6900000000',
-                  prefixIcon: Icons.phone,
-                  initial: widget.customer.phone,
-                  onSaved: (val) {
-                    phone = val;
-                  },
-                ),
-                CustomTextForm(
-                  labelText: 'Διεύθυνση',
-                  hintText: 'Agiou Nikolaou, Patra',
-                  prefixIcon: Icons.home,
-                  initial: widget.customer.address,
-                  onSaved: (val) {
-                    address = val;
-                  },
-                ),
-                CustomTextForm(
-                  labelText: 'ΑΜΚΑ',
-                  hintText: '800000000',
-                  prefixIcon: Icons.numbers,
-                  initial: widget.customer.address,
-                  onSaved: (val) {
-                    amka = val;
-                  },
-                ),
-                CustomTextForm(
-                  labelText: 'Περιγραφή',
-                  hintText: '...........',
-                  prefixIcon: Icons.description,
-                  initial: widget.customer.description,
-                  onSaved: (val) {
-                    description = val;
-                  },
-                ),
-              ],
-            ),
+          child: Column(
+            spacing: 15,
+            children: [
+              CustomTextForm(
+                labelText: 'Όνομα',
+                hintText: 'John',
+                prefixIcon: Icons.people,
+                initial: widget.customer.name,
+                onSaved: (val) {
+                  name = val;
+                },
+              ),
+              CustomTextForm(
+                labelText: 'Επώνυμο',
+                hintText: 'Doe',
+                prefixIcon: Icons.people_alt,
+                initial: widget.customer.surname,
+                onSaved: (val) {
+                  surname = val;
+                },
+              ),
+              CustomTextForm(
+                labelText: 'Emal',
+                hintText: 'example@gmail.com',
+                prefixIcon: Icons.email,
+                initial: widget.customer.email,
+                onSaved: (val) {
+                  email = val;
+                },
+              ),
+              CustomTextForm(
+                labelText: 'Τηλέφωνο',
+                hintText: '6900000000',
+                prefixIcon: Icons.phone,
+                initial: widget.customer.phone,
+                onSaved: (val) {
+                  phone = val;
+                },
+              ),
+              CustomTextForm(
+                labelText: 'Διεύθυνση',
+                hintText: 'Agiou Nikolaou, Patra',
+                prefixIcon: Icons.home,
+                initial: widget.customer.address,
+                onSaved: (val) {
+                  address = val;
+                },
+              ),
+              CustomTextForm(
+                labelText: 'ΑΜΚΑ',
+                hintText: '800000000',
+                prefixIcon: Icons.numbers,
+                initial: widget.customer.address,
+                onSaved: (val) {
+                  amka = val;
+                },
+              ),
+              CustomTextForm(
+                labelText: 'Οφειλή',
+                hintText: 'Υπόλοιπο',
+                prefixIcon: Icons.payment,
+                chooseText: ChooseText.owes,
+                initial: widget.customer.owes,
+                onSaved: (val) {
+                  owes = val;
+                },
+              ),
+              CustomTextForm(
+                labelText: 'Περιγραφή',
+                hintText: '...........',
+                prefixIcon: Icons.description,
+                // initial: widget.customer.description,
+                onSaved: (val) {
+                  description = val;
+                },
+              ),
+            ],
           ),
         ),
       ),

@@ -86,7 +86,10 @@ class _CustomerCardState extends State<CustomerCard> {
   @override
   Widget build(BuildContext context) {
     var layoutWidth = getLayout(context);
-    print(layoutWidth);
+    final descriptions = (widget.customer.description ?? [])
+        .where((desc) => desc.trim().isNotEmpty)
+        .toList();
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -116,8 +119,16 @@ class _CustomerCardState extends State<CustomerCard> {
           child: Column(
             children: [
               SizedBox(height: 10),
-              Text(appointmentLength.toString()),
+              Row(
+                spacing: 10,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Συνολικά ραντεβού:"),
+                  Text(appointmentLength.toString()),
+                ],
+              ),
               _form(context, layoutWidth),
+              _descriptionList(descriptions),
             ],
           ),
         ),
@@ -167,9 +178,42 @@ class _CustomerCardState extends State<CustomerCard> {
     );
   }
 
+  Expanded _descriptionList(List<String> descriptions) {
+    return Expanded(
+        child: SingleChildScrollView(
+      child: Column(
+        children: [
+          descriptions.isEmpty
+              ? Text('Καμία περιγραφή', style: TextStyle(fontSize: 18))
+              : Text('Προηγούμενες περιγραφές', style: TextStyle(fontSize: 18)),
+          ListView.builder(
+            shrinkWrap: true,
+            reverse: true,
+            itemCount: descriptions.length,
+            itemBuilder: (BuildContext context, int index) {
+              if (descriptions.isEmpty) {
+                return SizedBox();
+              }
+              final desc = descriptions[index];
+              return Center(
+                child: SizedBox(
+                  height: 50,
+                  child: Card(
+                      margin: EdgeInsets.only(right: 10, left: 10, top: 10),
+                      child: Center(
+                          child: Expanded(child: Text(desc.toString())))),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    ));
+  }
+
   Padding _form(BuildContext context, double layoutWidth) {
     return Padding(
-      padding: EdgeInsets.only(top: 30),
+      padding: EdgeInsets.only(top: 20),
       child: SizedBox(
         width: layoutWidth < 600
             ? 350
@@ -182,7 +226,7 @@ class _CustomerCardState extends State<CustomerCard> {
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
-              spacing: 20,
+              spacing: 15,
               children: [
                 CustomTextForm(
                   labelText: 'Όνομα',
@@ -236,6 +280,16 @@ class _CustomerCardState extends State<CustomerCard> {
                   initial: widget.customer.address,
                   onSaved: (val) {
                     amka = val;
+                  },
+                ),
+                CustomTextForm(
+                  labelText: 'Οφειλή',
+                  hintText: 'Υπόλοιπο',
+                  prefixIcon: Icons.payment,
+                  chooseText: ChooseText.owes,
+                  initial: widget.customer.owes,
+                  onSaved: (val) {
+                    owes = val;
                   },
                 ),
                 CustomTextForm(

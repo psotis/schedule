@@ -17,7 +17,8 @@ class CustomerList extends StatefulWidget {
 
 class _CustomerListState extends State<CustomerList> {
   String? userId;
-  late final stream = SearchEditUserRepository().streamUser(userId: userId!);
+  late final Stream? stream;
+
   String _searchTerm = '';
   bool isListView = true;
   final int _itemsPerPage = 10;
@@ -28,30 +29,32 @@ class _CustomerListState extends State<CustomerList> {
 
   @override
   void initState() {
-    userId = widget.user!.uid;
     super.initState();
-
+    userId = widget.user!.uid;
+    stream = SearchEditUserRepository().streamUser(userId: userId!);
     _scrollController.addListener(_onScroll);
   }
 
   void _loadMoreItems() {
     if (_isLoading) return;
 
+    final filteredCustomers = _allCustomers.where((customer) {
+      final fullName = '${customer.name} ${customer.surname}'.toLowerCase();
+      return fullName.contains(_searchTerm.toLowerCase());
+    }).toList();
+
+    if (_visibleCustomers.length >= filteredCustomers.length) return;
+
     setState(() {
       _isLoading = true;
     });
 
-    Future.delayed(Duration(seconds: 2), () {
-      final filteredCustomers = _allCustomers.where((customer) {
-        final fullName = '${customer.name} ${customer.surname}'.toLowerCase();
-        return fullName.contains(_searchTerm.toLowerCase());
-      }).toList();
-
+    Future.delayed(Duration(milliseconds: 500), () {
       int startIndex = _visibleCustomers.length;
       int endIndex = startIndex + _itemsPerPage;
 
-      if (endIndex > _allCustomers.length) {
-        endIndex = _allCustomers.length;
+      if (endIndex > filteredCustomers.length) {
+        endIndex = filteredCustomers.length;
       }
 
       setState(() {
@@ -119,17 +122,14 @@ class _CustomerListState extends State<CustomerList> {
                 _allCustomers.clear();
                 _allCustomers.addAll(snapshot.data!);
 
-                // final filteredCustomers = _allCustomers.where((customer) {
-                //   final fullName =
-                //       '${customer.name} ${customer.surname}'.toLowerCase();
-                //   return fullName.contains(_searchTerm.toLowerCase());
-                // }).toList();
+                final filteredCustomers = _allCustomers.where((customer) {
+                  final fullName =
+                      '${customer.name} ${customer.surname}'.toLowerCase();
+                  return fullName.contains(_searchTerm.toLowerCase());
+                }).toList();
 
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (_visibleCustomers.isEmpty) {
-                    _updateVisibleCustomers();
-                  }
-                });
+                _visibleCustomers.clear();
+                _visibleCustomers.addAll(filteredCustomers);
                 return isListView ? _buildListView() : _buildGridView();
               }),
         ),

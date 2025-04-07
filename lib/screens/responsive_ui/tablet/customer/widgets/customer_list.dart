@@ -36,21 +36,23 @@ class _CustomerListState extends State<CustomerList> {
   void _loadMoreItems() {
     if (_isLoading) return;
 
+    final filteredCustomers = _allCustomers.where((customer) {
+      final fullName = '${customer.name} ${customer.surname}'.toLowerCase();
+      return fullName.contains(_searchTerm.toLowerCase());
+    }).toList();
+
+    if (_visibleCustomers.length >= filteredCustomers.length) return;
+
     setState(() {
       _isLoading = true;
     });
 
-    Future.delayed(Duration(seconds: 2), () {
-      final filteredCustomers = _allCustomers.where((customer) {
-        final fullName = '${customer.name} ${customer.surname}'.toLowerCase();
-        return fullName.contains(_searchTerm.toLowerCase());
-      }).toList();
-
+    Future.delayed(Duration(milliseconds: 500), () {
       int startIndex = _visibleCustomers.length;
       int endIndex = startIndex + _itemsPerPage;
 
-      if (endIndex > _allCustomers.length) {
-        endIndex = _allCustomers.length;
+      if (endIndex > filteredCustomers.length) {
+        endIndex = filteredCustomers.length;
       }
 
       setState(() {
@@ -118,17 +120,14 @@ class _CustomerListState extends State<CustomerList> {
                 _allCustomers.clear();
                 _allCustomers.addAll(snapshot.data!);
 
-                // final filteredCustomers = _allCustomers.where((customer) {
-                //   final fullName =
-                //       '${customer.name} ${customer.surname}'.toLowerCase();
-                //   return fullName.contains(_searchTerm.toLowerCase());
-                // }).toList();
+                final filteredCustomers = _allCustomers.where((customer) {
+                  final fullName =
+                      '${customer.name} ${customer.surname}'.toLowerCase();
+                  return fullName.contains(_searchTerm.toLowerCase());
+                }).toList();
 
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (_visibleCustomers.isEmpty) {
-                    _updateVisibleCustomers();
-                  }
-                });
+                _visibleCustomers.clear();
+                _visibleCustomers.addAll(filteredCustomers);
 
                 return isListView ? _buildListView() : _buildGridView();
               }),
