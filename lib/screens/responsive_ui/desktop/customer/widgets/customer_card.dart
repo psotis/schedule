@@ -113,6 +113,7 @@ class _CustomerCardState extends State<CustomerCard> {
                   ],
                 ),
                 _form(context),
+                SizedBox(height: 15),
                 _descriptionList(descriptions),
               ],
             ),
