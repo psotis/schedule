@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -32,6 +33,8 @@ class _CustomerCardState extends State<CustomerCard> {
   String? name, surname, email, phone, address, description, amka, owes;
   int appointmentLength = 0;
   final _formKey = GlobalKey<FormState>();
+  final DateTime? date = DateTime.now();
+  String? descriptionDate;
 
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
 
@@ -41,6 +44,10 @@ class _CustomerCardState extends State<CustomerCard> {
         autovalidateUser = AutovalidateMode.always;
       });
     }
+
+    setState(() {
+      descriptionDate = DateFormat("dd-MM-yyyy HH:mm").format(date!);
+    });
 
     final userForm = _formKey.currentState;
     if (userForm == null || !userForm.validate()) return;
@@ -52,7 +59,7 @@ class _CustomerCardState extends State<CustomerCard> {
           phone: phone!,
           email: email!,
           address: address!,
-          description: description!,
+          description: "$descriptionDate:  $description",
           amka: amka!,
           owes: owes!,
           userUid: widget.user!.uid,
@@ -197,10 +204,13 @@ class _CustomerCardState extends State<CustomerCard> {
               final desc = descriptions[index];
               return Center(
                 child: SizedBox(
-                  height: 50,
+                  width: double.infinity,
                   child: Card(
                       margin: EdgeInsets.only(right: 10, left: 10, top: 10),
-                      child: Center(child: Text(desc.toString()))),
+                      child: Padding(
+                          padding: EdgeInsets.only(
+                              left: 20, top: 10, bottom: 10, right: 20),
+                          child: Text(desc.toString()))),
                 ),
               );
             },
@@ -284,7 +294,7 @@ class _CustomerCardState extends State<CustomerCard> {
                 CustomTextForm(
                   labelText: 'Οφειλή',
                   hintText: 'Υπόλοιπο',
-                  prefixIcon: Icons.payment,
+                  prefixIcon: Icons.euro,
                   chooseText: ChooseText.owes,
                   initial: widget.customer.owes,
                   onSaved: (val) {
