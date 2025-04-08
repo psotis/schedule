@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -33,12 +34,34 @@ class _CustomerCardState extends State<CustomerCard> {
   final DateTime? date = DateTime.now();
   String? descriptionDate;
 
+  final ScrollController _scrollController = ScrollController();
+  bool _isFabVisible = true;
+
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
 
   @override
   void initState() {
     seeApp();
+    _scrollController.addListener(_scrollListener);
     super.initState();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.reverse) {
+      if (_isFabVisible) {
+        setState(() {
+          _isFabVisible = false;
+        });
+      }
+    } else if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.forward) {
+      if (!_isFabVisible && _scrollController.offset <= 10) {
+        setState(() {
+          _isFabVisible = true;
+        });
+      }
+    }
   }
 
   void _submit() async {
@@ -62,7 +85,9 @@ class _CustomerCardState extends State<CustomerCard> {
           phone: phone!,
           email: email!,
           address: address!,
-          description: "$descriptionDate:  $description",
+          description: description!.isEmpty
+              ? description!
+              : "$descriptionDate:  $description",
           amka: amka!,
           owes: owes!,
           userUid: widget.user!.uid,
@@ -92,76 +117,82 @@ class _CustomerCardState extends State<CustomerCard> {
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final descriptions = (widget.customer.description ?? [])
         .where((desc) => desc.trim().isNotEmpty)
         .toList();
+
     return Material(
       color: Colors.transparent,
-      child: Center(
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                SizedBox(height: 10),
-                Row(
-                  spacing: 10,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Συνολικά ραντεβού:"),
-                    Text(appointmentLength.toString()),
-                  ],
-                ),
-                _form(context),
-                SizedBox(height: 15),
-                _descriptionList(descriptions),
-              ],
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            controller: _scrollController,
+            padding: const EdgeInsets.only(bottom: 100),
+            child: Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Συνολικά ραντεβού: "),
+                      Text(appointmentLength.toString()),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  _form(context),
+                  const SizedBox(height: 20),
+                  _descriptionList(descriptions),
+                ],
+              ),
             ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 10,
+          ),
+          // FAB/buttons
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 10,
+            child: AnimatedOpacity(
+              opacity: _isFabVisible ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 300),
               child: Center(child: _buttons(context)),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Flexible _descriptionList(List<String> descriptions) {
-    return Flexible(
-        child: SingleChildScrollView(
-      child: Column(
-        children: [
-          descriptions.isEmpty
-              ? Text('Καμία περιγραφή', style: TextStyle(fontSize: 18))
-              : Text('Προηγούμενες περιγραφές', style: TextStyle(fontSize: 18)),
-          ListView.builder(
-            shrinkWrap: true,
-            reverse: true,
-            itemCount: descriptions.length,
-            itemBuilder: (BuildContext context, int index) {
-              if (descriptions.isEmpty) {
-                return SizedBox();
-              }
-              final desc = descriptions[index];
-              return Center(
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Card(
-                      margin: EdgeInsets.only(right: 10, left: 10, top: 10),
-                      child: Padding(
-                          padding: EdgeInsets.only(
-                              left: 20, top: 10, bottom: 10, right: 20),
-                          child: Text(desc.toString()))),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    ));
+  Widget _descriptionList(List<String> descriptions) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        descriptions.isEmpty
+            ? Center(
+                child: Text('Καμία περιγραφή', style: TextStyle(fontSize: 18)))
+            : Center(
+                child: Text('Προηγούμενες περιγραφές',
+                    style: TextStyle(fontSize: 18)),
+              ),
+        const SizedBox(height: 10),
+        ...descriptions.reversed.map((desc) => Card(
+              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Text(desc),
+              ),
+            )),
+      ],
+    );
   }
 
   Row _buttons(BuildContext context) {

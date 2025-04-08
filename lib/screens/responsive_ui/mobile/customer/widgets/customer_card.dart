@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -36,7 +37,36 @@ class _CustomerCardState extends State<CustomerCard> {
   final DateTime? date = DateTime.now();
   String? descriptionDate;
 
+  final ScrollController _scrollController = ScrollController();
+  bool _isFabVisible = true;
+
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
+
+  @override
+  void initState() {
+    seeApp();
+
+    _scrollController.addListener(_scrollListener);
+    super.initState();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.reverse) {
+      if (_isFabVisible) {
+        setState(() {
+          _isFabVisible = false;
+        });
+      }
+    } else if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.forward) {
+      if (!_isFabVisible && _scrollController.offset <= 10) {
+        setState(() {
+          _isFabVisible = true;
+        });
+      }
+    }
+  }
 
   void _submit() async {
     if (mounted) {
@@ -59,7 +89,9 @@ class _CustomerCardState extends State<CustomerCard> {
           phone: phone!,
           email: email!,
           address: address!,
-          description: "$descriptionDate:  $description",
+          description: description!.isEmpty
+              ? description!
+              : "$descriptionDate:  $description",
           amka: amka!,
           owes: owes!,
           userUid: widget.user!.uid,
@@ -85,9 +117,9 @@ class _CustomerCardState extends State<CustomerCard> {
   }
 
   @override
-  void initState() {
-    seeApp();
-    super.initState();
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -122,7 +154,8 @@ class _CustomerCardState extends State<CustomerCard> {
           ),
         ),
         backgroundColor: Colors.transparent,
-        body: Center(
+        body: SingleChildScrollView(
+          controller: _scrollController,
           child: Column(
             children: [
               SizedBox(height: 10),
@@ -145,80 +178,72 @@ class _CustomerCardState extends State<CustomerCard> {
     );
   }
 
-  Row _buttons(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      spacing: 20,
-      children: [
-        SendButton(
-          onPressed: () {
-            _removeUser(
-              userId: widget.user!.uid,
-              userDoc: widget.customer.id,
-            );
+  Widget _buttons(BuildContext context) {
+    return IgnorePointer(
+      ignoring: !_isFabVisible,
+      child: AnimatedOpacity(
+          opacity: _isFabVisible ? 1.0 : 0,
+          duration: Duration(milliseconds: 300),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 20,
+            children: [
+              SendButton(
+                onPressed: () {
+                  _removeUser(
+                    userId: widget.user!.uid,
+                    userDoc: widget.customer.id,
+                  );
 
-            Navigator.pop(context);
-            snackBarDialog(context,
-                color: Colors.red,
-                message:
-                    'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
-          },
-          text: 'Διαγραφή',
-          backgroundColor: Colors.red,
-          icon: Icons.delete,
-        ),
-        SendButton(
-          onPressed: () {
-            _submit();
+                  Navigator.pop(context);
+                  snackBarDialog(context,
+                      color: Colors.red,
+                      message:
+                          'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
+                },
+                text: 'Διαγραφή',
+                backgroundColor: Colors.red,
+                icon: Icons.delete,
+              ),
+              SendButton(
+                onPressed: () {
+                  _submit();
 
-            Navigator.pop(context);
-            snackBarDialog(context,
-                color: Colors.orange,
-                message:
-                    'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
-          },
-          text: 'Αποστολή',
-          icon: Icons.edit,
-          backgroundColor: Colors.orange,
-        ),
-      ],
+                  Navigator.pop(context);
+                  snackBarDialog(context,
+                      color: Colors.orange,
+                      message:
+                          'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
+                },
+                text: 'Αποστολή',
+                icon: Icons.edit,
+                backgroundColor: Colors.orange,
+              ),
+            ],
+          )),
     );
   }
 
-  Flexible _descriptionList(List<String> descriptions) {
-    return Flexible(
-        child: SingleChildScrollView(
-      child: Column(
-        children: [
-          descriptions.isEmpty
-              ? Text('Καμία περιγραφή', style: TextStyle(fontSize: 18))
-              : Text('Προηγούμενες περιγραφές', style: TextStyle(fontSize: 18)),
-          ListView.builder(
-            shrinkWrap: true,
-            reverse: true,
-            itemCount: descriptions.length,
-            itemBuilder: (BuildContext context, int index) {
-              if (descriptions.isEmpty) {
-                return SizedBox();
-              }
-              final desc = descriptions[index];
-              return Center(
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Card(
-                      margin: EdgeInsets.only(right: 10, left: 10, top: 10),
-                      child: Padding(
-                          padding: EdgeInsets.only(
-                              left: 20, top: 10, bottom: 10, right: 20),
-                          child: Text(desc.toString()))),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    ));
+  Widget _descriptionList(List<String> descriptions) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        descriptions.isEmpty
+            ? Center(
+                child: Text('Καμία περιγραφή', style: TextStyle(fontSize: 18)))
+            : Center(
+                child: Text('Προηγούμενες περιγραφές',
+                    style: TextStyle(fontSize: 18))),
+        ...descriptions.reversed.map((desc) => Card(
+              margin: EdgeInsets.only(right: 10, left: 10, top: 10),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Text(desc),
+              ),
+            )),
+      ],
+    );
   }
 
   Padding _form(BuildContext context, double layoutWidth) {
@@ -230,8 +255,6 @@ class _CustomerCardState extends State<CustomerCard> {
             : layoutWidth < 1300
                 ? 500
                 : 700,
-        // width: MediaQuery.of(context).size.width * .7,
-        // height: MediaQuery.of(context).size.height * .7,
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
