@@ -34,7 +34,7 @@ class _CustomerCardState extends State<CustomerCard> {
   String? name, surname, email, phone, address, description, amka, owes;
   int appointmentLength = 0;
   final _formKey = GlobalKey<FormState>();
-  final DateTime? date = DateTime.now();
+
   String? descriptionDate;
 
   final ScrollController _scrollController = ScrollController();
@@ -69,6 +69,7 @@ class _CustomerCardState extends State<CustomerCard> {
   }
 
   void _submit() async {
+    final DateTime date = DateTime.now();
     if (mounted) {
       setState(() {
         autovalidateUser = AutovalidateMode.always;
@@ -76,7 +77,7 @@ class _CustomerCardState extends State<CustomerCard> {
     }
 
     setState(() {
-      descriptionDate = DateFormat("dd-MM-yyyy HH:mm").format(date!);
+      descriptionDate = DateFormat("dd-MM-yyyy HH:mm").format(date);
     });
 
     final userForm = _formKey.currentState;
