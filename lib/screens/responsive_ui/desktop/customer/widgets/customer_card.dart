@@ -241,7 +241,7 @@ class _CustomerCardState extends State<CustomerCard> {
       padding: EdgeInsets.only(top: 20),
       child: SizedBox(
         width: 400,
-        height: MediaQuery.of(context).size.height * .65,
+        // height: MediaQuery.of(context).size.height * .65,
         child: Form(
           key: _formKey,
           child: Column(

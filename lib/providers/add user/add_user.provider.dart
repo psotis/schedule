@@ -7,8 +7,6 @@ class AddUserProvider extends ChangeNotifier {
   AddUserState _addUserState = AddUserState.initial();
   AddUserState get addUserState => _addUserState;
 
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-
   Future<void> addUser({
     required String name,
     required String surname,

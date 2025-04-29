@@ -40,7 +40,7 @@ class _AppointmentsState extends State<Appointments> {
   final _formKey = GlobalKey<FormState>();
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
 
-  void _submit() async {
+  void _submit(BuildContext context) async {
     if (mounted) {
       setState(() {
         autovalidateUser = AutovalidateMode.always;
@@ -51,6 +51,7 @@ class _AppointmentsState extends State<Appointments> {
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
     await context.read<AddAppointmentProvider>().addAppointment(
+          context,
           userUid: widget.user!.uid,
           name: name!,
           surname: surname!,
@@ -274,7 +275,7 @@ class _AppointmentsState extends State<Appointments> {
               backgroundColor: Color(0xFF003128),
               onPressed: isEnabled
                   ? () {
-                      _submit();
+                      _submit(context);
                       nameController.clear();
                       surnameController.clear();
                       positionController.clear();
