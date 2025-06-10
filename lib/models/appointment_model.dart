@@ -15,6 +15,31 @@ class AppointMent extends Equatable {
   final String? employee;
   final String? position;
   final String? owes;
+  final String? birthday;
+  final String? allo;
+  final String? startingDate;
+  final String? mainIssue;
+  final String? doctor;
+  final String? surgeryPast;
+  final String? surgeryNow;
+  final String? pharmacy;
+  final String? allergies;
+  final String? spot;
+  final String? missFunctions;
+  final bool? heart;
+  final bool? breathe;
+  final bool? sugar;
+  final bool? ypertash;
+  final bool? neuro;
+  final bool? orthopedic;
+  final bool? selfCare;
+  final bool? helpCare;
+  final bool? disabled;
+  final bool? good;
+  final bool? medium;
+  final bool? bad;
+  final bool? yes;
+  final bool? no;
 
   AppointMent({
     required this.id,
@@ -29,6 +54,31 @@ class AppointMent extends Equatable {
     this.employee,
     this.position,
     this.owes,
+    this.birthday,
+    this.allo,
+    this.startingDate,
+    this.mainIssue,
+    this.doctor,
+    this.surgeryPast,
+    this.surgeryNow,
+    this.pharmacy,
+    this.allergies,
+    this.spot,
+    this.missFunctions,
+    this.heart,
+    this.breathe,
+    this.sugar,
+    this.ypertash,
+    this.neuro,
+    this.orthopedic,
+    this.selfCare,
+    this.helpCare,
+    this.disabled,
+    this.good,
+    this.medium,
+    this.bad,
+    this.yes,
+    this.no,
   });
 
   factory AppointMent.fromDoc(DocumentSnapshot doc) {
@@ -46,6 +96,31 @@ class AppointMent extends Equatable {
       employee: userData['employee'],
       position: userData['position'],
       owes: userData['owes'],
+      birthday: userData['birthday'],
+      allo: userData['allo'],
+      startingDate: userData['startingDate'],
+      mainIssue: userData['mainIssue'],
+      doctor: userData['doctor'],
+      surgeryPast: userData['surgeryPast'],
+      surgeryNow: userData['surgeryNow'],
+      pharmacy: userData['pharmacy'],
+      allergies: userData['allergies'],
+      spot: userData['spot'],
+      missFunctions: userData['missFunctions'],
+      heart: userData['heart'] ?? false,
+      breathe: userData['breathe'] ?? false,
+      sugar: userData['sugar'] ?? false,
+      ypertash: userData['ypertash'] ?? false,
+      neuro: userData['neuro'] ?? false,
+      orthopedic: userData['orthopedic'] ?? false,
+      selfCare: userData['selfCare'] ?? false,
+      helpCare: userData['helpCare'] ?? false,
+      disabled: userData['disabled'] ?? false,
+      good: userData['good'] ?? false,
+      medium: userData['medium'] ?? false,
+      bad: userData['bad'] ?? false,
+      yes: userData['yes'] ?? false,
+      no: userData['no'] ?? false,
     );
   }
 
@@ -63,6 +138,31 @@ class AppointMent extends Equatable {
       employee: '',
       position: '',
       owes: '',
+      birthday: '',
+      allo: '',
+      startingDate: '',
+      mainIssue: '',
+      doctor: '',
+      surgeryPast: '',
+      surgeryNow: '',
+      pharmacy: '',
+      allergies: '',
+      spot: '',
+      missFunctions: '',
+      heart: false,
+      breathe: false,
+      sugar: false,
+      ypertash: false,
+      neuro: false,
+      orthopedic: false,
+      selfCare: false,
+      helpCare: false,
+      disabled: false,
+      good: false,
+      medium: false,
+      bad: false,
+      yes: false,
+      no: false,
     );
   }
 
@@ -80,7 +180,32 @@ class AppointMent extends Equatable {
       date ?? Timestamp.now(),
       employee ?? '',
       position ?? '',
-      owes ?? ''
+      owes ?? '',
+      birthday ?? '',
+      allo ?? '',
+      startingDate ?? '',
+      mainIssue ?? '',
+      doctor ?? '',
+      surgeryPast ?? '',
+      surgeryNow ?? '',
+      pharmacy ?? '',
+      allergies ?? '',
+      spot ?? '',
+      missFunctions ?? '',
+      heart ?? false,
+      breathe ?? false,
+      sugar ?? false,
+      ypertash ?? false,
+      neuro ?? false,
+      orthopedic ?? false,
+      selfCare ?? false,
+      helpCare ?? false,
+      disabled ?? false,
+      good ?? false,
+      medium ?? false,
+      bad ?? false,
+      yes ?? false,
+      no ?? false,
     ];
   }
 
@@ -100,6 +225,31 @@ class AppointMent extends Equatable {
     String? employee,
     String? position,
     String? owes,
+    String? birthday,
+    String? allo,
+    String? startingDate,
+    String? mainIssue,
+    String? doctor,
+    String? surgeryPast,
+    String? surgeryNow,
+    String? pharmacy,
+    String? allergies,
+    String? spot,
+    String? missFunctions,
+    bool? heart,
+    bool? breathe,
+    bool? sugar,
+    bool? ypertash,
+    bool? neuro,
+    bool? orthopedic,
+    bool? selfCare,
+    bool? helpCare,
+    bool? disabled,
+    bool? good,
+    bool? medium,
+    bool? bad,
+    bool? yes,
+    bool? no,
   }) {
     return AppointMent(
       id: id ?? this.id,
@@ -114,6 +264,31 @@ class AppointMent extends Equatable {
       employee: employee ?? this.employee,
       position: position ?? this.position,
       owes: owes ?? this.owes,
+      birthday: birthday ?? this.birthday,
+      allo: allo ?? this.allo,
+      startingDate: startingDate ?? this.startingDate,
+      mainIssue: mainIssue ?? this.mainIssue,
+      doctor: doctor ?? this.doctor,
+      surgeryPast: surgeryPast ?? this.surgeryPast,
+      surgeryNow: surgeryNow ?? this.surgeryNow,
+      pharmacy: pharmacy ?? this.pharmacy,
+      allergies: allergies ?? this.allergies,
+      spot: spot ?? this.spot,
+      missFunctions: missFunctions ?? this.missFunctions,
+      heart: heart ?? this.heart,
+      breathe: breathe ?? this.breathe,
+      sugar: sugar ?? this.sugar,
+      ypertash: ypertash ?? this.ypertash,
+      neuro: neuro ?? this.neuro,
+      orthopedic: orthopedic ?? this.orthopedic,
+      selfCare: selfCare ?? this.selfCare,
+      helpCare: helpCare ?? this.helpCare,
+      disabled: disabled ?? this.disabled,
+      good: good ?? this.good,
+      medium: medium ?? this.medium,
+      bad: bad ?? this.bad,
+      yes: yes ?? this.yes,
+      no: no ?? this.no,
     );
   }
 }

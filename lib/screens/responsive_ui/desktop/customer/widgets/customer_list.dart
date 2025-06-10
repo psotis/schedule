@@ -118,9 +118,12 @@ class _CustomerListState extends State<CustomerList> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 }
+                final List<AppointMent> sortedData = List.from(snapshot.data!);
+                sortedData.sort((a, b) =>
+                    a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
                 _allCustomers.clear();
-                _allCustomers.addAll(snapshot.data!);
+                _allCustomers.addAll(sortedData);
 
                 final filteredCustomers = _allCustomers.where((customer) {
                   final fullName =
