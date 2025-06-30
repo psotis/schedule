@@ -43,60 +43,63 @@ class _CustomerState extends State<Customer>
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Flexible(
-          child: Column(
-            children: [
-              TabBar(controller: _tabController, tabs: [
-                SizedBox(
-                  height: ScreenSize.screenHeight * .08,
-                  width: ScreenSize.screenWidth * .2,
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Λίστα πελατών',
+    return GestureDetector(
+      onTap: () => context.read<ToggleScreenProvider>().showInitialScreen(),
+      child: Row(
+        children: [
+          Flexible(
+            child: Column(
+              children: [
+                TabBar(controller: _tabController, tabs: [
+                  SizedBox(
+                    height: ScreenSize.screenHeight * .08,
+                    width: ScreenSize.screenWidth * .2,
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Λίστα πελατών',
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(
-                  height: ScreenSize.screenHeight * .08,
-                  width: ScreenSize.screenWidth * .2,
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Προσθήκη πελάτη',
+                  SizedBox(
+                    height: ScreenSize.screenHeight * .08,
+                    width: ScreenSize.screenWidth * .2,
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Προσθήκη πελάτη',
+                      ),
                     ),
                   ),
+                ]),
+                Flexible(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      Tab(
+                        child: CustomerList(user: widget.user),
+                      ),
+                      Tab(
+                        child: CustomerAdd(user: widget.user),
+                      )
+                    ],
+                  ),
                 ),
-              ]),
-              Flexible(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    Tab(
-                      child: CustomerList(user: widget.user),
-                    ),
-                    Tab(
-                      child: CustomerAdd(user: widget.user),
-                    )
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        VerticalDivider(),
-        Flexible(child: Consumer<ToggleScreenProvider>(
-          builder: (context, state, child) {
-            if (state.toggleState?.toggleStatus == ToggleStatus.yes) {
-              return CustomerCard(
-                  customer: state.toggleState!.customer, user: widget.user);
-            }
-            return Container();
-          },
-        )),
-      ],
+          VerticalDivider(),
+          Flexible(child: Consumer<ToggleScreenProvider>(
+            builder: (context, state, child) {
+              if (state.toggleState?.toggleStatus == ToggleStatus.yes) {
+                return CustomerCard(
+                    customer: state.toggleState!.customer, user: widget.user);
+              }
+              return Container();
+            },
+          )),
+        ],
+      ),
     );
   }
 }

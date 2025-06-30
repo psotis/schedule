@@ -7,8 +7,6 @@ class AddUserProvider extends ChangeNotifier {
   AddUserState _addUserState = AddUserState.initial();
   AddUserState get addUserState => _addUserState;
 
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-
   Future<void> addUser({
     required String name,
     required String surname,
@@ -17,6 +15,7 @@ class AddUserProvider extends ChangeNotifier {
     required String address,
     required String description,
     required String amka,
+    required String owes,
     required String userUid,
   }) async {
     _addUserState =
@@ -31,8 +30,9 @@ class AddUserProvider extends ChangeNotifier {
         'phone': phone,
         'email': email,
         'address': address,
-        'description': description,
+        'description': [description],
         'amka': amka,
+        'owes': owes,
         'date': Timestamp.fromMicrosecondsSinceEpoch(0),
       }).then((DocumentReference doc) {
         print(doc.id);

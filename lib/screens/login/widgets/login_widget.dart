@@ -43,10 +43,11 @@ class _LoginWidgetState extends State<LoginWidget> {
   Widget build(BuildContext context) {
     var loginStatus = context.watch<SigninProvider>().state.signinStatus;
     return Column(
+      spacing: 15,
       children: [
         //* ****************** Email textfield ***************************
         SizedBox(
-          height: ScreenSize.screenHeight * .1,
+          // height: ScreenSize.screenHeight * .1,
           width: widget.isMobile == true
               ? ScreenSize.screenWidth * .8
               : ScreenSize.screenWidth * .3,
@@ -72,14 +73,9 @@ class _LoginWidgetState extends State<LoginWidget> {
             },
           ),
         ),
-        SizedBox(
-          height: widget.isMobile == true
-              ? ScreenSize.screenHeight * .03
-              : ScreenSize.screenHeight * .01,
-        ),
         //* ****************** Password textfield ***************************
         SizedBox(
-          height: ScreenSize.screenHeight * .1,
+          // height: ScreenSize.screenHeight * .1,
           width: widget.isMobile == true
               ? ScreenSize.screenWidth * .8
               : ScreenSize.screenWidth * .3,
@@ -117,7 +113,7 @@ class _LoginWidgetState extends State<LoginWidget> {
             onFieldSubmitted: (value) => signIn(),
           ),
         ),
-        SizedBox(height: ScreenSize.screenHeight * .01),
+        // SizedBox(height: ScreenSize.screenHeight * .01),
         SizedBox(
           height: ScreenSize.screenHeight * .06,
           width: widget.isMobile == true
@@ -148,13 +144,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                   ),
           ),
         ),
-        // Flexible(
-        //   flex: 2,
-        //   child: SignInScreen(
-        //     providerConfigs: [GoogleProviderConfiguration(clientId: '')],
-        //   ),
-        // ),
-        SizedBox(height: ScreenSize.screenHeight * .02),
+        // SizedBox(height: ScreenSize.screenHeight * .02),
         SizedBox(
           height: ScreenSize.screenHeight * .06,
           width: widget.isMobile == true
@@ -162,7 +152,6 @@ class _LoginWidgetState extends State<LoginWidget> {
               : ScreenSize.screenWidth * .3,
           child: OutlinedButton(
             onPressed: () => context.read<ChangePageProvider>().changePage(),
-            // onPressed: () => Navigator.pushNamed(context, '/signup'),
             child: Text('Create Account',
                 style: TextStyle(
                   color: Colors.black,

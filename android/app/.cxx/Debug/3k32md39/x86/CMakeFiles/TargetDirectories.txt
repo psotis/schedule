@@ -1,0 +1,2 @@
+/Users/fotispsarris/projects/flutter/schedule/android/app/.cxx/Debug/3k32md39/x86/CMakeFiles/edit_cache.dir
+/Users/fotispsarris/projects/flutter/schedule/android/app/.cxx/Debug/3k32md39/x86/CMakeFiles/rebuild_cache.dir

@@ -51,6 +51,7 @@ class _CustomerAddState extends State<CustomerAdd> {
           email: email!,
           address: address!,
           description: description!,
+          owes: '',
           amka: amka!,
         );
   }

@@ -98,47 +98,44 @@ class _EmployeeCardState extends State<EmployeeCard> {
     );
   }
 
-  Padding _buttons(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20, right: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.end,
-        spacing: 20,
-        children: [
-          SendButton(
-            onPressed: () {
-              _removeEmployee(
-                employeeId: widget.user!.uid,
-                userDoc: widget.employe.id,
-              );
+  Row _buttons(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      spacing: 20,
+      children: [
+        SendButton(
+          onPressed: () {
+            _removeEmployee(
+              employeeId: widget.user!.uid,
+              userDoc: widget.employe.id,
+            );
 
-              hideScreen();
-              snackBarDialog(context,
-                  color: Colors.red,
-                  message:
-                      'Ο εργαζόμενος ${widget.employe.name} ${widget.employe.surname} διαγράφθηκε');
-            },
-            text: 'Διαγραφή',
-            backgroundColor: Colors.red,
-            icon: Icons.delete,
-          ),
-          SendButton(
-            onPressed: () {
-              _submit();
+            hideScreen();
+            snackBarDialog(context,
+                color: Colors.red,
+                message:
+                    'Ο εργαζόμενος ${widget.employe.name} ${widget.employe.surname} διαγράφθηκε');
+          },
+          text: 'Διαγραφή',
+          backgroundColor: Colors.red,
+          icon: Icons.delete,
+        ),
+        SendButton(
+          onPressed: () {
+            _submit();
 
-              hideScreen();
-              snackBarDialog(context,
-                  color: Colors.orange,
-                  message:
-                      'Ο εργαζόμενος ${widget.employe.name} ${widget.employe.surname} ανανεώθηκε');
-            },
-            text: 'Αποστολή',
-            icon: Icons.edit,
-            backgroundColor: Colors.orange,
-          ),
-        ],
-      ),
+            hideScreen();
+            snackBarDialog(context,
+                color: Colors.orange,
+                message:
+                    'Ο εργαζόμενος ${widget.employe.name} ${widget.employe.surname} ανανεώθηκε');
+          },
+          text: 'Αποστολή',
+          icon: Icons.edit,
+          backgroundColor: Colors.orange,
+        ),
+      ],
     );
   }
 

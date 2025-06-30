@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
+import 'package:scheldule/utils/search/search_mobile.dart';
 
 import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
 
-import '../../../../constants/logos/photos_gifs.dart';
+// import '../../../../constants/logos/photos_gifs.dart';
 import '../../../../providers/add appointment/add_appointment_provider.dart';
 import '../../../../utils/custom_text_form.dart';
 import '../../../../utils/search/search.dart';
@@ -40,7 +41,7 @@ class _AppointmentsState extends State<Appointments> {
   final _formKey = GlobalKey<FormState>();
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
 
-  void _submit() async {
+  void _submit(BuildContext context) async {
     if (mounted) {
       setState(() {
         autovalidateUser = AutovalidateMode.always;
@@ -51,6 +52,7 @@ class _AppointmentsState extends State<Appointments> {
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
     await context.read<AddAppointmentProvider>().addAppointment(
+          context,
           userUid: widget.user!.uid,
           name: name!,
           surname: surname!,
@@ -150,25 +152,15 @@ class _AppointmentsState extends State<Appointments> {
           crossAxisAlignment: CrossAxisAlignment.center,
           spacing: 20,
           children: [
-            Search(
+            SearchMobile(
               user: widget.user,
-              width: ScreenSize.screenWidth * .5,
-              selectSearch: SelectSearch.customer,
+              width: ScreenSize.screenWidth * .8,
+              selectSearch: SelectSearchMob.customer,
               setAppointment: (p0, p1) => setCustomer(p0, p1),
             ),
             _form(),
-            SizedBox(height: MediaQuery.of(context).size.height * .1),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Image.asset(
-                  Media.addAppointment,
-                  width: 100,
-                  height: 100,
-                ),
-                _sendButton(),
-              ],
-            ),
+            SizedBox(height: MediaQuery.of(context).size.height * .02),
+            _sendButton(),
           ],
         ),
       ),
@@ -274,7 +266,7 @@ class _AppointmentsState extends State<Appointments> {
               backgroundColor: Color(0xFF003128),
               onPressed: isEnabled
                   ? () {
-                      _submit();
+                      _submit(context);
                       nameController.clear();
                       surnameController.clear();
                       positionController.clear();

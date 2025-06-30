@@ -1,30 +1,36 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 
+enum ChooseText { owes }
+
 class CustomTextForm extends StatelessWidget {
   final String labelText;
   final String hintText;
-  final IconData prefixIcon;
+  final IconData? prefixIcon;
   final IconData? suffixIcon;
   final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onChanged;
   final void Function(String?)? onSaved;
+  final void Function(String?)? onSubmitted;
   final bool obscureText;
   final TextEditingController? controller;
   final String? initial;
+  final ChooseText? chooseText;
 
   const CustomTextForm({
     super.key,
     required this.labelText,
     required this.hintText,
-    required this.prefixIcon,
+    this.prefixIcon,
     this.suffixIcon,
     this.validator,
     this.onChanged,
     this.onSaved,
+    this.onSubmitted,
     this.obscureText = false,
     this.controller,
     this.initial,
+    this.chooseText,
   });
 
   @override
@@ -44,10 +50,12 @@ class CustomTextForm extends StatelessWidget {
         hintStyle: TextStyle(
           color: Colors.grey[400],
         ),
-        prefixIcon: Icon(
-          prefixIcon,
-          color: Color(0xFFf1b24b),
-        ),
+        prefixIcon: prefixIcon != null
+            ? Icon(
+                prefixIcon,
+                color: Color(0xFFf1b24b),
+              )
+            : null,
         suffixIcon: suffixIcon != null
             ? Icon(
                 suffixIcon,
@@ -91,12 +99,15 @@ class CustomTextForm extends StatelessWidget {
         ),
       ),
       style: TextStyle(
-        color: Color(0xFFf1b24b),
+        color: chooseText == ChooseText.owes ? Colors.redAccent : Colors.white,
+        fontWeight:
+            chooseText == ChooseText.owes ? FontWeight.bold : FontWeight.normal,
         fontSize: 16,
       ),
       validator: validator,
       onChanged: onChanged,
       onSaved: onSaved,
+      onFieldSubmitted: onSubmitted,
     );
   }
 }

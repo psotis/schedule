@@ -6,9 +6,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:provider/provider.dart';
+import 'package:scheldule/constants/db_constans.dart';
 import 'package:scheldule/firebase_options.dart';
 import 'package:scheldule/keys/material_key.dart';
 import 'package:scheldule/providers/auth/auth_provider.dart';
@@ -31,7 +33,7 @@ Future<void> main() async {
 
   FlutterNativeSplash.preserve(
       widgetsBinding: WidgetsFlutterBinding.ensureInitialized());
-
+  Gemini.init(apiKey: apiKey);
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle
         .loadString('assets/google_fonts/ibm_plex_sans/OFL.txt');

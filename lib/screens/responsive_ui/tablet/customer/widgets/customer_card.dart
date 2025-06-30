@@ -1,16 +1,19 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:scheldule/models/appointment_model.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
+import 'package:scheldule/utils/get%20layout/get_layout.dart';
 import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
 
 import '../../../../../providers/search user/search_user_provider.dart';
+import '../../../../../repositories/search_edit_user_repository.dart';
 import '../../../../../utils/cutom_text.dart';
-import '../../../../../utils/get layout/get_layout.dart';
 
 class CustomerCard extends StatefulWidget {
   final AppointMent customer;
@@ -28,17 +31,54 @@ class CustomerCard extends StatefulWidget {
 }
 
 class _CustomerCardState extends State<CustomerCard> {
-  String? name, surname, email, phone, address, description, amka;
+  String? name, surname, email, phone, address, description, amka, owes;
+  int appointmentLength = 0;
   final _formKey = GlobalKey<FormState>();
+
+  String? descriptionDate;
+
+  final ScrollController _scrollController = ScrollController();
+  bool _isFabVisible = true;
 
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
 
+  @override
+  void initState() {
+    seeApp();
+
+    _scrollController.addListener(_scrollListener);
+    super.initState();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.reverse) {
+      if (_isFabVisible) {
+        setState(() {
+          _isFabVisible = false;
+        });
+      }
+    } else if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.forward) {
+      if (!_isFabVisible && _scrollController.offset <= 10) {
+        setState(() {
+          _isFabVisible = true;
+        });
+      }
+    }
+  }
+
   void _submit() async {
+    final DateTime date = DateTime.now();
     if (mounted) {
       setState(() {
         autovalidateUser = AutovalidateMode.always;
       });
     }
+
+    setState(() {
+      descriptionDate = DateFormat("dd-MM-yyyy HH:mm").format(date);
+    });
 
     final userForm = _formKey.currentState;
     if (userForm == null || !userForm.validate()) return;
@@ -50,8 +90,11 @@ class _CustomerCardState extends State<CustomerCard> {
           phone: phone!,
           email: email!,
           address: address!,
-          description: description!,
+          description: description!.isEmpty
+              ? description!
+              : "$descriptionDate:  $description",
           amka: amka!,
+          owes: owes!,
           userUid: widget.user!.uid,
           docId: widget.customer.id,
         );
@@ -63,9 +106,30 @@ class _CustomerCardState extends State<CustomerCard> {
         .deleteUsers(userId: userId, userDoc: userDoc);
   }
 
+  void seeApp() async {
+    var length = await SearchEditUserRepository().patientAppointmentLength(
+      userId: widget.user!.uid,
+      name: widget.customer.name,
+      surename: widget.customer.surname,
+    );
+    setState(() {
+      appointmentLength = length;
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     var layoutWidth = getLayout(context);
+    final descriptions = (widget.customer.description ?? [])
+        .where((desc) => desc.trim().isNotEmpty)
+        .toList();
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -81,7 +145,6 @@ class _CustomerCardState extends State<CustomerCard> {
         ),
       ),
       child: Scaffold(
-        backgroundColor: Colors.transparent,
         appBar: AppBar(
           centerTitle: true,
           title: CustomText(
@@ -91,13 +154,23 @@ class _CustomerCardState extends State<CustomerCard> {
             color: Color(0xFFf1b24b),
           ),
         ),
-        body: Center(
+        backgroundColor: Colors.transparent,
+        body: SingleChildScrollView(
+          controller: _scrollController,
           child: Column(
             children: [
               SizedBox(height: 10),
+              Row(
+                spacing: 10,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Συνολικά ραντεβού:"),
+                  Text(appointmentLength.toString()),
+                ],
+              ),
               _form(context, layoutWidth),
-              // Spacer(),
-              // _buttons(context),
+              SizedBox(height: 15),
+              _descriptionList(descriptions),
             ],
           ),
         ),
@@ -106,65 +179,90 @@ class _CustomerCardState extends State<CustomerCard> {
     );
   }
 
-  Padding _buttons(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20, right: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.end,
-        spacing: 20,
-        children: [
-          SendButton(
-            onPressed: () {
-              _removeUser(
-                userId: widget.user!.uid,
-                userDoc: widget.customer.id,
-              );
+  Widget _buttons(BuildContext context) {
+    return IgnorePointer(
+      ignoring: !_isFabVisible,
+      child: AnimatedOpacity(
+          opacity: _isFabVisible ? 1.0 : 0,
+          duration: Duration(milliseconds: 300),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 20,
+            children: [
+              SendButton(
+                onPressed: () {
+                  _removeUser(
+                    userId: widget.user!.uid,
+                    userDoc: widget.customer.id,
+                  );
 
-              Navigator.pop(context);
-              snackBarDialog(context,
-                  color: Colors.red,
-                  message:
-                      'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
-            },
-            text: 'Διαγραφή',
-            backgroundColor: Colors.red,
-            icon: Icons.delete,
-          ),
-          SendButton(
-            onPressed: () {
-              _submit();
+                  Navigator.pop(context);
+                  snackBarDialog(context,
+                      color: Colors.red,
+                      message:
+                          'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
+                },
+                text: 'Διαγραφή',
+                backgroundColor: Colors.red,
+                icon: Icons.delete,
+              ),
+              SendButton(
+                onPressed: () {
+                  _submit();
 
-              Navigator.pop(context);
-              snackBarDialog(context,
-                  color: Colors.orange,
-                  message:
-                      'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
-            },
-            text: 'Αποστολή',
-            icon: Icons.edit,
-            backgroundColor: Colors.orange,
-          ),
-        ],
-      ),
+                  Navigator.pop(context);
+                  snackBarDialog(context,
+                      color: Colors.orange,
+                      message:
+                          'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
+                },
+                text: 'Αποστολή',
+                icon: Icons.edit,
+                backgroundColor: Colors.orange,
+              ),
+            ],
+          )),
+    );
+  }
+
+  Widget _descriptionList(List<String> descriptions) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        descriptions.isEmpty
+            ? Center(
+                child: Text('Καμία περιγραφή', style: TextStyle(fontSize: 18)))
+            : Center(
+                child: Text('Προηγούμενες περιγραφές',
+                    style: TextStyle(fontSize: 18))),
+        ...descriptions.reversed.map((desc) => Card(
+              margin: EdgeInsets.only(right: 10, left: 10, top: 10),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Text(desc),
+              ),
+            )),
+      ],
     );
   }
 
   Padding _form(BuildContext context, double layoutWidth) {
     return Padding(
-      padding: EdgeInsets.only(top: 30),
+      padding: EdgeInsets.only(top: 20),
       child: SizedBox(
         width: layoutWidth < 600
             ? 350
             : layoutWidth < 1300
                 ? 500
                 : 700,
-        height: MediaQuery.of(context).size.height * .7,
+        // width: MediaQuery.of(context).size.width * .7,
+        // height: MediaQuery.of(context).size.height * .7,
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
-              spacing: 20,
+              spacing: 15,
               children: [
                 CustomTextForm(
                   labelText: 'Όνομα',
@@ -221,10 +319,20 @@ class _CustomerCardState extends State<CustomerCard> {
                   },
                 ),
                 CustomTextForm(
+                  labelText: 'Οφειλή',
+                  hintText: 'Υπόλοιπο',
+                  prefixIcon: Icons.euro,
+                  chooseText: ChooseText.owes,
+                  initial: widget.customer.owes,
+                  onSaved: (val) {
+                    owes = val;
+                  },
+                ),
+                CustomTextForm(
                   labelText: 'Περιγραφή',
                   hintText: '...........',
                   prefixIcon: Icons.description,
-                  initial: widget.customer.description,
+                  // initial: widget.customer.description,
                   onSaved: (val) {
                     description = val;
                   },

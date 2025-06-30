@@ -6,9 +6,11 @@ void snackBarDialog(BuildContext context,
     SnackBar(
       content: Text(
         message,
+        textAlign: TextAlign.center,
         style: TextStyle(color: Colors.white, fontSize: 16),
       ),
-      duration: const Duration(seconds: 4),
+      width: 350,
+      duration: const Duration(seconds: 3),
       behavior: SnackBarBehavior.floating,
       backgroundColor: color,
       shape: RoundedRectangleBorder(

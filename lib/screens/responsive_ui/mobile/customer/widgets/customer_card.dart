@@ -1,5 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -29,11 +31,42 @@ class CustomerCard extends StatefulWidget {
 }
 
 class _CustomerCardState extends State<CustomerCard> {
-  String? name, surname, email, phone, address, description, amka;
+  String? name, surname, email, phone, address, description, amka, owes;
   int appointmentLength = 0;
   final _formKey = GlobalKey<FormState>();
+  final DateTime? date = DateTime.now();
+  String? descriptionDate;
+
+  final ScrollController _scrollController = ScrollController();
+  bool _isFabVisible = true;
 
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
+
+  @override
+  void initState() {
+    seeApp();
+
+    _scrollController.addListener(_scrollListener);
+    super.initState();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.reverse) {
+      if (_isFabVisible) {
+        setState(() {
+          _isFabVisible = false;
+        });
+      }
+    } else if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.forward) {
+      if (!_isFabVisible && _scrollController.offset <= 10) {
+        setState(() {
+          _isFabVisible = true;
+        });
+      }
+    }
+  }
 
   void _submit() async {
     if (mounted) {
@@ -41,6 +74,10 @@ class _CustomerCardState extends State<CustomerCard> {
         autovalidateUser = AutovalidateMode.always;
       });
     }
+
+    setState(() {
+      descriptionDate = DateFormat("dd-MM-yyyy HH:mm").format(date!);
+    });
 
     final userForm = _formKey.currentState;
     if (userForm == null || !userForm.validate()) return;
@@ -52,8 +89,11 @@ class _CustomerCardState extends State<CustomerCard> {
           phone: phone!,
           email: email!,
           address: address!,
-          description: description!,
+          description: description!.isEmpty
+              ? description!
+              : "$descriptionDate:  $description",
           amka: amka!,
+          owes: owes!,
           userUid: widget.user!.uid,
           docId: widget.customer.id,
         );
@@ -77,15 +117,18 @@ class _CustomerCardState extends State<CustomerCard> {
   }
 
   @override
-  void initState() {
-    seeApp();
-    super.initState();
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     var layoutWidth = getLayout(context);
-    print(layoutWidth);
+    final descriptions = (widget.customer.description ?? [])
+        .where((desc) => desc.trim().isNotEmpty)
+        .toList();
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -111,12 +154,22 @@ class _CustomerCardState extends State<CustomerCard> {
           ),
         ),
         backgroundColor: Colors.transparent,
-        body: Center(
+        body: SingleChildScrollView(
+          controller: _scrollController,
           child: Column(
             children: [
               SizedBox(height: 10),
-              Text(appointmentLength.toString()),
+              Row(
+                spacing: 10,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Συνολικά ραντεβού:"),
+                  Text(appointmentLength.toString()),
+                ],
+              ),
               _form(context, layoutWidth),
+              SizedBox(height: 15),
+              _descriptionList(descriptions),
             ],
           ),
         ),
@@ -125,66 +178,88 @@ class _CustomerCardState extends State<CustomerCard> {
     );
   }
 
-  Padding _buttons(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.end,
-        spacing: 20,
-        children: [
-          SendButton(
-            onPressed: () {
-              _removeUser(
-                userId: widget.user!.uid,
-                userDoc: widget.customer.id,
-              );
+  Widget _buttons(BuildContext context) {
+    return IgnorePointer(
+      ignoring: !_isFabVisible,
+      child: AnimatedOpacity(
+          opacity: _isFabVisible ? 1.0 : 0,
+          duration: Duration(milliseconds: 300),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 20,
+            children: [
+              SendButton(
+                onPressed: () {
+                  _removeUser(
+                    userId: widget.user!.uid,
+                    userDoc: widget.customer.id,
+                  );
 
-              Navigator.pop(context);
-              snackBarDialog(context,
-                  color: Colors.red,
-                  message:
-                      'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
-            },
-            text: 'Διαγραφή',
-            backgroundColor: Colors.red,
-            icon: Icons.delete,
-          ),
-          SendButton(
-            onPressed: () {
-              _submit();
+                  Navigator.pop(context);
+                  snackBarDialog(context,
+                      color: Colors.red,
+                      message:
+                          'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
+                },
+                text: 'Διαγραφή',
+                backgroundColor: Colors.red,
+                icon: Icons.delete,
+              ),
+              SendButton(
+                onPressed: () {
+                  _submit();
 
-              Navigator.pop(context);
-              snackBarDialog(context,
-                  color: Colors.orange,
-                  message:
-                      'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
-            },
-            text: 'Αποστολή',
-            icon: Icons.edit,
-            backgroundColor: Colors.orange,
-          ),
-        ],
-      ),
+                  Navigator.pop(context);
+                  snackBarDialog(context,
+                      color: Colors.orange,
+                      message:
+                          'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
+                },
+                text: 'Αποστολή',
+                icon: Icons.edit,
+                backgroundColor: Colors.orange,
+              ),
+            ],
+          )),
+    );
+  }
+
+  Widget _descriptionList(List<String> descriptions) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        descriptions.isEmpty
+            ? Center(
+                child: Text('Καμία περιγραφή', style: TextStyle(fontSize: 18)))
+            : Center(
+                child: Text('Προηγούμενες περιγραφές',
+                    style: TextStyle(fontSize: 18))),
+        ...descriptions.reversed.map((desc) => Card(
+              margin: EdgeInsets.only(right: 10, left: 10, top: 10),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Text(desc),
+              ),
+            )),
+      ],
     );
   }
 
   Padding _form(BuildContext context, double layoutWidth) {
     return Padding(
-      padding: EdgeInsets.only(top: 30),
+      padding: EdgeInsets.only(top: 20),
       child: SizedBox(
         width: layoutWidth < 600
             ? 350
             : layoutWidth < 1300
                 ? 500
                 : 700,
-        // width: MediaQuery.of(context).size.width * .7,
-        // height: MediaQuery.of(context).size.height * .7,
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
-              spacing: 20,
+              spacing: 15,
               children: [
                 CustomTextForm(
                   labelText: 'Όνομα',
@@ -241,10 +316,20 @@ class _CustomerCardState extends State<CustomerCard> {
                   },
                 ),
                 CustomTextForm(
+                  labelText: 'Οφειλή',
+                  hintText: 'Υπόλοιπο',
+                  prefixIcon: Icons.euro,
+                  chooseText: ChooseText.owes,
+                  initial: widget.customer.owes,
+                  onSaved: (val) {
+                    owes = val;
+                  },
+                ),
+                CustomTextForm(
                   labelText: 'Περιγραφή',
                   hintText: '...........',
                   prefixIcon: Icons.description,
-                  initial: widget.customer.description,
+                  // initial: widget.customer.description,
                   onSaved: (val) {
                     description = val;
                   },

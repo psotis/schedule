@@ -41,10 +41,11 @@ class _SignupWidgetState extends State<SignupWidget> {
   Widget build(BuildContext context) {
     var signupStatus = context.watch<SignupProvider>().state.signupStatus;
     return Column(
+      spacing: 15,
       children: [
         //* ****************** Name textfield ***************************
         SizedBox(
-          height: ScreenSize.screenHeight * .1,
+          // height: ScreenSize.screenHeight * .1,
           width: widget.isMobile == true
               ? ScreenSize.screenWidth * .8
               : ScreenSize.screenWidth * .3,
@@ -70,14 +71,10 @@ class _SignupWidgetState extends State<SignupWidget> {
             },
           ),
         ),
-        SizedBox(
-          height: widget.isMobile == true
-              ? ScreenSize.screenHeight * .03
-              : ScreenSize.screenHeight * .01,
-        ),
+
         //* ****************** Email textfield ***************************
         SizedBox(
-          height: ScreenSize.screenHeight * .1,
+          // height: ScreenSize.screenHeight * .1,
           width: widget.isMobile == true
               ? ScreenSize.screenWidth * .8
               : ScreenSize.screenWidth * .3,
@@ -103,14 +100,10 @@ class _SignupWidgetState extends State<SignupWidget> {
             },
           ),
         ),
-        SizedBox(
-          height: widget.isMobile == true
-              ? ScreenSize.screenHeight * .03
-              : ScreenSize.screenHeight * .01,
-        ),
+
         //* ****************** Password textfield ***************************
         SizedBox(
-          height: ScreenSize.screenHeight * .1,
+          // height: ScreenSize.screenHeight * .1,
           width: widget.isMobile == true
               ? ScreenSize.screenWidth * .8
               : ScreenSize.screenWidth * .3,
@@ -147,7 +140,7 @@ class _SignupWidgetState extends State<SignupWidget> {
             },
           ),
         ),
-        SizedBox(height: ScreenSize.screenHeight * .02),
+        // SizedBox(height: ScreenSize.screenHeight * .02),
         SizedBox(
           height: ScreenSize.screenHeight * .06,
           width: widget.isMobile == true
@@ -178,7 +171,7 @@ class _SignupWidgetState extends State<SignupWidget> {
                   ),
           ),
         ),
-        SizedBox(height: ScreenSize.screenHeight * .02),
+        // SizedBox(height: ScreenSize.screenHeight * .02),
         SizedBox(
           height: ScreenSize.screenHeight * .06,
           width: widget.isMobile == true

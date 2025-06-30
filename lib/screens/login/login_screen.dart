@@ -116,14 +116,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.all(Radius.circular(20))),
                   child: SingleChildScrollView(
                     child: Column(
+                      spacing: 5,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        SizedBox(height: 5),
+                        // SizedBox(height: 5),
                         EntryGif(
                           height: ScreenSize.screenHeight * .35,
                           width: ScreenSize.screenWidth * .5,
                         ),
-                        SizedBox(height: ScreenSize.screenHeight * .02),
+                        // SizedBox(height: ScreenSize.screenHeight * .01),
                         Consumer<ChangePageProvider>(
                             builder: (context, state, child) {
                           if (state.state.changePageStatus ==

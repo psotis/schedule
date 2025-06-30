@@ -15,7 +15,8 @@ class AddAppointmentProvider extends ChangeNotifier {
     required this.addAppointmentRepository,
   });
 
-  Future<void> addAppointment({
+  Future<void> addAppointment(
+    BuildContext context, {
     required String name,
     required String surname,
     required Timestamp date,
@@ -30,6 +31,8 @@ class AddAppointmentProvider extends ChangeNotifier {
 
     try {
       await addAppointmentRepository.sendAppointments(
+        // ignore: use_build_context_synchronously
+        context,
         userUid: userUid,
         surname: surname,
         date: date,
