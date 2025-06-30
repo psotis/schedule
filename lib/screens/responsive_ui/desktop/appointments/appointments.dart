@@ -149,6 +149,7 @@ class _AppointmentsState extends State<Appointments> {
         child: Column(
           spacing: 40,
           children: [
+            SizedBox(height: 15),
             Search(
               user: widget.user,
               width: ScreenSize.screenWidth * .25,

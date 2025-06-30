@@ -151,6 +151,7 @@ class _AppointmentsState extends State<Appointments> {
           crossAxisAlignment: CrossAxisAlignment.center,
           spacing: 20,
           children: [
+            SizedBox(height: 15),
             Search(
               user: widget.user,
               width: ScreenSize.screenWidth * .3,

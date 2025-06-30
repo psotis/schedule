@@ -26,8 +26,11 @@ class Search extends StatefulWidget {
 }
 
 class _SearchState extends State<Search> {
+  TextEditingController _search = TextEditingController();
+
   @override
   void initState() {
+    _search = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       fetchUsers();
       fetchEmployees();
@@ -44,11 +47,18 @@ class _SearchState extends State<Search> {
   }
 
   @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     var searchUser = context.watch<SearchUserProvider>().appointment;
     var employee = context.watch<EmployeeProvider>().employees;
     return widget.selectSearch == SelectSearch.customer
         ? DropdownMenu(
+            controller: _search,
             menuStyle: MenuStyle(
               shape: WidgetStatePropertyAll(RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(5)))),
@@ -75,6 +85,7 @@ class _SearchState extends State<Search> {
             onSelected: (val) => widget.setAppointment!(val!.name, val.surname),
           )
         : DropdownMenu(
+            controller: _search,
             menuStyle: MenuStyle(
               shape: WidgetStatePropertyAll(RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(5)))),

@@ -145,112 +145,109 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
       builder: (context, constraints) {
         if (constraints.maxWidth < DeviceSizes.mobileSize) {
           return SingleChildScrollView(
-            child: Column(
-              children: [
-                StreamBuilder(
-                  stream: stream,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    }
-                    return SizedBox(
-                      height: 400,
-                      child: Card(
-                        child: SfCalendar(
-                          allowDragAndDrop: true,
-                          controller: _controller,
-                          showNavigationArrow: true,
-                          showDatePickerButton: true,
-                          allowViewNavigation: true,
-                          view: CalendarView.week,
-                          firstDayOfWeek: DateTime.monday,
-                          timeSlotViewSettings: TimeSlotViewSettings(
-                            timeIntervalHeight: 50,
-                            startHour: 7,
-                            endHour: 23,
-                            timeFormat: 'HH:mm',
-                            nonWorkingDays: <int>[
-                              DateTime.saturday,
-                              DateTime.sunday
-                            ],
-                          ),
-                          headerDateFormat: 'y MMMM',
-                          minDate: DateTime(2022, 1, 1, 10, 0, 00, 000),
-                          maxDate: DateTime(2100, 1, 1, 10, 0, 00, 000),
-                          allowedViews: [
-                            CalendarView.workWeek,
-                            CalendarView.week,
-                            CalendarView.day,
-                          ],
-                          appointmentBuilder:
-                              (context, calendarAppointmentDetails) {
-                            final List appointments = calendarAppointmentDetails
-                                .appointments
-                                .toList();
-                            final AppointMent appointment = appointments[0];
-                            return Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.blue.shade400,
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(10))),
-                                child: Center(
-                                    child: Text(appointment.eventName,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyles().appointments)));
-                          },
-                          onTap: calendarPicker,
-                          monthViewSettings: const MonthViewSettings(
-                            appointmentDisplayMode:
-                                MonthAppointmentDisplayMode.appointment,
-                          ),
-                          dataSource: MeetingDataSource(snapshot.data!
-                              .map((e) => AppointMent(
-                                    '${e.name} ${e.surname}',
-                                    e.id,
-                                    e.date!.toDate(),
-                                    e.date!.toDate().add(Duration(hours: 1)),
-                                    Colors.blueAccent,
-                                    e.surname,
-                                    e.phone,
-                                    e.email,
-                                    e.address,
-                                    // e.description,
-                                    e.amka,
-                                  ))
-                              .toList()),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                StreamBuilder(
-                  stream: streamToday,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    }
-                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(
-                          child: Text('Δεν βρέθηκαν σημερινά ραντεβού'));
-                    }
-                    return Padding(
-                      padding: EdgeInsets.only(top: 20),
-                      child: SizedBox(
-                        height: 500,
-                        child: Column(
-                          spacing: 10,
-                          children: [
-                            CustomText(
-                              text: 'Σημερινά Ραντεβού',
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                children: [
+                  StreamBuilder(
+                    stream: stream,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      return SizedBox(
+                        height: 400,
+                        child: Card(
+                          child: SfCalendar(
+                            allowDragAndDrop: true,
+                            controller: _controller,
+                            showNavigationArrow: true,
+                            showDatePickerButton: true,
+                            allowViewNavigation: true,
+                            view: CalendarView.week,
+                            firstDayOfWeek: DateTime.monday,
+                            timeSlotViewSettings: TimeSlotViewSettings(
+                              timeIntervalHeight: 50,
+                              startHour: 7,
+                              endHour: 23,
+                              timeFormat: 'HH:mm',
+                              nonWorkingDays: <int>[
+                                DateTime.saturday,
+                                DateTime.sunday
+                              ],
                             ),
-                            ListView.builder(
-                              padding: EdgeInsets.all(10),
-                              shrinkWrap: true,
-                              itemCount: snapshot.data?.length,
-                              itemBuilder: (context, index) {
+                            headerDateFormat: 'y MMMM',
+                            minDate: DateTime(2022, 1, 1, 10, 0, 00, 000),
+                            maxDate: DateTime(2100, 1, 1, 10, 0, 00, 000),
+                            allowedViews: [
+                              CalendarView.workWeek,
+                              CalendarView.week,
+                              CalendarView.day,
+                            ],
+                            appointmentBuilder:
+                                (context, calendarAppointmentDetails) {
+                              final List appointments =
+                                  calendarAppointmentDetails.appointments
+                                      .toList();
+                              final AppointMent appointment = appointments[0];
+                              return Container(
+                                  decoration: BoxDecoration(
+                                      color: Colors.blue.shade400,
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10))),
+                                  child: Center(
+                                      child: Text(appointment.eventName,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyles().appointments)));
+                            },
+                            onTap: calendarPicker,
+                            monthViewSettings: const MonthViewSettings(
+                              appointmentDisplayMode:
+                                  MonthAppointmentDisplayMode.appointment,
+                            ),
+                            dataSource: MeetingDataSource(snapshot.data!
+                                .map((e) => AppointMent(
+                                      '${e.name} ${e.surname}',
+                                      e.id,
+                                      e.date!.toDate(),
+                                      e.date!.toDate().add(Duration(hours: 1)),
+                                      Colors.blueAccent,
+                                      e.surname,
+                                      e.phone,
+                                      e.email,
+                                      e.address,
+                                      // e.description,
+                                      e.amka,
+                                    ))
+                                .toList()),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  StreamBuilder(
+                    stream: streamToday,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(
+                            child: Text('Δεν βρέθηκαν σημερινά ραντεβού'));
+                      }
+                      return Padding(
+                        padding: EdgeInsets.only(top: 20, bottom: 25),
+                        child: SizedBox(
+                          child: Column(
+                            spacing: 10,
+                            children: [
+                              CustomText(
+                                text: 'Σημερινά Ραντεβού',
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              ...List.generate(snapshot.data!.length, (index) {
                                 var appoint = snapshot.data?[index];
                                 return Card(
                                   child: Dismissible(
@@ -266,13 +263,13 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                                               SendButton(
                                                   backgroundColor: Colors.green,
                                                   icon: Icons.thumb_up_outlined,
-                                                  onPressed: () {
-                                                    context
+                                                  onPressed: () async {
+                                                    await context
                                                         .read<
                                                             AppointmentProvider>()
                                                         .deleteAppointments(
                                                             widget.user.uid,
-                                                            snapshot.data![0].id
+                                                            appoint.id
                                                                 .toString());
                                                     snackBarDialog(context,
                                                         color: Colors.red,
@@ -313,22 +310,29 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
                                         children: [
-                                          Text(appoint.employee ?? ''),
-                                          Text(appoint.position ?? '')
+                                          Flexible(
+                                            child: Text(
+                                              appoint.employee ?? '',
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: 20,
+                                            child: Text(appoint.position ?? ''),
+                                          ),
                                         ],
                                       ),
                                     ),
                                   ),
                                 );
-                              },
-                            ),
-                          ],
+                              }),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                )
-              ],
+                      );
+                    },
+                  )
+                ],
+              ),
             ),
           );
         } else {
@@ -432,93 +436,97 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                           ),
-                          ListView.builder(
-                            padding: EdgeInsets.all(10),
-                            shrinkWrap: true,
-                            itemCount: snapshot.data?.length,
-                            itemBuilder: (context, index) {
-                              var appoint = snapshot.data?[index];
-                              return Card(
-                                child: Dismissible(
-                                  key: Key(appoint!.id),
-                                  confirmDismiss: (direction) async {
-                                    return await showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          title: Text(
-                                              'Διαγραφή ραντεβού με ${appoint.name} ${appoint.surname}?'),
-                                          actions: [
-                                            SendButton(
-                                                backgroundColor: Colors.green,
-                                                icon: Icons.thumb_up_outlined,
-                                                onPressed: () {
-                                                  context
-                                                      .read<
-                                                          AppointmentProvider>()
-                                                      .deleteAppointments(
-                                                          widget.user.uid,
-                                                          snapshot.data![0].id
-                                                              .toString());
-                                                  snackBarDialog(context,
-                                                      color: Colors.red,
-                                                      message:
-                                                          'Το ραντεβού με πελάτη ${appoint.name} ${appoint.surname} διαγράφθηκε');
-                                                  Navigator.pop(context, true);
-                                                },
-                                                text: 'Ναι'),
-                                            SendButton(
-                                                backgroundColor: Colors.red,
-                                                icon: Icons.delete,
-                                                onPressed: () => Navigator.pop(
-                                                    context, false),
-                                                text: 'Όχι')
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  },
-                                  direction: DismissDirection.startToEnd,
-                                  background: Container(
-                                    color: Colors.red,
-                                    alignment: Alignment.centerRight,
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 20),
-                                    child:
-                                        Icon(Icons.delete, color: Colors.white),
-                                  ),
-                                  child: ListTile(
-                                    title: Text(
-                                      '${appoint.name} ${appoint.surname}',
-                                      overflow: TextOverflow.ellipsis,
+                          Expanded(
+                            child: ListView.builder(
+                              padding: EdgeInsets.all(10),
+                              shrinkWrap: true,
+                              itemCount: snapshot.data?.length,
+                              itemBuilder: (context, index) {
+                                var appoint = snapshot.data?[index];
+                                return Card(
+                                  child: Dismissible(
+                                    key: Key(appoint!.id),
+                                    confirmDismiss: (direction) async {
+                                      return await showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: Text(
+                                                'Διαγραφή ραντεβού με ${appoint.name} ${appoint.surname}?'),
+                                            actions: [
+                                              SendButton(
+                                                  backgroundColor: Colors.green,
+                                                  icon: Icons.thumb_up_outlined,
+                                                  onPressed: () {
+                                                    context
+                                                        .read<
+                                                            AppointmentProvider>()
+                                                        .deleteAppointments(
+                                                            widget.user.uid,
+                                                            appoint.id
+                                                                .toString());
+                                                    snackBarDialog(context,
+                                                        color: Colors.red,
+                                                        message:
+                                                            'Το ραντεβού με πελάτη ${appoint.name} ${appoint.surname} διαγράφθηκε');
+                                                    Navigator.pop(
+                                                        context, true);
+                                                  },
+                                                  text: 'Ναι'),
+                                              SendButton(
+                                                  backgroundColor: Colors.red,
+                                                  icon: Icons.delete,
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                          context, false),
+                                                  text: 'Όχι')
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                    direction: DismissDirection.startToEnd,
+                                    background: Container(
+                                      color: Colors.red,
+                                      alignment: Alignment.centerRight,
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 20),
+                                      child: Icon(Icons.delete,
+                                          color: Colors.white),
                                     ),
-                                    leading: Text(
-                                      DateFormat('dd-MM-yyyy HH:mm')
-                                          .format(appoint.date!.toDate()),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    subtitle: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            appoint.employee ?? '',
-                                            overflow: TextOverflow.ellipsis,
+                                    child: ListTile(
+                                      title: Text(
+                                        '${appoint.name} ${appoint.surname}',
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      leading: Text(
+                                        DateFormat('dd-MM-yyyy HH:mm')
+                                            .format(appoint.date!.toDate()),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      subtitle: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              appoint.employee ?? '',
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                           ),
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            appoint.position ?? '',
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        )
-                                      ],
+                                          Expanded(
+                                            child: Text(
+                                              appoint.position ?? '',
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          )
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
-                            },
+                                );
+                              },
+                            ),
                           ),
                         ],
                       ),
