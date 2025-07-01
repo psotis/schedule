@@ -159,7 +159,9 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                   showNavigationArrow: true,
                   showDatePickerButton: true,
                   allowViewNavigation: true,
-                  view: CalendarView.week,
+                  view: widget.user.email == 'physiocure.oe@gmail.com'
+                      ? CalendarView.workWeek
+                      : CalendarView.week,
                   firstDayOfWeek: DateTime.monday,
                   timeSlotViewSettings: TimeSlotViewSettings(
                     timeIntervalHeight: 50,
@@ -406,7 +408,9 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                       showNavigationArrow: true,
                       showDatePickerButton: true,
                       allowViewNavigation: true,
-                      view: CalendarView.week,
+                      view: widget.user.email == 'physiocure.oe@gmail.com'
+                          ? CalendarView.workWeek
+                          : CalendarView.week,
                       firstDayOfWeek: DateTime.monday,
                       timeSlotViewSettings: TimeSlotViewSettings(
                         timeIntervalHeight: 50,
