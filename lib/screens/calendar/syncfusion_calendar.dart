@@ -326,7 +326,6 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                                       Expanded(
                                         child: Text(
                                           appoint.employee ?? '',
-                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                       Expanded(

@@ -13,6 +13,7 @@ class Employee extends Equatable {
   final String amka;
   final String specialiazation;
   final String contractType;
+  final String? paid;
   Employee({
     required this.id,
     required this.name,
@@ -24,6 +25,7 @@ class Employee extends Equatable {
     required this.amka,
     required this.specialiazation,
     required this.contractType,
+    this.paid,
   });
 
   factory Employee.fromDoc(DocumentSnapshot doc) {
@@ -39,6 +41,7 @@ class Employee extends Equatable {
       amka: userData['amka'],
       specialiazation: userData['specialiazation'],
       contractType: userData['contract_type'],
+      paid: userData['paid'] ?? '',
     );
   }
 
@@ -54,6 +57,7 @@ class Employee extends Equatable {
       amka: '',
       specialiazation: '',
       contractType: '',
+      paid: '',
     );
   }
 
@@ -68,19 +72,20 @@ class Employee extends Equatable {
     String? amka,
     String? specialiazation,
     String? contractType,
+    String? paid,
   }) {
     return Employee(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      surname: surname ?? this.surname,
-      email: email ?? this.email,
-      phone: phone ?? this.phone,
-      address: address ?? this.address,
-      afm: afm ?? this.afm,
-      amka: amka ?? this.amka,
-      specialiazation: specialiazation ?? this.specialiazation,
-      contractType: contractType ?? this.contractType,
-    );
+        id: id ?? this.id,
+        name: name ?? this.name,
+        surname: surname ?? this.surname,
+        email: email ?? this.email,
+        phone: phone ?? this.phone,
+        address: address ?? this.address,
+        afm: afm ?? this.afm,
+        amka: amka ?? this.amka,
+        specialiazation: specialiazation ?? this.specialiazation,
+        contractType: contractType ?? this.contractType,
+        paid: paid ?? this.paid);
   }
 
   @override
@@ -97,6 +102,7 @@ class Employee extends Equatable {
         afm,
         amka,
         specialiazation,
-        contractType
+        contractType,
+        paid
       ];
 }

@@ -42,7 +42,8 @@ class _CustomerSideState extends State<CustomerSide> {
       amka,
       owes,
       employee,
-      position;
+      position,
+      paid;
   int appointmentLength = 0;
   final _formKey = GlobalKey<FormState>();
   final DateTime? date = DateTime.now();
@@ -90,40 +91,45 @@ class _CustomerSideState extends State<CustomerSide> {
       });
     }
 
+    final addProvider = context.read<AddAppointmentProvider>();
+    final searchProvider = context.read<SearchUserProvider>();
+
     setState(() {
       descriptionDate = DateFormat("dd-MM-yyyy HH:mm").format(date!);
     });
 
     final userForm = _formKey.currentState;
+
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
 
-    await context.read<AddAppointmentProvider>().editAppointment(
-          context,
-          appointmentId: widget.appointMent.id,
-          userUid: widget.user!.uid,
-          name: name ?? widget.appointMent.name,
-          surname: surname ?? widget.appointMent.surname,
-          date: timestampday ?? widget.appointMent.date!,
-          employee: employee ?? widget.appointMent.employee,
-          position: position ?? widget.appointMent.position,
-        );
+    await addProvider.editAppointment(
+      context,
+      appointmentId: widget.appointMent.id,
+      userUid: widget.user!.uid,
+      name: name ?? widget.appointMent.name,
+      surname: surname ?? widget.appointMent.surname,
+      date: timestampday ?? widget.appointMent.date!,
+      employee: employee ?? widget.appointMent.employee,
+      position: position ?? widget.appointMent.position,
+    );
 
-    // ignore: use_build_context_synchronously
-    await context.read<SearchUserProvider>().editUser(
-          name: name ?? widget.customer.name,
-          surname: surname ?? widget.customer.surname,
-          phone: phone ?? widget.customer.phone,
-          email: email ?? widget.customer.email,
-          address: address ?? widget.customer.address,
-          description: description!.isEmpty
-              ? description!
-              : "$descriptionDate:  $description",
-          amka: amka ?? widget.customer.amka,
-          owes: owes ?? widget.customer.owes!,
-          userUid: widget.user!.uid,
-          docId: widget.customer.id,
-        );
+    await Future.delayed(Duration(milliseconds: 200));
+
+    await searchProvider.editUser(
+      name: name ?? widget.customer.name,
+      surname: surname ?? widget.customer.surname,
+      phone: phone ?? widget.customer.phone,
+      email: email ?? widget.customer.email,
+      address: address ?? widget.customer.address,
+      description: (description == null || description!.isEmpty)
+          ? ''
+          : "$descriptionDate:  $description",
+      amka: amka ?? widget.customer.amka,
+      owes: owes ?? widget.customer.owes!,
+      userUid: widget.user!.uid,
+      docId: widget.customer.id,
+    );
   }
 
   void _removeUser({required String userId, required String userDoc}) async {
@@ -138,9 +144,11 @@ class _CustomerSideState extends State<CustomerSide> {
       name: widget.customer.name,
       surename: widget.customer.surname,
     );
-    setState(() {
-      appointmentLength = length;
-    });
+    if (mounted) {
+      setState(() {
+        appointmentLength = length;
+      });
+    }
   }
 
   Future pickDateTime() async {
@@ -441,13 +449,39 @@ class _CustomerSideState extends State<CustomerSide> {
                           child: CustomTextForm(
                             labelText: 'Ραντεβού',
                             hintText: '6900000000',
-                            prefixIcon: Icons.phone,
-                            initial: widget.appointMent.date
-                                ?.toDate()
-                                .toString()
-                                .substring(0, 16),
+                            prefixIcon: Icons.calendar_month,
+                            readOnly: true,
+                            initial: DateFormat('dd-MM-yyyy HH:mm')
+                                .format(widget.appointMent.date!.toDate()),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      spacing: 10,
+                      children: [
+                        Flexible(
+                          flex: 1,
+                          child: CustomTextForm(
+                            labelText: 'Πληρωμή',
+                            hintText: 'Σημερινό πληρωτέο ποσό',
+                            prefixIcon: Icons.euro,
+                            chooseText: ChooseText.owes,
+                            initial: '',
                             onSaved: (val) {
-                              phone = val;
+                              paid = val;
+                            },
+                          ),
+                        ),
+                        Flexible(
+                          flex: 2,
+                          child: CustomTextForm(
+                            labelText: 'Περιγραφή',
+                            hintText: '...........',
+                            prefixIcon: Icons.description,
+                            // initial: widget.customer.description,
+                            onSaved: (val) {
+                              description = val;
                             },
                           ),
                         ),
