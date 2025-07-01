@@ -102,4 +102,36 @@ class AddAppointmentRepository {
       );
     }
   }
+
+  Future<void> editAppointment(
+    BuildContext context, {
+    required String appointmentId,
+    required String name,
+    required String surname,
+    required Timestamp date,
+    required String userUid,
+    String? position,
+    String? employee,
+    String? owes,
+  }) async {
+    try {
+      final docRef =
+          FirebaseFirestore.instance.collection(userUid).doc(appointmentId);
+
+      await docRef.update({
+        'name': name,
+        'surname': surname,
+        'date': date,
+        'position': position ?? '',
+        'employee': employee ?? '',
+        'owes': owes ?? '',
+      });
+    } catch (e) {
+      throw CustomError(
+        code: 'Exception',
+        message: 'Failed to update appointment: $e',
+        plugin: 'flutter_error/server_error',
+      );
+    }
+  }
 }

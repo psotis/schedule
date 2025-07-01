@@ -180,7 +180,7 @@ class _CustomerCardState extends State<CustomerCard> {
 
   void seeApp() async {
     var length = await SearchEditUserRepository().patientAppointmentLength(
-      userId: widget.user!.uid,
+      userId: widget.user?.uid ?? '1',
       name: widget.customer.name,
       surename: widget.customer.surname,
     );
@@ -810,7 +810,7 @@ class _CustomerCardState extends State<CustomerCard> {
                       labelText: 'ΑΜΚΑ',
                       hintText: '800000000',
                       prefixIcon: Icons.numbers,
-                      initial: widget.customer.address,
+                      initial: widget.customer.amka,
                       onSaved: (val) {
                         amka = val;
                       },

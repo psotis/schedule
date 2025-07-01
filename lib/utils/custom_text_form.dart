@@ -16,6 +16,7 @@ class CustomTextForm extends StatelessWidget {
   final TextEditingController? controller;
   final String? initial;
   final ChooseText? chooseText;
+  final bool? readOnly;
 
   const CustomTextForm({
     super.key,
@@ -31,6 +32,7 @@ class CustomTextForm extends StatelessWidget {
     this.controller,
     this.initial,
     this.chooseText,
+    this.readOnly,
   });
 
   @override
@@ -39,6 +41,7 @@ class CustomTextForm extends StatelessWidget {
       controller: controller,
       obscureText: obscureText,
       initialValue: initial,
+      readOnly: readOnly ?? false,
       decoration: InputDecoration(
         labelText: labelText,
         labelStyle: TextStyle(

@@ -59,4 +59,55 @@ class AddAppointmentProvider extends ChangeNotifier {
       throw Exception();
     }
   }
+
+  Future<void> editAppointment(
+    BuildContext context, {
+    required String appointmentId,
+    required String name,
+    required String surname,
+    required Timestamp date,
+    required String userUid,
+    String? position,
+    String? employee,
+  }) async {
+    _appointmentState = _appointmentState.copyWith(
+      appointmentStatus: AddAppointmentStatus.loading,
+    );
+    notifyListeners();
+    await Future.delayed(Duration(milliseconds: 500));
+
+    try {
+      await addAppointmentRepository.editAppointment(
+        context,
+        appointmentId: appointmentId,
+        name: name,
+        surname: surname,
+        date: date,
+        userUid: userUid,
+        position: position,
+        employee: employee,
+      );
+
+      _appointmentState = _appointmentState.copyWith(
+        appointmentStatus: AddAppointmentStatus.loaded,
+      );
+      notifyListeners();
+      await Future.delayed(Duration(milliseconds: 2));
+      _appointmentState = _appointmentState.copyWith(
+        appointmentStatus: AddAppointmentStatus.addAppointment,
+      );
+      notifyListeners();
+      await Future.delayed(Duration(seconds: 2));
+      _appointmentState = _appointmentState.copyWith(
+        appointmentStatus: AddAppointmentStatus.initial,
+      );
+      notifyListeners();
+    } catch (e) {
+      _appointmentState = _appointmentState.copyWith(
+        appointmentStatus: AddAppointmentStatus.error,
+      );
+      notifyListeners();
+      throw Exception("Failed to edit appointment: $e");
+    }
+  }
 }
