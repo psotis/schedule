@@ -6,6 +6,7 @@ import 'package:scheldule/providers/appointment/appointment_status.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/cutom_text.dart';
+import 'package:scheldule/utils/snackbar.dart';
 
 class AppointmentHistory extends StatefulWidget {
   final User? user;
@@ -180,12 +181,61 @@ class _AppointmentHistoryState extends State<AppointmentHistory> {
                                           style: const TextStyle(fontSize: 13),
                                         ),
                                       ),
+                                      Text(
+                                        'Πλήρωσε: ',
+                                        style: const TextStyle(fontSize: 13),
+                                      ),
                                       const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Text(
-                                          'Πλήρωσε ${appointment.paid.toString()} €',
-                                          style: const TextStyle(fontSize: 13),
+                                      Flexible(
+                                        child: SizedBox(
+                                          width: 40,
+                                          child: TextFormField(
+                                            initialValue:
+                                                appointment.paid?.toString() ??
+                                                    '',
+                                            keyboardType: TextInputType.number,
+                                            style:
+                                                const TextStyle(fontSize: 13),
+                                            decoration: const InputDecoration(
+                                              isDense: true,
+                                              contentPadding:
+                                                  EdgeInsets.symmetric(
+                                                      vertical: 8,
+                                                      horizontal: 4),
+                                            ),
+                                            onFieldSubmitted: (value) async {
+                                              final newPaid =
+                                                  int.tryParse(value);
+                                              if (newPaid != null) {
+                                                await context
+                                                    .read<
+                                                        AddAppointmentProvider>()
+                                                    .editAppointment(context,
+                                                        appointmentId:
+                                                            appointment.id,
+                                                        name: appointment.name,
+                                                        surname:
+                                                            appointment.surname,
+                                                        date: appointment.date!,
+                                                        employee: appointment
+                                                            .employee,
+                                                        position: appointment
+                                                            .position,
+                                                        paid: newPaid,
+                                                        userUid:
+                                                            widget.user!.uid);
+                                                snackBarDialog(context,
+                                                    color: Colors.blueGrey,
+                                                    message:
+                                                        'Ποσό ενημερώθηκε');
+                                              }
+                                            },
+                                          ),
                                         ),
+                                      ),
+                                      Text(
+                                        '€',
+                                        style: const TextStyle(fontSize: 13),
                                       ),
                                       const SizedBox(width: 10),
                                       Expanded(
