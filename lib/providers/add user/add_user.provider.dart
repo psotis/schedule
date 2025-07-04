@@ -17,6 +17,7 @@ class AddUserProvider extends ChangeNotifier {
     required String amka,
     required String owes,
     required String userUid,
+    int? paid,
   }) async {
     _addUserState =
         _addUserState.copyWith(addUserStatus: AddUserStatus.loading);
@@ -34,6 +35,7 @@ class AddUserProvider extends ChangeNotifier {
         'amka': amka,
         'owes': owes,
         'date': Timestamp.fromMicrosecondsSinceEpoch(0),
+        'paid': paid ?? 0
       }).then((DocumentReference doc) {
         print(doc.id);
         print("collection created");

@@ -42,8 +42,8 @@ class _CustomerSideState extends State<CustomerSide> {
       amka,
       owes,
       employee,
-      position,
-      paid;
+      position;
+  int? paid;
   int appointmentLength = 0;
   final _formKey = GlobalKey<FormState>();
   final DateTime? date = DateTime.now();
@@ -112,6 +112,7 @@ class _CustomerSideState extends State<CustomerSide> {
       date: timestampday ?? widget.appointMent.date!,
       employee: employee ?? widget.appointMent.employee,
       position: position ?? widget.appointMent.position,
+      paid: paid ?? widget.appointMent.paid,
     );
 
     await Future.delayed(Duration(milliseconds: 200));
@@ -467,9 +468,9 @@ class _CustomerSideState extends State<CustomerSide> {
                             hintText: 'Σημερινό πληρωτέο ποσό',
                             prefixIcon: Icons.euro,
                             chooseText: ChooseText.owes,
-                            initial: '',
+                            initial: widget.appointMent.paid.toString(),
                             onSaved: (val) {
-                              paid = val;
+                              paid = int.tryParse(val!);
                             },
                           ),
                         ),

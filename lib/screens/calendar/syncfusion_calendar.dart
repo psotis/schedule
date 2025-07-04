@@ -208,7 +208,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                             e.phone,
                             e.email,
                             e.address,
-                            // e.description,
+                            e.paid,
                             e.amka,
                           ))
                       .toList()),
@@ -228,16 +228,46 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return Center(child: Text('Δεν βρέθηκαν σημερινά ραντεβού'));
               }
+
+              int todaysIncome = 0;
+              for (var i = 0; i < snapshot.data!.length; i++) {
+                todaysIncome += snapshot.data![i].paid ?? 0;
+              }
+
               return Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: Column(
                   children: [
-                    CustomText(
-                      text: 'Σημερινά Ραντεβού',
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    widget.user.email == 'physiocure.oe@gmail.com'
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              CustomText(
+                                text: 'Σημερινά Ραντεβού',
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              CustomText(
+                                text: '-',
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              CustomText(
+                                text: 'Σημερινό Εισόδημα: $todaysIncome €',
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ],
+                          )
+                        : CustomText(
+                            text: 'Σημερινά Ραντεβού',
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
                     Expanded(
                       child: ListView.builder(
                         padding: EdgeInsets.all(10),
@@ -315,12 +345,18 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(color: Colors.blue),
                                   ),
-                                  leading: Text(
-                                    DateFormat('dd-MM-yyyy HH:mm')
-                                        .format(appoint.date!.toDate()),
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: Colors.red),
-                                  ),
+                                  leading: appoint.date != null
+                                      ? Text(
+                                          DateFormat('dd-MM-yyyy HH:mm')
+                                              .format(appoint.date!.toDate()),
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(color: Colors.red),
+                                        )
+                                      : Text(
+                                          'Ημερομηνία άγνωστη',
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(color: Colors.red),
+                                        ),
                                   subtitle: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,
@@ -462,6 +498,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                                 e.email,
                                 e.address,
                                 // e.description,
+                                e.paid,
                                 e.amka,
                               ))
                           .toList()),
@@ -479,18 +516,48 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return Center(child: Text('Δεν βρέθηκαν σημερινά ραντεβού'));
                 }
+
+                int todaysIncome = 0;
+                for (var i = 0; i < snapshot.data!.length; i++) {
+                  todaysIncome += snapshot.data![i].paid ?? 0;
+                }
                 return Padding(
                   padding: EdgeInsets.only(top: 20, bottom: 25),
                   child: SizedBox(
                     child: Column(
                       spacing: 10,
                       children: [
-                        CustomText(
-                          text: 'Σημερινά Ραντεβού',
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        widget.user.email == 'physiocure.oe@gmail.com'
+                            ? Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  CustomText(
+                                    text: 'Σημερινά Ραντεβού',
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  CustomText(
+                                    text: '-',
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  CustomText(
+                                    text: 'Σημερινό Εισόδημα: $todaysIncome €',
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ],
+                              )
+                            : CustomText(
+                                text: 'Σημερινά Ραντεβού',
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
                         ...List.generate(snapshot.data!.length, (index) {
                           var appoint = snapshot.data?[index];
                           return Card(
@@ -541,8 +608,18 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                               child: ListTile(
                                 title:
                                     Text('${appoint.name} ${appoint.surname}'),
-                                leading: Text(DateFormat('dd-MM-yyyy HH:mm')
-                                    .format(appoint.date!.toDate())),
+                                leading: appoint.date != null
+                                    ? Text(
+                                        DateFormat('dd-MM-yyyy HH:mm')
+                                            .format(appoint.date!.toDate()),
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(color: Colors.red),
+                                      )
+                                    : Text(
+                                        'Ημερομηνία άγνωστη',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(color: Colors.red),
+                                      ),
                                 subtitle: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
@@ -626,6 +703,7 @@ class AppointMent extends CalendarDataSource {
     this.phone,
     this.email,
     this.address,
+    this.paid,
     // this.description,
     this.recurrenceRule,
   );
@@ -639,6 +717,7 @@ class AppointMent extends CalendarDataSource {
   String phone;
   String email;
   String address;
+  int? paid;
   // String description;
   String recurrenceRule;
 

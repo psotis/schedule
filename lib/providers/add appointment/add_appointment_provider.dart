@@ -69,6 +69,7 @@ class AddAppointmentProvider extends ChangeNotifier {
     required String userUid,
     String? position,
     String? employee,
+    int? paid,
   }) async {
     _appointmentState = _appointmentState.copyWith(
       appointmentStatus: AddAppointmentStatus.loading,
@@ -86,6 +87,7 @@ class AddAppointmentProvider extends ChangeNotifier {
         userUid: userUid,
         position: position,
         employee: employee,
+        paid: paid,
       );
 
       _appointmentState = _appointmentState.copyWith(

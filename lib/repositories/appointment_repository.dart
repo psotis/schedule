@@ -5,6 +5,7 @@ import '../models/custom_errors.dart';
 
 class AppointmentRepository {
   QuerySnapshot<Map<String, dynamic>>? appointMentsFromFirebase;
+  QuerySnapshot<Map<String, dynamic>>? appointMentsFromFirebaseByDate;
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   List<AppointMent>? appointment;
@@ -42,6 +43,31 @@ class AppointmentRepository {
       appointment = appointMentsFromFirebase!.docs
           .map((e) => AppointMent.fromDoc(e))
           .toList();
+      return appointment!;
+    } catch (e) {
+      throw CustomError(
+        code: 'Exception',
+        message: e.toString(),
+        plugin: 'flutter_error/server_error',
+      );
+    }
+  }
+
+  Future<List<AppointMent>> fetchAppointmentsByDate(
+      {required String userid, required DateTime date}) async {
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
+    try {
+      appointMentsFromFirebaseByDate = await firestore
+          .collection(userid)
+          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+          .where('date', isLessThan: Timestamp.fromDate(endOfDay))
+          .get();
+
+      appointment = appointMentsFromFirebaseByDate!.docs
+          .map((e) => AppointMent.fromDoc(e))
+          .toList();
+      print(appointment);
       return appointment!;
     } catch (e) {
       throw CustomError(

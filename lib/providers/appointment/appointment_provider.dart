@@ -11,6 +11,7 @@ import 'appointment_status.dart';
 class AppointmentProvider extends ChangeNotifier {
   List<AppointMent> appointment = [];
   List<AppointMent> appointments = [];
+  List<AppointMent> appointmentsByDate = [];
   AppointmentState _appointmentState = AppointmentState.initial();
   AppointmentState get appointmentState => _appointmentState;
   late DocumentReference documentReference;
@@ -59,6 +60,35 @@ class AppointmentProvider extends ChangeNotifier {
       //     appointMent: appointment,
       //     appointmentStatus: AppointmentStatus.initial);
       // notifyListeners();
+    } catch (e) {
+      _appointmentState = _appointmentState.copyWith(
+          appointmentStatus: AppointmentStatus.error);
+      notifyListeners();
+      throw Exception();
+    }
+  }
+
+  Future<void> getAppointMentsByDate(
+      {required String userid, required DateTime date}) async {
+    _appointmentState = _appointmentState.copyWith(
+        appointmentStatus: AppointmentStatus.loading);
+    notifyListeners();
+    await Future.delayed(Duration(milliseconds: 500));
+
+    try {
+      appointmentsByDate = await appointmentRepository.fetchAppointmentsByDate(
+          userid: userid, date: date);
+      if (appointmentsByDate.isEmpty) {
+        _appointmentState = _appointmentState.copyWith(
+            appointmentStatus: AppointmentStatus.empty);
+        notifyListeners();
+        return;
+      }
+
+      _appointmentState = _appointmentState.copyWith(
+          appointMent: appointmentsByDate,
+          appointmentStatus: AppointmentStatus.loaded);
+      notifyListeners();
     } catch (e) {
       _appointmentState = _appointmentState.copyWith(
           appointmentStatus: AppointmentStatus.error);

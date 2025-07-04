@@ -26,6 +26,7 @@ class AppointMent extends Equatable {
   final String? allergies;
   final String? spot;
   final String? missFunctions;
+  final int? paid;
   final bool? heart;
   final bool? breathe;
   final bool? sugar;
@@ -65,6 +66,7 @@ class AppointMent extends Equatable {
     this.allergies,
     this.spot,
     this.missFunctions,
+    this.paid,
     this.heart,
     this.breathe,
     this.sugar,
@@ -107,6 +109,7 @@ class AppointMent extends Equatable {
       allergies: userData['allergies'],
       spot: userData['spot'],
       missFunctions: userData['missFunctions'],
+      paid: userData['paid'] ?? 0,
       heart: userData['heart'] ?? false,
       breathe: userData['breathe'] ?? false,
       sugar: userData['sugar'] ?? false,
@@ -149,6 +152,7 @@ class AppointMent extends Equatable {
       allergies: '',
       spot: '',
       missFunctions: '',
+      paid: 0,
       heart: false,
       breathe: false,
       sugar: false,
@@ -192,6 +196,7 @@ class AppointMent extends Equatable {
       allergies ?? '',
       spot ?? '',
       missFunctions ?? '',
+      paid ?? 0,
       heart ?? false,
       breathe ?? false,
       sugar ?? false,
@@ -236,6 +241,7 @@ class AppointMent extends Equatable {
     String? allergies,
     String? spot,
     String? missFunctions,
+    int? paid,
     bool? heart,
     bool? breathe,
     bool? sugar,
@@ -275,6 +281,7 @@ class AppointMent extends Equatable {
       allergies: allergies ?? this.allergies,
       spot: spot ?? this.spot,
       missFunctions: missFunctions ?? this.missFunctions,
+      paid: paid ?? this.paid,
       heart: heart ?? this.heart,
       breathe: breathe ?? this.breathe,
       sugar: sugar ?? this.sugar,

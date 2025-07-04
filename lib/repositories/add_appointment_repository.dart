@@ -39,9 +39,8 @@ class AddAppointmentRepository {
     String? employee,
     String? position,
     String? owes,
+    int? paid,
   }) async {
-    // final addUserProvider =
-    //     Provider.of<AddUserProvider>(context, listen: false);
     try {
       if (await checkForUser(name: name, surname: surname, userUid: userUid) ==
           true) {
@@ -57,6 +56,7 @@ class AddAppointmentRepository {
           'position': position ?? '',
           'employee': employee ?? '',
           'owes': '',
+          'paid': 0,
         }).then((_) {
           print("collection created");
         }).catchError((error) {
@@ -74,6 +74,7 @@ class AddAppointmentRepository {
               description: '',
               amka: '',
               owes: '',
+              paid: 0,
             );
         await Future.delayed(Duration(milliseconds: 500));
         firestore.collection(userUid).add({
@@ -88,6 +89,7 @@ class AddAppointmentRepository {
           'position': position ?? '',
           'employee': employee ?? '',
           'owes': '',
+          'paid': 0,
         }).then((_) {
           print("collection created");
         }).catchError((error) {
@@ -113,6 +115,7 @@ class AddAppointmentRepository {
     String? position,
     String? employee,
     String? owes,
+    int? paid,
   }) async {
     try {
       final docRef =
@@ -125,6 +128,7 @@ class AddAppointmentRepository {
         'position': position ?? '',
         'employee': employee ?? '',
         'owes': owes ?? '',
+        'paid': paid ?? 0,
       });
     } catch (e) {
       throw CustomError(
