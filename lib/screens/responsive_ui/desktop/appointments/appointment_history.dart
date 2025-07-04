@@ -182,7 +182,7 @@ class _AppointmentHistoryState extends State<AppointmentHistory> {
                                         ),
                                       ),
                                       Text(
-                                        'Πλήρωσε: ',
+                                        'Πλήρωσε:',
                                         style: const TextStyle(fontSize: 13),
                                       ),
                                       const SizedBox(width: 10),
