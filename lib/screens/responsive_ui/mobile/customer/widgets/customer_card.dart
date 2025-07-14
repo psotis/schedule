@@ -173,7 +173,7 @@ class _CustomerCardState extends State<CustomerCard> {
             ],
           ),
         ),
-        floatingActionButton: _buttons(context),
+        floatingActionButton: Center(child: _buttons(context)),
       ),
     );
   }

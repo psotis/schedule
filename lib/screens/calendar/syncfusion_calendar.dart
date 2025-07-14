@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:scheldule/providers/appointment/appointment_provider.dart';
 import 'package:scheldule/providers/search%20user/search_user_provider.dart';
 import 'package:scheldule/screens/calendar/widgets/customer_side.dart';
+import 'package:scheldule/screens/calendar/widgets/customer_side_mobile.dart';
 import 'package:scheldule/styling/fonts/textstyle.dart';
 import 'package:scheldule/utils/cutom_text.dart';
 import 'package:scheldule/utils/send_button.dart';
@@ -560,80 +561,105 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                               ),
                         ...List.generate(snapshot.data!.length, (index) {
                           var appoint = snapshot.data?[index];
-                          return Card(
-                            child: Dismissible(
-                              key: Key(appoint!.id),
-                              confirmDismiss: (direction) {
-                                return showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: Text(
-                                          'Διαγραφή ραντεβού με ${appoint.name} ${appoint.surname}?'),
-                                      actions: [
-                                        SendButton(
-                                            backgroundColor: Colors.green,
-                                            icon: Icons.thumb_up_outlined,
-                                            onPressed: () async {
-                                              await context
-                                                  .read<AppointmentProvider>()
-                                                  .deleteAppointments(
-                                                      widget.user.uid,
-                                                      appoint.id.toString());
-                                              snackBarDialog(context,
-                                                  color: Colors.red,
-                                                  message:
-                                                      'Το ραντεβού με πελάτη ${appoint.name} ${appoint.surname} διαγράφθηκε');
-                                              Navigator.pop(context, true);
-                                            },
-                                            text: 'Ναι'),
-                                        SendButton(
-                                            backgroundColor: Colors.red,
-                                            icon: Icons.delete,
-                                            onPressed: () =>
-                                                Navigator.pop(context, false),
-                                            text: 'Όχι')
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
-                              direction: DismissDirection.startToEnd,
-                              background: Container(
-                                color: Colors.red,
-                                alignment: Alignment.centerRight,
-                                padding: EdgeInsets.symmetric(horizontal: 20),
-                                child: Icon(Icons.delete, color: Colors.white),
-                              ),
-                              child: ListTile(
-                                title:
-                                    Text('${appoint.name} ${appoint.surname}'),
-                                leading: appoint.date != null
-                                    ? Text(
-                                        DateFormat('dd-MM-yyyy HH:mm')
-                                            .format(appoint.date!.toDate()),
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(color: Colors.red),
-                                      )
-                                    : Text(
-                                        'Ημερομηνία άγνωστη',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                subtitle: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        appoint.employee ?? '',
-                                      ),
+                          return InkWell(
+                            onTap: () async {
+                              final List<app.AppointMent> customer =
+                                  await context
+                                      .read<SearchUserProvider>()
+                                      .searchUsers(user: widget.user.uid);
+
+                              final finalCustomer = customer.firstWhere(
+                                (cus) =>
+                                    cus.name == appoint.name &&
+                                    cus.surname == appoint.surname,
+                                orElse: () => app.AppointMent.initial(),
+                              );
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CustomerSideMobile(
+                                      customer: finalCustomer,
+                                      appointMent: appoint,
+                                      user: widget.user,
                                     ),
-                                    SizedBox(
-                                      width: 20,
-                                      child: Text(appoint.position ?? ''),
-                                    ),
-                                  ],
+                                  ));
+                            },
+                            child: Card(
+                              child: Dismissible(
+                                key: Key(appoint!.id),
+                                confirmDismiss: (direction) {
+                                  return showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        title: Text(
+                                            'Διαγραφή ραντεβού με ${appoint.name} ${appoint.surname}?'),
+                                        actions: [
+                                          SendButton(
+                                              backgroundColor: Colors.green,
+                                              icon: Icons.thumb_up_outlined,
+                                              onPressed: () async {
+                                                await context
+                                                    .read<AppointmentProvider>()
+                                                    .deleteAppointments(
+                                                        widget.user.uid,
+                                                        appoint.id.toString());
+                                                snackBarDialog(context,
+                                                    color: Colors.red,
+                                                    message:
+                                                        'Το ραντεβού με πελάτη ${appoint.name} ${appoint.surname} διαγράφθηκε');
+                                                Navigator.pop(context, true);
+                                              },
+                                              text: 'Ναι'),
+                                          SendButton(
+                                              backgroundColor: Colors.red,
+                                              icon: Icons.delete,
+                                              onPressed: () =>
+                                                  Navigator.pop(context, false),
+                                              text: 'Όχι')
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                                direction: DismissDirection.startToEnd,
+                                background: Container(
+                                  color: Colors.red,
+                                  alignment: Alignment.centerRight,
+                                  padding: EdgeInsets.symmetric(horizontal: 20),
+                                  child:
+                                      Icon(Icons.delete, color: Colors.white),
+                                ),
+                                child: ListTile(
+                                  title: Text(
+                                    '${appoint.name} ${appoint.surname}',
+                                    style: TextStyle(color: Colors.blue),
+                                  ),
+                                  leading: appoint.date != null
+                                      ? Text(
+                                          DateFormat('dd-MM-yyyy HH:mm')
+                                              .format(appoint.date!.toDate()),
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(color: Colors.red),
+                                        )
+                                      : Text(
+                                          'Ημερομηνία άγνωστη',
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                  subtitle: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          appoint.employee ?? '',
+                                        ),
+                                      ),
+                                      Flexible(
+                                          child: Text(appoint.position ?? '')),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
