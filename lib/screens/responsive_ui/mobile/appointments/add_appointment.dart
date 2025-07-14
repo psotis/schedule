@@ -12,7 +12,6 @@ import 'package:scheldule/utils/send_button.dart';
 // import '../../../../constants/logos/photos_gifs.dart';
 import '../../../../providers/add appointment/add_appointment_provider.dart';
 import '../../../../utils/custom_text_form.dart';
-import '../../../../utils/search/search.dart';
 import '../../../../utils/snackbar.dart';
 
 class AddAppointments extends StatefulWidget {
