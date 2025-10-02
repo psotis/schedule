@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
@@ -6,19 +5,21 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:scheldule/models/appointment_model.dart';
+import 'package:scheldule/providers/toggle_screen/toggle_screen_provider.dart';
+import 'package:scheldule/repositories/appointment_repository.dart';
+import 'package:scheldule/utils/check_box.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
-import 'package:scheldule/utils/get%20layout/get_layout.dart';
+import 'package:scheldule/utils/cutom_text.dart';
 import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
 
 import '../../../../../providers/search user/search_user_provider.dart';
 import '../../../../../repositories/search_edit_user_repository.dart';
-import '../../../../../utils/cutom_text.dart';
 
 class CustomerCard extends StatefulWidget {
   final AppointMent customer;
   final User? user;
-  final String title;
+  final String? title;
   const CustomerCard({
     super.key,
     required this.customer,
@@ -31,23 +32,209 @@ class CustomerCard extends StatefulWidget {
 }
 
 class _CustomerCardState extends State<CustomerCard> {
-  String? name, surname, email, phone, address, description, amka, owes;
-  int appointmentLength = 0;
+  bool? heart,
+      breathe,
+      sugar,
+      ypertash,
+      neuro,
+      orthopedic,
+      selfCare,
+      helpCare,
+      disabled,
+      good,
+      medium,
+      bad,
+      yes,
+      no;
+  String? name,
+      surname,
+      email,
+      phone,
+      address,
+      description,
+      amka,
+      owes,
+      birthday,
+      allo,
+      startingDate,
+      mainIssue,
+      doctor,
+      surgeryPast,
+      surgeryNow,
+      pharmacy,
+      allergies,
+      spot,
+      missFunctions;
+  int appointmentLength = 0, fullPaid = 0, payment = 0;
   final _formKey = GlobalKey<FormState>();
   final DateTime? date = DateTime.now();
   String? descriptionDate;
 
   final ScrollController _scrollController = ScrollController();
   bool _isFabVisible = true;
+  late List<AppointMent> paidRepo;
 
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
 
   @override
   void initState() {
     seeApp();
-
     _scrollController.addListener(_scrollListener);
+    inializeBooleans();
     super.initState();
+  }
+
+  void inializeBooleans() {
+    heart = widget.customer.heart ?? false;
+    breathe = widget.customer.breathe ?? false;
+    sugar = widget.customer.sugar ?? false;
+    ypertash = widget.customer.ypertash ?? false;
+    neuro = widget.customer.neuro ?? false;
+    orthopedic = widget.customer.orthopedic ?? false;
+    selfCare = widget.customer.selfCare ?? false;
+    helpCare = widget.customer.helpCare ?? false;
+    disabled = widget.customer.disabled ?? false;
+    good = widget.customer.good ?? false;
+    medium = widget.customer.medium ?? false;
+    bad = widget.customer.bad ?? false;
+    yes = widget.customer.yes ?? false;
+    no = widget.customer.no ?? false;
+  }
+
+  Future<Object?> _showSideDialog() {
+    return showGeneralDialog(
+      context: context,
+      barrierColor: Colors.black.withAlpha(20),
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        final sortedList = [...paidRepo]
+          ..sort((a, b) => b.date!.compareTo(a.date!));
+        return Align(
+          alignment: Alignment.centerRight,
+          child: Container(
+            width: 360,
+            height: MediaQuery.of(context).size.height,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                bottomLeft: Radius.circular(16),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(-4, 0),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header bar
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blueGrey[700],
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      "Ιστορικό Πληρωμών",
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          decoration: TextDecoration.none),
+                    ),
+                  ),
+                ),
+
+                // Column labels
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  color: Colors.blueGrey[100],
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Ημερομηνία",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            decoration: TextDecoration.none),
+                      ),
+                      Text(
+                        "Ποσό",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            decoration: TextDecoration.none),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // List of items
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: sortedList.length - 1,
+                    itemBuilder: (context, index) {
+                      var paid = sortedList[index];
+                      DateTime dateTime = paid.date!.toDate();
+                      String formattedDate =
+                          DateFormat('dd-MM-yyyy HH:mm:ss').format(dateTime);
+
+                      return Card(
+                        color: Colors.green[100],
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                formattedDate,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                "${paid.paid} €",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _scrollListener() {
@@ -83,7 +270,7 @@ class _CustomerCardState extends State<CustomerCard> {
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
 
-    context.read<SearchUserProvider>().editUser(
+    await context.read<SearchUserProvider>().editUser(
           name: name!,
           surname: surname!,
           phone: phone!,
@@ -96,6 +283,31 @@ class _CustomerCardState extends State<CustomerCard> {
           owes: owes!,
           userUid: widget.user!.uid,
           docId: widget.customer.id,
+          heart: heart!,
+          breathe: breathe,
+          sugar: sugar,
+          ypertash: ypertash,
+          neuro: neuro,
+          orthopedic: orthopedic,
+          selfCare: selfCare,
+          helpCare: helpCare,
+          disabled: disabled,
+          good: good,
+          medium: medium,
+          bad: bad,
+          yes: yes,
+          no: no,
+          birthday: birthday,
+          allo: allo,
+          startingDate: startingDate,
+          mainIssue: mainIssue,
+          doctor: doctor,
+          surgeryPast: surgeryPast,
+          surgeryNow: surgeryNow,
+          pharmacy: pharmacy,
+          allergies: allergies,
+          spot: spot,
+          missFunctions: missFunctions,
         );
   }
 
@@ -106,14 +318,30 @@ class _CustomerCardState extends State<CustomerCard> {
   }
 
   void seeApp() async {
+    if (!mounted) return;
     var length = await SearchEditUserRepository().patientAppointmentLength(
-      userId: widget.user!.uid,
+      userId: widget.user?.uid ?? '1',
       name: widget.customer.name,
       surename: widget.customer.surname,
     );
+    paidRepo = await AppointmentRepository().fetchAppointmentPaid(
+      userid: widget.user?.uid ?? '1',
+      name: widget.customer.name,
+      surname: widget.customer.surname,
+    );
+
+    for (var paid in paidRepo) {
+      payment += paid.paid!;
+    }
+
     setState(() {
       appointmentLength = length;
+      fullPaid = payment;
     });
+  }
+
+  void hideScreen() async {
+    context.read<ToggleScreenProvider>().showInitialScreen();
   }
 
   @override
@@ -124,7 +352,6 @@ class _CustomerCardState extends State<CustomerCard> {
 
   @override
   Widget build(BuildContext context) {
-    var layoutWidth = getLayout(context);
     final descriptions = (widget.customer.description ?? [])
         .where((desc) => desc.trim().isNotEmpty)
         .toList();
@@ -147,7 +374,7 @@ class _CustomerCardState extends State<CustomerCard> {
         appBar: AppBar(
           centerTitle: true,
           title: CustomText(
-            text: widget.title,
+            text: widget.title!,
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Color(0xFFf1b24b),
@@ -156,72 +383,43 @@ class _CustomerCardState extends State<CustomerCard> {
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
           controller: _scrollController,
-          child: Column(
-            children: [
-              SizedBox(height: 10),
-              Row(
-                spacing: 10,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Συνολικά ραντεβού:"),
-                  Text(appointmentLength.toString()),
-                ],
-              ),
-              _form(context, layoutWidth),
-              SizedBox(height: 15),
-              _descriptionList(descriptions),
-            ],
+          padding: const EdgeInsets.only(bottom: 100),
+          child: Center(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Συνολικά ραντεβού: "),
+                    Text(appointmentLength.toString()),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  spacing: 10,
+                  children: [
+                    if (widget.user?.email == 'physiocure.oe@gmail.com') ...[
+                      Text("Συνολική πληρωμή: ${fullPaid.toString()}"),
+                      ElevatedButton(
+                        onPressed: _showSideDialog,
+                        child: const Text('Πληρωμές ανά ραντεβού'),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _form(context),
+                const SizedBox(height: 20),
+                _descriptionList(descriptions),
+              ],
+            ),
           ),
         ),
-        floatingActionButton: Center(child: _buttons(context)),
+        // FAB/buttons
+        floatingActionButton: _buttons(context),
       ),
-    );
-  }
-
-  Widget _buttons(BuildContext context) {
-    return IgnorePointer(
-      ignoring: !_isFabVisible,
-      child: AnimatedOpacity(
-          opacity: _isFabVisible ? 1.0 : 0,
-          duration: Duration(milliseconds: 300),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 20,
-            children: [
-              SendButton(
-                onPressed: () {
-                  _removeUser(
-                    userId: widget.user!.uid,
-                    userDoc: widget.customer.id,
-                  );
-
-                  Navigator.pop(context);
-                  snackBarDialog(context,
-                      color: Colors.red,
-                      message:
-                          'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
-                },
-                text: 'Διαγραφή',
-                backgroundColor: Colors.red,
-                icon: Icons.delete,
-              ),
-              SendButton(
-                onPressed: () {
-                  _submit();
-
-                  Navigator.pop(context);
-                  snackBarDialog(context,
-                      color: Colors.orange,
-                      message:
-                          'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
-                },
-                text: 'Αποστολή',
-                icon: Icons.edit,
-                backgroundColor: Colors.orange,
-              ),
-            ],
-          )),
     );
   }
 
@@ -234,11 +432,14 @@ class _CustomerCardState extends State<CustomerCard> {
                 child: Text('Καμία περιγραφή', style: TextStyle(fontSize: 18)))
             : Center(
                 child: Text('Προηγούμενες περιγραφές',
-                    style: TextStyle(fontSize: 18))),
+                    style: TextStyle(fontSize: 18)),
+              ),
+        const SizedBox(height: 10),
         ...descriptions.reversed.map((desc) => Card(
-              margin: EdgeInsets.only(right: 10, left: 10, top: 10),
+              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Text(desc),
               ),
             )),
@@ -246,98 +447,570 @@ class _CustomerCardState extends State<CustomerCard> {
     );
   }
 
-  Padding _form(BuildContext context, double layoutWidth) {
+  Row _buttons(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      spacing: 20,
+      children: [
+        SendButton(
+          onPressed: () async {
+            _removeUser(
+              userId: widget.user!.uid,
+              userDoc: widget.customer.id,
+            );
+
+            hideScreen();
+            snackBarDialog(context,
+                color: Colors.red,
+                message:
+                    'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
+          },
+          text: 'Διαγραφή',
+          backgroundColor: Colors.red,
+          icon: Icons.delete,
+        ),
+        SendButton(
+          onPressed: () async {
+            _submit();
+            hideScreen();
+
+            snackBarDialog(context,
+                color: Colors.orange,
+                message:
+                    'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
+          },
+          text: 'Αποστολή',
+          icon: Icons.edit,
+          backgroundColor: Colors.orange,
+        ),
+      ],
+    );
+  }
+
+  Padding _form(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 20),
+      padding: widget.user?.email == 'physiocure.oe@gmail.com'
+          ? EdgeInsets.only(top: 20, left: 20, right: 20)
+          : EdgeInsets.only(top: 20),
       child: SizedBox(
-        width: layoutWidth < 600
-            ? 350
-            : layoutWidth < 1300
-                ? 500
-                : 700,
+        width: widget.user?.email == 'physiocure.oe@gmail.com' ? null : 500,
+        // height: MediaQuery.of(context).size.height * .65,
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              spacing: 15,
-              children: [
-                CustomTextForm(
-                  labelText: 'Όνομα',
-                  hintText: 'John',
-                  prefixIcon: Icons.people,
-                  initial: widget.customer.name,
-                  onSaved: (val) {
-                    name = val;
-                  },
+          child: widget.user?.email == 'physiocure.oe@gmail.com'
+              ? Column(
+                  spacing: 15,
+                  children: [
+                    Row(
+                      spacing: 10,
+                      children: [
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'Όνομα',
+                            hintText: 'John',
+                            prefixIcon: Icons.people,
+                            initial: widget.customer.name,
+                            onSaved: (val) {
+                              name = val;
+                            },
+                          ),
+                        ),
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'Επώνυμο',
+                            hintText: 'Doe',
+                            prefixIcon: Icons.people_alt,
+                            initial: widget.customer.surname,
+                            onSaved: (val) {
+                              surname = val;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      spacing: 10,
+                      children: [
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'Email',
+                            hintText: 'example@gmail.com',
+                            prefixIcon: Icons.email,
+                            initial: widget.customer.email,
+                            onSaved: (val) {
+                              email = val;
+                            },
+                          ),
+                        ),
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'Τηλέφωνο',
+                            hintText: '6900000000',
+                            prefixIcon: Icons.phone,
+                            initial: widget.customer.phone,
+                            onSaved: (val) {
+                              phone = val;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      spacing: 10,
+                      children: [
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'Διεύθυνση',
+                            hintText: 'Agiou Nikolaou, Patra',
+                            prefixIcon: Icons.home,
+                            initial: widget.customer.address,
+                            onSaved: (val) {
+                              address = val;
+                            },
+                          ),
+                        ),
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'ΑΜΚΑ',
+                            hintText: '800000000',
+                            prefixIcon: Icons.numbers,
+                            initial: widget.customer.address,
+                            onSaved: (val) {
+                              amka = val;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      spacing: 10,
+                      children: [
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'Ημ. Γέννησης',
+                            hintText: '16/06/1993',
+                            prefixIcon: Icons.date_range,
+                            initial: widget.customer.birthday,
+                            onSaved: (val) {
+                              birthday = val;
+                            },
+                          ),
+                        ),
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'Οφειλή',
+                            hintText: 'Υπόλοιπο',
+                            prefixIcon: Icons.euro,
+                            chooseText: ChooseText.owes,
+                            initial: widget.customer.owes,
+                            onSaved: (val) {
+                              owes = val;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    // *************** Checkboxes ****************
+                    Row(
+                      spacing: 10,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CustomCheckbox(
+                          value: heart!,
+                          onChanged: (newValue) =>
+                              setState(() => heart = newValue),
+                          label: "Καρδιολογικά ",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 22,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                        CustomCheckbox(
+                          value: breathe!,
+                          onChanged: (newValue) =>
+                              setState(() => breathe = newValue),
+                          label: "Αναπνευστικά ",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 22,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                        CustomCheckbox(
+                          value: sugar!,
+                          onChanged: (newValue) =>
+                              setState(() => sugar = newValue),
+                          label: "Διαβήτης",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 22,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    // *************** Checkboxes ****************
+                    Row(
+                      spacing: 10,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CustomCheckbox(
+                          value: ypertash!,
+                          onChanged: (newValue) =>
+                              setState(() => ypertash = newValue),
+                          label: "Υπέρταση",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 22,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                        CustomCheckbox(
+                          value: neuro!,
+                          onChanged: (newValue) =>
+                              setState(() => neuro = newValue),
+                          label: "Νευρολογικά",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 22,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                        CustomCheckbox(
+                          value: orthopedic!,
+                          onChanged: (newValue) =>
+                              setState(() => orthopedic = newValue),
+                          label: "Ορθοπεδικά",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 22,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      spacing: 10,
+                      children: [
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'Άλλο',
+                            hintText: 'Άλλο',
+                            prefixIcon: Icons.event,
+                            initial: widget.customer.allo,
+                            onSaved: (val) {
+                              allo = val;
+                            },
+                          ),
+                        ),
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'Ημ.Έναρξης Συμπτωμάτων',
+                            hintText: '20/02/2025',
+                            prefixIcon: Icons.calendar_month,
+                            initial: widget.customer.startingDate,
+                            onSaved: (val) {
+                              startingDate = val;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    CustomTextForm(
+                      labelText: 'Κύριο Πρόβλημα',
+                      hintText: 'Κύριο Πρόβλημα',
+                      prefixIcon: Icons.sync_problem,
+                      initial: widget.customer.mainIssue,
+                      onSaved: (val) {
+                        mainIssue = val;
+                      },
+                    ),
+                    Row(
+                      spacing: 10,
+                      children: [
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'Παραπέμπον Ιατρός',
+                            hintText: 'Ειδικότητα',
+                            prefixIcon: Icons.person,
+                            initial: widget.customer.doctor,
+                            onSaved: (val) {
+                              doctor = val;
+                            },
+                          ),
+                        ),
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'Χειρουργεία (παρελθόν)',
+                            hintText: 'Τύπος χειρουργείου',
+                            prefixIcon: Icons.man,
+                            initial: widget.customer.surgeryPast,
+                            onSaved: (val) {
+                              surgeryPast = val;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      spacing: 10,
+                      children: [
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'Φαρμακευτική αγωγή',
+                            hintText: 'Φάρμακα',
+                            prefixIcon: Icons.vaccines,
+                            initial: widget.customer.pharmacy,
+                            onSaved: (val) {
+                              pharmacy = val;
+                            },
+                          ),
+                        ),
+                        Flexible(
+                          child: CustomTextForm(
+                            labelText: 'Χειρουργεία (τωρινό)',
+                            hintText: 'Τύπος χειρουργείου',
+                            prefixIcon: Icons.man,
+                            initial: widget.customer.surgeryNow,
+                            onSaved: (val) {
+                              surgeryNow = val;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    CustomTextForm(
+                      labelText: 'Αλλεργίες',
+                      hintText: 'Τύποι',
+                      prefixIcon: Icons.man_2,
+                      initial: widget.customer.allergies,
+                      onSaved: (val) {
+                        allergies = val;
+                      },
+                    ),
+                    // *************** Checkboxes ****************
+                    Row(
+                      spacing: 8,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CustomText(
+                            text: 'Κίνηση:',
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal),
+                        CustomCheckbox(
+                          value: selfCare!,
+                          onChanged: (newValue) =>
+                              setState(() => selfCare = newValue),
+                          label: "Αυτόνομος",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 22,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                        CustomCheckbox(
+                          value: helpCare!,
+                          onChanged: (newValue) =>
+                              setState(() => helpCare = newValue),
+                          label: "Με βοήθεια",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 22,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                        CustomCheckbox(
+                          value: disabled!,
+                          onChanged: (newValue) =>
+                              setState(() => disabled = newValue),
+                          label: "Καθηλωμένος",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 22,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    // *************** Checkboxes ****************
+                    Row(
+                      spacing: 10,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CustomText(
+                            text: 'Ισορροπία/Στάση:',
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal),
+                        CustomCheckbox(
+                          value: good!,
+                          onChanged: (newValue) =>
+                              setState(() => good = newValue),
+                          label: "Καλή",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 28,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                        CustomCheckbox(
+                          value: medium!,
+                          onChanged: (newValue) =>
+                              setState(() => medium = newValue),
+                          label: "Μέτρια",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 28,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                        CustomCheckbox(
+                          value: bad!,
+                          onChanged: (newValue) =>
+                              setState(() => bad = newValue),
+                          label: "Κακή",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 28,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    // *************** Checkboxes ****************
+                    Row(
+                      spacing: 10,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CustomText(
+                            text: 'Αίσθηση πόνου:',
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal),
+                        CustomCheckbox(
+                          value: yes!,
+                          onChanged: (newValue) =>
+                              setState(() => yes = newValue),
+                          label: "Ναι",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 22,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                        CustomCheckbox(
+                          value: no!,
+                          onChanged: (newValue) =>
+                              setState(() => no = newValue),
+                          label: "Όχι",
+                          activeColor: Colors.green,
+                          checkColor: Colors.white,
+                          size: 22,
+                          labelStyle: const TextStyle(fontSize: 16),
+                        ),
+                        Expanded(
+                          child: CustomTextForm(
+                            labelText: 'Σημείο',
+                            hintText: 'Σημείο',
+                            prefixIcon: Icons.sticky_note_2,
+                            initial: widget.customer.spot,
+                            onSaved: (val) {
+                              spot = val;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    CustomTextForm(
+                      labelText: 'Κινητικάν/λειτουργικά ελλείμματα',
+                      hintText: '....',
+                      prefixIcon: Icons.sticky_note_2_sharp,
+                      initial: widget.customer.missFunctions,
+                      onSaved: (val) {
+                        missFunctions = val;
+                      },
+                    ),
+
+                    CustomTextForm(
+                      labelText: 'Περιγραφή',
+                      hintText: '...........',
+                      prefixIcon: Icons.description,
+                      // initial: widget.customer.description,
+                      onSaved: (val) {
+                        description = val;
+                      },
+                    ),
+                  ],
+                )
+              : Column(
+                  spacing: 15,
+                  children: [
+                    CustomTextForm(
+                      labelText: 'Όνομα',
+                      hintText: 'John',
+                      prefixIcon: Icons.people,
+                      initial: widget.customer.name,
+                      onSaved: (val) {
+                        name = val;
+                      },
+                    ),
+                    CustomTextForm(
+                      labelText: 'Επώνυμο',
+                      hintText: 'Doe',
+                      prefixIcon: Icons.people_alt,
+                      initial: widget.customer.surname,
+                      onSaved: (val) {
+                        surname = val;
+                      },
+                    ),
+                    CustomTextForm(
+                      labelText: 'Email',
+                      hintText: 'example@gmail.com',
+                      prefixIcon: Icons.email,
+                      initial: widget.customer.email,
+                      onSaved: (val) {
+                        email = val;
+                      },
+                    ),
+                    CustomTextForm(
+                      labelText: 'Τηλέφωνο',
+                      hintText: '6900000000',
+                      prefixIcon: Icons.phone,
+                      initial: widget.customer.phone,
+                      onSaved: (val) {
+                        phone = val;
+                      },
+                    ),
+                    CustomTextForm(
+                      labelText: 'Διεύθυνση',
+                      hintText: 'Agiou Nikolaou, Patra',
+                      prefixIcon: Icons.home,
+                      initial: widget.customer.address,
+                      onSaved: (val) {
+                        address = val;
+                      },
+                    ),
+                    CustomTextForm(
+                      labelText: 'ΑΜΚΑ',
+                      hintText: '800000000',
+                      prefixIcon: Icons.numbers,
+                      initial: widget.customer.amka,
+                      onSaved: (val) {
+                        amka = val;
+                      },
+                    ),
+                    CustomTextForm(
+                      labelText: 'Οφειλή',
+                      hintText: 'Υπόλοιπο',
+                      prefixIcon: Icons.euro,
+                      chooseText: ChooseText.owes,
+                      initial: widget.customer.owes,
+                      onSaved: (val) {
+                        owes = val;
+                      },
+                    ),
+                    CustomTextForm(
+                      labelText: 'Περιγραφή',
+                      hintText: '...........',
+                      prefixIcon: Icons.description,
+                      // initial: widget.customer.description,
+                      onSaved: (val) {
+                        description = val;
+                      },
+                    ),
+                  ],
                 ),
-                CustomTextForm(
-                  labelText: 'Επώνυμο',
-                  hintText: 'Doe',
-                  prefixIcon: Icons.people_alt,
-                  initial: widget.customer.surname,
-                  onSaved: (val) {
-                    surname = val;
-                  },
-                ),
-                CustomTextForm(
-                  labelText: 'Emal',
-                  hintText: 'example@gmail.com',
-                  prefixIcon: Icons.email,
-                  initial: widget.customer.email,
-                  onSaved: (val) {
-                    email = val;
-                  },
-                ),
-                CustomTextForm(
-                  labelText: 'Τηλέφωνο',
-                  hintText: '6900000000',
-                  prefixIcon: Icons.phone,
-                  initial: widget.customer.phone,
-                  onSaved: (val) {
-                    phone = val;
-                  },
-                ),
-                CustomTextForm(
-                  labelText: 'Διεύθυνση',
-                  hintText: 'Agiou Nikolaou, Patra',
-                  prefixIcon: Icons.home,
-                  initial: widget.customer.address,
-                  onSaved: (val) {
-                    address = val;
-                  },
-                ),
-                CustomTextForm(
-                  labelText: 'ΑΜΚΑ',
-                  hintText: '800000000',
-                  prefixIcon: Icons.numbers,
-                  initial: widget.customer.address,
-                  onSaved: (val) {
-                    amka = val;
-                  },
-                ),
-                CustomTextForm(
-                  labelText: 'Οφειλή',
-                  hintText: 'Υπόλοιπο',
-                  prefixIcon: Icons.euro,
-                  chooseText: ChooseText.owes,
-                  initial: widget.customer.owes,
-                  onSaved: (val) {
-                    owes = val;
-                  },
-                ),
-                CustomTextForm(
-                  labelText: 'Περιγραφή',
-                  hintText: '...........',
-                  prefixIcon: Icons.description,
-                  // initial: widget.customer.description,
-                  onSaved: (val) {
-                    description = val;
-                  },
-                ),
-                // Spacer(),
-              ],
-            ),
-          ),
         ),
       ),
     );

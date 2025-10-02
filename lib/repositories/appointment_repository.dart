@@ -9,6 +9,7 @@ class AppointmentRepository {
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   List<AppointMent>? appointment;
+  List<AppointMent>? appointmentPaid;
 
   Stream<List<AppointMent>>? streamAppointment({required String userId}) {
     return firestore
@@ -44,6 +45,29 @@ class AppointmentRepository {
           .map((e) => AppointMent.fromDoc(e))
           .toList();
       return appointment!;
+    } catch (e) {
+      throw CustomError(
+        code: 'Exception',
+        message: e.toString(),
+        plugin: 'flutter_error/server_error',
+      );
+    }
+  }
+
+  Future<List<AppointMent>> fetchAppointmentPaid(
+      {required String userid,
+      required String name,
+      required String surname}) async {
+    try {
+      appointMentsFromFirebase = await firestore
+          .collection(userid)
+          .where('name', isEqualTo: name)
+          .where('surname', isEqualTo: surname)
+          .get();
+      appointmentPaid = appointMentsFromFirebase!.docs
+          .map((e) => AppointMent.fromDoc(e))
+          .toList();
+      return appointmentPaid!;
     } catch (e) {
       throw CustomError(
         code: 'Exception',

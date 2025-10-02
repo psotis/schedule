@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:scheldule/models/appointment_model.dart';
 import 'package:scheldule/providers/toggle_screen/toggle_screen_provider.dart';
+import 'package:scheldule/repositories/appointment_repository.dart';
 import 'package:scheldule/utils/check_box.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/cutom_text.dart';
@@ -63,13 +64,14 @@ class _CustomerCardState extends State<CustomerCard> {
       allergies,
       spot,
       missFunctions;
-  int appointmentLength = 0;
+  num appointmentLength = 0, fullPaid = 0, payment = 0;
   final _formKey = GlobalKey<FormState>();
   final DateTime? date = DateTime.now();
   String? descriptionDate;
 
   final ScrollController _scrollController = ScrollController();
   bool _isFabVisible = true;
+  late List<AppointMent> paidRepo;
 
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
 
@@ -96,6 +98,142 @@ class _CustomerCardState extends State<CustomerCard> {
     bad = widget.customer.bad ?? false;
     yes = widget.customer.yes ?? false;
     no = widget.customer.no ?? false;
+  }
+
+  Future<Object?> _showSideDialog() {
+    return showGeneralDialog(
+      context: context,
+      barrierColor: Colors.black.withAlpha(20),
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        final sortedList = [...paidRepo]
+          ..sort((a, b) => b.date!.compareTo(a.date!));
+        return Align(
+          alignment: Alignment.centerRight,
+          child: Container(
+            width: 320,
+            height: MediaQuery.of(context).size.height,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                bottomLeft: Radius.circular(16),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(-4, 0),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header bar
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blueGrey[700],
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      "Ιστορικό Πληρωμών",
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          decoration: TextDecoration.none),
+                    ),
+                  ),
+                ),
+
+                // Column labels
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  color: Colors.blueGrey[100],
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Ημερομηνία",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            decoration: TextDecoration.none),
+                      ),
+                      Text(
+                        "Ποσό",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            decoration: TextDecoration.none),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // List of items
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: sortedList.length - 1,
+                    itemBuilder: (context, index) {
+                      var paid = sortedList[index];
+                      DateTime dateTime = paid.date!.toDate();
+                      String formattedDate =
+                          DateFormat('dd-MM-yyyy HH:mm:ss').format(dateTime);
+
+                      return Card(
+                        color: Colors.green[100],
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                formattedDate,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                "${paid.paid} €",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _scrollListener() {
@@ -179,13 +317,25 @@ class _CustomerCardState extends State<CustomerCard> {
   }
 
   void seeApp() async {
+    if (!mounted) return;
     var length = await SearchEditUserRepository().patientAppointmentLength(
       userId: widget.user?.uid ?? '1',
       name: widget.customer.name,
       surename: widget.customer.surname,
     );
+    paidRepo = await AppointmentRepository().fetchAppointmentPaid(
+      userid: widget.user?.uid ?? '1',
+      name: widget.customer.name,
+      surname: widget.customer.surname,
+    );
+
+    for (var paid in paidRepo) {
+      payment += paid.paid!;
+    }
+
     setState(() {
       appointmentLength = length;
+      fullPaid = payment;
     });
   }
 
@@ -219,9 +369,23 @@ class _CustomerCardState extends State<CustomerCard> {
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 10,
                     children: [
                       const Text("Συνολικά ραντεβού: "),
                       Text(appointmentLength.toString()),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    spacing: 10,
+                    children: [
+                      if (widget.user?.email == 'physiocure.oe@gmail.com') ...[
+                        Text("Συνολική πληρωμή: ${fullPaid.toString()}"),
+                        ElevatedButton(
+                          onPressed: _showSideDialog,
+                          child: const Text('Πληρωμές ανά ραντεβού'),
+                        ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 10),

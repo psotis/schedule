@@ -69,7 +69,6 @@ class _LoginWidgetState extends State<LoginWidget> {
             ),
             onChanged: (value) {
               value = _emailController.text;
-              print(_emailController.text);
             },
           ),
         ),
@@ -108,12 +107,10 @@ class _LoginWidgetState extends State<LoginWidget> {
             ),
             onChanged: (value) {
               value = _passwordController.text;
-              print(_passwordController.text);
             },
             onFieldSubmitted: (value) => signIn(),
           ),
         ),
-        // SizedBox(height: ScreenSize.screenHeight * .01),
         SizedBox(
           height: ScreenSize.screenHeight * .06,
           width: widget.isMobile == true
