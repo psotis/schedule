@@ -47,6 +47,24 @@ class EmployeeProvider with ChangeNotifier {
     }
   }
 
+  Future<void> initEmployees({required String user}) async {
+    _employeeState =
+        _employeeState?.copyWith(employeeStatus: EmployeeStatus.loading);
+    notifyListeners();
+
+    try {
+      employees = await employeeRepository.findEmployee(user: user);
+      _employeeState =
+          _employeeState?.copyWith(employeeStatus: EmployeeStatus.loaded);
+      notifyListeners();
+    } catch (e) {
+      _employeeState =
+          _employeeState?.copyWith(employeeStatus: EmployeeStatus.error);
+      notifyListeners();
+      print("Error fetching employees: $e");
+    }
+  }
+
   Future<void> addEmployee({
     required String name,
     required String surname,
@@ -58,7 +76,7 @@ class EmployeeProvider with ChangeNotifier {
     required String amka,
     required String specialiazation,
     required String contractType,
-    Color? color,
+    String? color,
   }) async {
     _employeeState =
         _employeeState?.copyWith(employeeStatus: EmployeeStatus.loading);
@@ -77,6 +95,7 @@ class EmployeeProvider with ChangeNotifier {
         amka: amka,
         specialiazation: specialiazation,
         contractType: contractType,
+        color: color,
       );
 
       _employeeState =
@@ -113,6 +132,7 @@ class EmployeeProvider with ChangeNotifier {
     required String contractType,
     required String userUid,
     required String docId,
+    String? color,
   }) async {
     await Future.delayed(Duration(milliseconds: 500));
 
@@ -134,6 +154,7 @@ class EmployeeProvider with ChangeNotifier {
         specialiazation: specialiazation,
         contractType: contractType,
         docId: docId,
+        color: color ?? '',
       );
       _employeeState =
           _employeeState?.copyWith(employeeStatus: EmployeeStatus.send);

@@ -14,9 +14,11 @@ import 'package:scheldule/constants/db_constans.dart';
 import 'package:scheldule/firebase_options.dart';
 import 'package:scheldule/keys/material_key.dart';
 import 'package:scheldule/providers/auth/auth_provider.dart';
+import 'package:scheldule/providers/expenses/expenses_provider.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/repositories/appointment_repository.dart';
 import 'package:scheldule/repositories/auth_repository.dart';
+import 'package:scheldule/repositories/expense_repository.dart';
 import 'package:scheldule/repositories/search_edit_user_repository.dart';
 import 'package:scheldule/routes/route_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -72,6 +74,9 @@ class MyApp extends StatelessWidget {
         Provider<SearchEditUserRepository>(
           create: (context) => SearchEditUserRepository(),
         ),
+        Provider<ExpenseRepository>(
+          create: (context) => ExpenseRepository(),
+        ),
         StreamProvider<fb_auth.User?>(
           create: (context) => context.read<AuthRepository>().user,
           initialData: null,
@@ -126,6 +131,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<EmployeeProvider>(
           create: (context) => EmployeeProvider(
             employeeRepository: context.read<EmployeeRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider<ExpenseStateProvider>(
+          create: (context) => ExpenseStateProvider(
+            expenseRepository: context.read<ExpenseRepository>(),
           ),
         ),
       ],

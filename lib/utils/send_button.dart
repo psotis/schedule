@@ -27,7 +27,7 @@ class SendButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
       onPressed: () => onPressed?.call(),
-      icon: Icon(icon, color: iconColor, size: 22),
+      icon: icon == null ? null : Icon(icon, color: iconColor, size: 22),
       label: Text(
         text,
         style: TextStyle(

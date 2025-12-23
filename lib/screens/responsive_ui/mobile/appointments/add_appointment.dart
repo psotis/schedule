@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
+import 'package:scheldule/providers/expenses/expenses_provider.dart';
 import 'package:scheldule/utils/search/search_mobile.dart';
 
 import 'package:scheldule/utils/send_button.dart';
@@ -142,6 +143,8 @@ class _AddAppointmentsState extends State<AddAppointments> {
 
   @override
   Widget build(BuildContext context) {
+    // final provider = context.watch<ExpenseStateProvider>();
+
     ScreenSize().init(context);
     return Padding(
       padding: EdgeInsets.all(10),
@@ -167,6 +170,15 @@ class _AddAppointmentsState extends State<AddAppointments> {
             //       height: 200,
             //     ),
             _sendButton(),
+            // Text('Total: €${provider.dailyTotal.toStringAsFixed(2)}'),
+            // ElevatedButton(
+            //   onPressed: () async {
+            //     provider.updateAmount(10);
+            //     provider.updateDescription('Coffee');
+            //     await provider.saveExpense(widget.user!.uid);
+            //   },
+            //   child: const Text('Add'),
+            // )
             //   ],
             // ),
           ],

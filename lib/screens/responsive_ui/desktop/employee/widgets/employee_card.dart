@@ -1,10 +1,12 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:scheldule/models/employee.dart';
 import 'package:scheldule/providers/providers.dart';
+import 'package:scheldule/utils/colors.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
@@ -36,6 +38,8 @@ class _EmployeeCardState extends State<EmployeeCard> {
 
   final _formKey = GlobalKey<FormState>();
 
+  Color _selectedColor = Colors.lime;
+
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
 
   void _submit() async {
@@ -48,6 +52,7 @@ class _EmployeeCardState extends State<EmployeeCard> {
     final userForm = _formKey.currentState;
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
+    final colorHex = colorToHexs(_selectedColor);
 
     context.read<EmployeeProvider>().editEmployee(
           name: name!,
@@ -61,6 +66,7 @@ class _EmployeeCardState extends State<EmployeeCard> {
           contractType: contractType!,
           userUid: widget.user!.uid,
           docId: widget.employe.id,
+          color: colorHex,
         );
   }
 
@@ -78,6 +84,41 @@ class _EmployeeCardState extends State<EmployeeCard> {
   @override
   void initState() {
     super.initState();
+    _selectedColor = hexToColors(widget.employe.color) ?? Colors.lime;
+  }
+
+  void _openColorPicker() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Επέλεξε χρώμα'),
+          content: SingleChildScrollView(
+            child: ColorPicker(
+              pickerColor: _selectedColor,
+              onColorChanged: (color) {
+                setState(() {
+                  _selectedColor = color;
+                });
+              },
+              enableAlpha: false,
+              displayThumbColor: true,
+              portraitOnly: true,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Ακύρωση'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -234,6 +275,13 @@ class _EmployeeCardState extends State<EmployeeCard> {
                     specialiazation = value;
                   },
                 ),
+                SendButton(
+                  backgroundColor: _selectedColor,
+                  foregroundColor: Colors.black,
+                  text: 'Χρώμα',
+                  onPressed: _openColorPicker,
+                ),
+                SizedBox(height: 20),
               ],
             ),
           ),

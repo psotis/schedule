@@ -41,12 +41,7 @@ class _EmployeeAddState extends State<EmployeeAdd> {
     super.initState();
   }
 
-  Color pickerColor = Colors.transparent;
-  Color currentColor = Color(0xff443a49);
-
-  void changeColor(Color color) {
-    setState(() => pickerColor = color);
-  }
+  String color = '';
 
   void _submit() async {
     if (mounted) {
@@ -70,7 +65,7 @@ class _EmployeeAddState extends State<EmployeeAdd> {
           amka: amka!,
           contractType: contractType!,
           specialiazation: specialiazation!,
-          color: pickerColor,
+          color: color,
         );
   }
 

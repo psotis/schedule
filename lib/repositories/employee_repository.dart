@@ -49,6 +49,7 @@ class EmployeeRepository {
     required String afm,
     required String specialiazation,
     required String contractType,
+    String? color,
   }) async {
     try {
       FirebaseFirestore.instance.collection(userUid).add({
@@ -61,6 +62,7 @@ class EmployeeRepository {
         'afm': afm,
         'specialiazation': specialiazation,
         'contract_type': contractType,
+        'color': color ?? '',
       }).then((_) {
         print("collection created");
       }).catchError((error) {
@@ -100,6 +102,7 @@ class EmployeeRepository {
     required String afm,
     required String specialiazation,
     required String contractType,
+    String? color,
   }) async {
     try {
       firestore.collection(userUid).doc(docId).update({
@@ -112,6 +115,7 @@ class EmployeeRepository {
         'afm': afm,
         'specialiazation': specialiazation,
         'contract_type': contractType,
+        'color': color ?? '',
       }).then((_) {
         print("collection created");
       }).catchError((error) {

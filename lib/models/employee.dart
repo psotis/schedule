@@ -14,6 +14,7 @@ class Employee extends Equatable {
   final String specialiazation;
   final String contractType;
   final String? paid;
+  final String? color;
   Employee({
     required this.id,
     required this.name,
@@ -26,6 +27,7 @@ class Employee extends Equatable {
     required this.specialiazation,
     required this.contractType,
     this.paid,
+    this.color,
   });
 
   factory Employee.fromDoc(DocumentSnapshot doc) {
@@ -42,6 +44,7 @@ class Employee extends Equatable {
       specialiazation: userData['specialiazation'],
       contractType: userData['contract_type'],
       paid: userData['paid'] ?? '',
+      color: userData['color'] ?? '',
     );
   }
 
@@ -58,6 +61,7 @@ class Employee extends Equatable {
       specialiazation: '',
       contractType: '',
       paid: '',
+      color: '',
     );
   }
 
@@ -73,19 +77,22 @@ class Employee extends Equatable {
     String? specialiazation,
     String? contractType,
     String? paid,
+    String? color,
   }) {
     return Employee(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        surname: surname ?? this.surname,
-        email: email ?? this.email,
-        phone: phone ?? this.phone,
-        address: address ?? this.address,
-        afm: afm ?? this.afm,
-        amka: amka ?? this.amka,
-        specialiazation: specialiazation ?? this.specialiazation,
-        contractType: contractType ?? this.contractType,
-        paid: paid ?? this.paid);
+      id: id ?? this.id,
+      name: name ?? this.name,
+      surname: surname ?? this.surname,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      address: address ?? this.address,
+      afm: afm ?? this.afm,
+      amka: amka ?? this.amka,
+      specialiazation: specialiazation ?? this.specialiazation,
+      contractType: contractType ?? this.contractType,
+      paid: paid ?? this.paid,
+      color: color ?? this.color,
+    );
   }
 
   @override
@@ -103,6 +110,7 @@ class Employee extends Equatable {
         amka,
         specialiazation,
         contractType,
-        paid
+        paid,
+        color,
       ];
 }

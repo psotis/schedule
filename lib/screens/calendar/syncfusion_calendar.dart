@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/appointment/appointment_provider.dart';
+import 'package:scheldule/providers/employee/empoyee_provider.dart';
 import 'package:scheldule/providers/search%20user/search_user_provider.dart';
 import 'package:scheldule/screens/calendar/widgets/customer_side.dart';
 import 'package:scheldule/screens/calendar/widgets/customer_side_mobile.dart';
 import 'package:scheldule/styling/fonts/textstyle.dart';
+import 'package:scheldule/utils/colors.dart';
 import 'package:scheldule/utils/cutom_text.dart';
 import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
@@ -39,6 +41,9 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
     stream = AppointmentRepository().streamAppointment(userId: userId!);
     streamToday =
         AppointmentRepository().streamTodayAppointment(userId: userId!);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<EmployeeProvider>().initEmployees(user: userId!);
+    });
   }
 
   void calendarPicker(CalendarTapDetails details) async {
@@ -153,6 +158,14 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               }
+
+              final employeeProvider = context.watch<EmployeeProvider>();
+
+              final Map<String, Color> employeeColorMap = {
+                for (final emp in employeeProvider.employees)
+                  '${emp.name} ${emp.surname}':
+                      hexToColors(emp.color) ?? Colors.blueAccent,
+              };
               return Card(
                 child: SfCalendar(
                   allowDragAndDrop: true,
@@ -183,9 +196,11 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                     final List appointments =
                         calendarAppointmentDetails.appointments.toList();
                     final AppointMent appointment = appointments[0];
+                    final appoint = calendarAppointmentDetails
+                        .appointments.first as AppointMent;
                     return Container(
                         decoration: BoxDecoration(
-                            color: Colors.blue.shade400,
+                            color: appoint.background,
                             borderRadius:
                                 BorderRadius.all(Radius.circular(10))),
                         child: Center(
@@ -198,21 +213,21 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                     appointmentDisplayMode:
                         MonthAppointmentDisplayMode.appointment,
                   ),
-                  dataSource: MeetingDataSource(snapshot.data!
-                      .map((e) => AppointMent(
-                            '${e.name} ${e.surname}',
-                            e.id,
-                            e.date!.toDate(),
-                            e.date!.toDate().add(Duration(hours: 1)),
-                            Colors.blueAccent,
-                            e.surname,
-                            e.phone,
-                            e.email,
-                            e.address,
-                            e.paid,
-                            e.amka,
-                          ))
-                      .toList()),
+                  dataSource: MeetingDataSource(snapshot.data!.map((e) {
+                    return AppointMent(
+                      '${e.name} ${e.surname}',
+                      e.id,
+                      e.date!.toDate(),
+                      e.date!.toDate().add(Duration(hours: 1)),
+                      employeeColorMap[e.employee] ?? Colors.blueAccent,
+                      e.surname,
+                      e.phone,
+                      e.email,
+                      e.address,
+                      e.paid,
+                      e.amka,
+                    );
+                  }).toList()),
                 ),
               );
             },
@@ -436,6 +451,14 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 }
+
+                final employeeProvider = context.watch<EmployeeProvider>();
+
+                final Map<String, Color> employeeColorMap = {
+                  for (final emp in employeeProvider.employees)
+                    '${emp.name} ${emp.surname}':
+                        hexToColors(emp.color) ?? Colors.blueAccent,
+                };
                 return SizedBox(
                   height: 400,
                   child: Card(
@@ -472,9 +495,12 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                         final List appointments =
                             calendarAppointmentDetails.appointments.toList();
                         final AppointMent appointment = appointments[0];
+                        final appoint = calendarAppointmentDetails
+                            .appointments.first as AppointMent;
+
                         return Container(
                             decoration: BoxDecoration(
-                                color: Colors.blue.shade400,
+                                color: appoint.background,
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(10))),
                             child: Center(
@@ -487,22 +513,22 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                         appointmentDisplayMode:
                             MonthAppointmentDisplayMode.appointment,
                       ),
-                      dataSource: MeetingDataSource(snapshot.data!
-                          .map((e) => AppointMent(
-                                '${e.name} ${e.surname}',
-                                e.id,
-                                e.date!.toDate(),
-                                e.date!.toDate().add(Duration(hours: 1)),
-                                Colors.blueAccent,
-                                e.surname,
-                                e.phone,
-                                e.email,
-                                e.address,
-                                // e.description,
-                                e.paid,
-                                e.amka,
-                              ))
-                          .toList()),
+                      dataSource: MeetingDataSource(snapshot.data!.map((e) {
+                        return AppointMent(
+                          '${e.name} ${e.surname}',
+                          e.id,
+                          e.date!.toDate(),
+                          e.date!.toDate().add(Duration(hours: 1)),
+                          employeeColorMap[e.employee] ?? Colors.blueAccent,
+                          e.surname,
+                          e.phone,
+                          e.email,
+                          e.address,
+                          // e.description,
+                          e.paid,
+                          e.amka,
+                        );
+                      }).toList()),
                     ),
                   ),
                 );
