@@ -173,9 +173,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                   showNavigationArrow: true,
                   showDatePickerButton: true,
                   allowViewNavigation: true,
-                  view: widget.user.email == 'physiocure.oe@gmail.com'
-                      ? CalendarView.workWeek
-                      : CalendarView.week,
+                  view: CalendarView.workWeek,
                   firstDayOfWeek: DateTime.monday,
                   timeSlotViewSettings: TimeSlotViewSettings(
                     timeIntervalHeight: 50,
@@ -254,36 +252,29 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                 padding: const EdgeInsets.only(top: 10),
                 child: Column(
                   children: [
-                    widget.user.email == 'physiocure.oe@gmail.com'
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              CustomText(
-                                text: 'Σημερινά Ραντεβού',
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
-                              CustomText(
-                                text: '-',
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
-                              CustomText(
-                                text: 'Σημερινό Εισόδημα: $todaysIncome €',
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ],
-                          )
-                        : CustomText(
-                            text: 'Σημερινά Ραντεβού',
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        CustomText(
+                          text: 'Σημερινά Ραντεβού',
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        CustomText(
+                          text: '-',
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        CustomText(
+                          text: 'Σημερινό Εισόδημα: $todaysIncome €',
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ],
+                    ),
                     Expanded(
                       child: ListView.builder(
                         padding: EdgeInsets.all(10),
@@ -468,9 +459,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                       showNavigationArrow: true,
                       showDatePickerButton: true,
                       allowViewNavigation: true,
-                      view: widget.user.email == 'physiocure.oe@gmail.com'
-                          ? CalendarView.workWeek
-                          : CalendarView.week,
+                      view: CalendarView.workWeek,
                       firstDayOfWeek: DateTime.monday,
                       timeSlotViewSettings: TimeSlotViewSettings(
                         timeIntervalHeight: 50,
@@ -554,37 +543,29 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                     child: Column(
                       spacing: 10,
                       children: [
-                        widget.user.email == 'physiocure.oe@gmail.com'
-                            ? Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  CustomText(
-                                    text: 'Σημερινά Ραντεβού',
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  CustomText(
-                                    text: '-',
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  CustomText(
-                                    text: 'Σημερινό Εισόδημα: $todaysIncome €',
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ],
-                              )
-                            : CustomText(
-                                text: 'Σημερινά Ραντεβού',
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                              ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            CustomText(
+                              text: 'Σημερινά Ραντεβού',
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            CustomText(
+                              text: '-',
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            CustomText(
+                              text: 'Σημερινό Εισόδημα: $todaysIncome €',
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ],
+                        ),
                         ...List.generate(snapshot.data!.length, (index) {
                           var appoint = snapshot.data?[index];
                           return InkWell(

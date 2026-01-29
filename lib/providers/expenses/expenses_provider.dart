@@ -116,6 +116,6 @@ class ExpenseStateProvider extends ChangeNotifier {
   /// ---------------- DAILY TOTAL ----------------
   /// Starts at 0, adds all expenses for the day
   double get dailyTotal {
-    return _expenses.fold(0.0, (sum, e) => sum + e.amount);
+    return _expenses.fold(0.0, (sums, e) => sums + e.amount);
   }
 }

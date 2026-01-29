@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
-import 'package:scheldule/providers/expenses/expenses_provider.dart';
+// import 'package:scheldule/providers/expenses/expenses_provider.dart';
 import 'package:scheldule/utils/search/search_mobile.dart';
 
 import 'package:scheldule/utils/send_button.dart';

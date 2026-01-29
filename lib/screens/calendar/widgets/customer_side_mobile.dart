@@ -357,198 +357,115 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
 
   Padding _form(BuildContext context) {
     return Padding(
-      padding: widget.user?.email == 'physiocure.oe@gmail.com'
-          ? EdgeInsets.only(top: 20, left: 20, right: 20)
-          : EdgeInsets.only(top: 20),
+      padding: EdgeInsets.only(top: 20, left: 20, right: 20),
       child: SizedBox(
-        width: widget.user?.email == 'physiocure.oe@gmail.com' ? null : 500,
         // height: MediaQuery.of(context).size.height * .65,
         child: Form(
-          key: _formKey,
-          child: widget.user?.email == 'physiocure.oe@gmail.com'
-              ? Column(
-                  spacing: 15,
-                  children: [
-                    CustomTextForm(
-                      labelText: 'Όνομα',
-                      hintText: 'John',
-                      prefixIcon: Icons.people,
-                      initial: widget.customer.name,
-                      readOnly: true,
-                      onSaved: (val) {
-                        name = val;
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'Επώνυμο',
-                      hintText: 'Doe',
-                      prefixIcon: Icons.people_alt,
-                      initial: widget.customer.surname,
-                      readOnly: true,
-                      onSaved: (val) {
-                        surname = val;
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'ΑΜΚΑ',
-                      hintText: '800000000',
-                      prefixIcon: Icons.numbers,
-                      initial: widget.customer.amka,
-                      onSaved: (val) {
-                        amka = val;
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'Τηλέφωνο',
-                      hintText: '6900000000',
-                      prefixIcon: Icons.phone,
-                      readOnly: true,
-                      initial: widget.customer.phone,
-                      onSaved: (val) {
-                        phone = val;
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'Θέση',
-                      hintText: 'Γραφείο/Καρέκλα/Δωμάτειο',
-                      prefixIcon: Icons.numbers,
-                      initial: widget.appointMent.position,
-                      onSaved: (val) {
-                        position = val;
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'Υπάλληλος',
-                      hintText: 'John Doe',
-                      prefixIcon: Icons.person,
-                      readOnly: true,
-                      initial: widget.appointMent.employee,
-                    ),
-                    Search(
-                      user: widget.user,
-                      width: ScreenSize.screenWidth * .75,
-                      selectSearch: SelectSearch.employee,
-                      setAppointment: (p0, p1) => setEmployee(p0, p1),
-                    ),
-                    CustomTextForm(
-                      labelText: 'Οφειλή',
-                      hintText: 'Υπόλοιπο',
-                      prefixIcon: Icons.euro,
-                      chooseText: ChooseText.owes,
-                      initial: widget.customer.owes,
-                      onSaved: (val) {
-                        owes = val;
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'Ραντεβού',
-                      hintText: '6900000000',
-                      prefixIcon: Icons.calendar_month,
-                      readOnly: true,
-                      initial: DateFormat('dd-MM-yyyy HH:mm')
-                          .format(widget.appointMent.date!.toDate()),
-                    ),
-                    CustomTextForm(
-                      labelText: 'Πληρωμή',
-                      hintText: 'Σημερινό πληρωτέο ποσό',
-                      prefixIcon: Icons.euro,
-                      chooseText: ChooseText.owes,
-                      initial: widget.appointMent.paid.toString(),
-                      onSaved: (val) {
-                        paid = int.tryParse(val!);
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'Περιγραφή',
-                      hintText: '...........',
-                      prefixIcon: Icons.description,
-                      // initial: widget.customer.description,
-                      onSaved: (val) {
-                        description = val;
-                      },
-                    ),
-                    _pickDate()
-                  ],
-                )
-              : Column(
-                  spacing: 15,
-                  children: [
-                    CustomTextForm(
-                      labelText: 'Όνομα',
-                      hintText: 'John',
-                      prefixIcon: Icons.people,
-                      initial: widget.customer.name,
-                      onSaved: (val) {
-                        name = val;
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'Επώνυμο',
-                      hintText: 'Doe',
-                      prefixIcon: Icons.people_alt,
-                      initial: widget.customer.surname,
-                      onSaved: (val) {
-                        surname = val;
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'Email',
-                      hintText: 'example@gmail.com',
-                      prefixIcon: Icons.email,
-                      initial: widget.customer.email,
-                      onSaved: (val) {
-                        email = val;
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'Τηλέφωνο',
-                      hintText: '6900000000',
-                      prefixIcon: Icons.phone,
-                      initial: widget.customer.phone,
-                      onSaved: (val) {
-                        phone = val;
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'Διεύθυνση',
-                      hintText: 'Agiou Nikolaou, Patra',
-                      prefixIcon: Icons.home,
-                      initial: widget.customer.address,
-                      onSaved: (val) {
-                        address = val;
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'ΑΜΚΑ',
-                      hintText: '800000000',
-                      prefixIcon: Icons.numbers,
-                      initial: widget.customer.amka,
-                      onSaved: (val) {
-                        amka = val;
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'Οφειλή',
-                      hintText: 'Υπόλοιπο',
-                      prefixIcon: Icons.euro,
-                      chooseText: ChooseText.owes,
-                      initial: widget.customer.owes,
-                      onSaved: (val) {
-                        owes = val;
-                      },
-                    ),
-                    CustomTextForm(
-                      labelText: 'Περιγραφή',
-                      hintText: '...........',
-                      prefixIcon: Icons.description,
-                      // initial: widget.customer.description,
-                      onSaved: (val) {
-                        description = val;
-                      },
-                    ),
-                  ],
+            key: _formKey,
+            child: Column(
+              spacing: 15,
+              children: [
+                CustomTextForm(
+                  labelText: 'Όνομα',
+                  hintText: 'John',
+                  prefixIcon: Icons.people,
+                  initial: widget.customer.name,
+                  readOnly: true,
+                  onSaved: (val) {
+                    name = val;
+                  },
                 ),
-        ),
+                CustomTextForm(
+                  labelText: 'Επώνυμο',
+                  hintText: 'Doe',
+                  prefixIcon: Icons.people_alt,
+                  initial: widget.customer.surname,
+                  readOnly: true,
+                  onSaved: (val) {
+                    surname = val;
+                  },
+                ),
+                CustomTextForm(
+                  labelText: 'ΑΜΚΑ',
+                  hintText: '800000000',
+                  prefixIcon: Icons.numbers,
+                  initial: widget.customer.amka,
+                  onSaved: (val) {
+                    amka = val;
+                  },
+                ),
+                CustomTextForm(
+                  labelText: 'Τηλέφωνο',
+                  hintText: '6900000000',
+                  prefixIcon: Icons.phone,
+                  readOnly: true,
+                  initial: widget.customer.phone,
+                  onSaved: (val) {
+                    phone = val;
+                  },
+                ),
+                CustomTextForm(
+                  labelText: 'Θέση',
+                  hintText: 'Γραφείο/Καρέκλα/Δωμάτειο',
+                  prefixIcon: Icons.numbers,
+                  initial: widget.appointMent.position,
+                  onSaved: (val) {
+                    position = val;
+                  },
+                ),
+                CustomTextForm(
+                  labelText: 'Υπάλληλος',
+                  hintText: 'John Doe',
+                  prefixIcon: Icons.person,
+                  readOnly: true,
+                  initial: widget.appointMent.employee,
+                ),
+                Search(
+                  user: widget.user,
+                  width: ScreenSize.screenWidth * .75,
+                  selectSearch: SelectSearch.employee,
+                  setAppointment: (p0, p1) => setEmployee(p0, p1),
+                ),
+                CustomTextForm(
+                  labelText: 'Οφειλή',
+                  hintText: 'Υπόλοιπο',
+                  prefixIcon: Icons.euro,
+                  chooseText: ChooseText.owes,
+                  initial: widget.customer.owes,
+                  onSaved: (val) {
+                    owes = val;
+                  },
+                ),
+                CustomTextForm(
+                  labelText: 'Ραντεβού',
+                  hintText: '6900000000',
+                  prefixIcon: Icons.calendar_month,
+                  readOnly: true,
+                  initial: DateFormat('dd-MM-yyyy HH:mm')
+                      .format(widget.appointMent.date!.toDate()),
+                ),
+                CustomTextForm(
+                  labelText: 'Πληρωμή',
+                  hintText: 'Σημερινό πληρωτέο ποσό',
+                  prefixIcon: Icons.euro,
+                  chooseText: ChooseText.owes,
+                  initial: widget.appointMent.paid.toString(),
+                  onSaved: (val) {
+                    paid = int.tryParse(val!);
+                  },
+                ),
+                CustomTextForm(
+                  labelText: 'Περιγραφή',
+                  hintText: '...........',
+                  prefixIcon: Icons.description,
+                  // initial: widget.customer.description,
+                  onSaved: (val) {
+                    description = val;
+                  },
+                ),
+                _pickDate()
+              ],
+            )),
       ),
     );
   }
