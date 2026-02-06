@@ -6,7 +6,6 @@ class ExpenseRepository {
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  /// ADD
   Future<bool> addExpense({
     required String userUid,
     required double amount,
@@ -14,7 +13,6 @@ class ExpenseRepository {
     required String description,
   }) async {
     try {
-      // ✅ Always write under a fixed root collection
       await firestore
           .collection('users')
           .doc(userUid)
@@ -31,7 +29,6 @@ class ExpenseRepository {
     }
   }
 
-  /// UPDATE
   Future<bool> updateExpense({
     required String userUid,
     required Expense expense,
@@ -47,7 +44,6 @@ class ExpenseRepository {
     }
   }
 
-  /// DELETE
   Future<bool> deleteExpense({
     required String userUid,
     required String expenseId,
@@ -60,7 +56,6 @@ class ExpenseRepository {
     }
   }
 
-  /// GET ALL
   Future<List<Expense>> getExpenses({
     required String userUid,
   }) async {
@@ -76,7 +71,6 @@ class ExpenseRepository {
     }
   }
 
-  /// GET BY DAY (00:00 → 23:59)
   Future<List<Expense>> getExpensesByDay({
     required String userUid,
     required DateTime day,

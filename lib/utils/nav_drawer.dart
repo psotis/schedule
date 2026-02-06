@@ -37,6 +37,11 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
       icon: Icons.work,
     ),
     Nav(
+      drawerStatus: DrawerStatus.incexp,
+      title: 'Income/Expenses',
+      icon: Icons.password,
+    ),
+    Nav(
       drawerStatus: DrawerStatus.settings,
       title: 'Settings',
       icon: Icons.settings,

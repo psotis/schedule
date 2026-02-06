@@ -59,3 +59,17 @@ class Expense extends Equatable {
   @override
   List<Object?> get props => [id, amount, date, description];
 }
+
+
+
+// tropoi plhrwmhs, karta, metrhta, iris
+// typos rantevou, katoikon, Grafeio
+// eoopy
+
+// eksoda, market,websites, xartika, ximika,analwsima
+// xwrou , noiki, deh , nero
+// ypallhkoi, plhrwmh mhna, dwro xrist, dwro pasxal,epidoma_adeias
+// genika eksoda
+// mhniaia, leasing, daneio, logisths
+// loipa eksoda ,equipment,efka,  fmy,t_epitideum
+

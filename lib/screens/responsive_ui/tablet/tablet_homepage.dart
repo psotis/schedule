@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/customer/customer.dart';
+import 'package:scheldule/screens/responsive_ui/tablet/income-expenses/income_expenses.dart';
 
 import '../../../providers/drawer_nav/drawer_provider.dart';
 import '../../../providers/drawer_nav/drawer_state.dart';
@@ -54,6 +55,9 @@ class TabletHomepage extends StatelessWidget {
     }
     if (provider.state.drawerStatus == DrawerStatus.appointments) {
       return Appointments(user: user!);
+    }
+    if (provider.state.drawerStatus == DrawerStatus.incexp) {
+      return IncomeExpenses(user: user!);
     }
     if (provider.state.drawerStatus == DrawerStatus.settings) {
       return Settings(user: user!);

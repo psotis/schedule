@@ -6,6 +6,7 @@ import 'package:scheldule/screens/calendar/syncfusion_calendar.dart';
 import 'package:scheldule/screens/responsive_ui/mobile/appointments/appointments.dart';
 import 'package:scheldule/screens/responsive_ui/mobile/customer/customer.dart';
 import 'package:scheldule/screens/responsive_ui/mobile/employee/employee.dart';
+import 'package:scheldule/screens/responsive_ui/mobile/income-expenses/income_expenses.dart';
 import 'package:scheldule/screens/responsive_ui/mobile/settings/settings.dart';
 import 'package:scheldule/utils/nav_drawer.dart';
 
@@ -54,6 +55,9 @@ class MobileHomepage extends StatelessWidget {
     }
     if (provider.state.drawerStatus == DrawerStatus.appointments) {
       return Appointments(user: user!);
+    }
+    if (provider.state.drawerStatus == DrawerStatus.incexp) {
+      return IncomeExpenses(user: user!);
     }
     if (provider.state.drawerStatus == DrawerStatus.settings) {
       return Settings(user: user!);

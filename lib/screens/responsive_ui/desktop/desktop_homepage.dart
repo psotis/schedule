@@ -8,6 +8,7 @@ import 'package:scheldule/screens/calendar/syncfusion_calendar.dart';
 // import 'package:scheldule/screens/responsive_ui/desktop/appointments/add_appointment.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/customer/customer.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/employee/employee.dart';
+import 'package:scheldule/screens/responsive_ui/desktop/income-expenses/income_expenses.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/settings/settings.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/appointments/appointments.dart';
 
@@ -48,6 +49,7 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
     Appointments(user: user!),
     Customer(user: user!),
     Employee(user: user!),
+    IncomeExpenses(user: user!),
     Settings(user: user!),
   ];
 
@@ -127,6 +129,11 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
           icon: Icon(Icons.work_outline),
           selectedIcon: Icon(Icons.work),
           label: Text('Employee'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.password_outlined),
+          selectedIcon: Icon(Icons.password),
+          label: Text('Incomes/Expenses'),
         ),
         NavigationRailDestination(
           icon: Icon(Icons.settings_outlined),
