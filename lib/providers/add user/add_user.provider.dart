@@ -25,23 +25,22 @@ class AddUserProvider extends ChangeNotifier {
     await Future.delayed(Duration(milliseconds: 500));
 
     try {
-      FirebaseFirestore.instance.collection(userUid).add({
-        'name': name,
-        'surname': surname,
-        'phone': phone,
-        'email': email,
-        'address': address,
-        'description': [description],
-        'amka': amka,
-        'owes': owes,
-        'date': Timestamp.fromMicrosecondsSinceEpoch(0),
-        'paid': paid ?? 0
-      }).then((DocumentReference doc) {
-        print(doc.id);
-        print("collection created");
-      }).catchError((error) {
-        print("An error occurred: $error");
-      });
+      FirebaseFirestore.instance
+          .collection(userUid)
+          .add({
+            'name': name,
+            'surname': surname,
+            'phone': phone,
+            'email': email,
+            'address': address,
+            'description': [description],
+            'amka': amka,
+            'owes': owes,
+            'date': Timestamp.fromMicrosecondsSinceEpoch(0),
+            'paid': paid ?? 0
+          })
+          .then((DocumentReference doc) {})
+          .catchError((error) {});
 
       _addUserState = _addUserState.copyWith(addUserStatus: AddUserStatus.sent);
       notifyListeners();

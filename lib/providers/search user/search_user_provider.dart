@@ -40,8 +40,7 @@ class SearchUserProvider extends ChangeNotifier {
       }
 
       return appointment;
-    } on CustomError catch (e) {
-      print(e);
+    } on CustomError {
       rethrow;
     }
   }

@@ -1,93 +1,108 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:scheldule/models/expenses.dart';
 import 'package:scheldule/repositories/expense_repository.dart';
 
-class ExpenseStateProvider extends ChangeNotifier {
-  ExpenseStateProvider({
-    required this.expenseRepository,
-  });
+class TransactionStateProvider extends ChangeNotifier {
+  TransactionStateProvider({required this.repository});
 
-  final ExpenseRepository expenseRepository;
+  final TransactionRepository repository;
 
-  /// Current expense (form/edit)
-  Expense _expense = Expense.initial();
-  Expense get expense => _expense;
+  AppTransaction _tx = AppTransaction.initial();
+  AppTransaction get tx => _tx;
 
-  /// Expenses for selected day
-  List<Expense> _expenses = [];
-  List<Expense> get expenses => _expenses;
+  List<AppTransaction> _txs = [];
+  List<AppTransaction> get txs => _txs;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  /// ---------------- STATE ----------------
-
-  void resetExpense() {
-    _expense = Expense.initial();
+  void reset() {
+    _tx = AppTransaction.initial();
     notifyListeners();
   }
 
-  void setExpense(Expense expense) {
-    _expense = expense;
+  void setTx(AppTransaction value) {
+    _tx = value;
+    notifyListeners();
+  }
+
+  void updateType(TransactionType type) {
+    // when switching type, clear fields that don’t apply
+    if (type == TransactionType.income) {
+      _tx = _tx.copyWith(
+        type: type,
+        category: 'eopyy', // optional default
+        subcategory: null,
+      );
+    } else {
+      _tx = _tx.copyWith(
+        type: type,
+        appointmentType: null,
+        counterparty: null,
+      );
+    }
+    notifyListeners();
+  }
+
+  void updatePaymentMethod(PaymentMethod? method) {
+    _tx = _tx.copyWith(paymentMethod: method);
+    notifyListeners();
+  }
+
+  void updateAppointmentType(AppointmentType? value) {
+    _tx = _tx.copyWith(appointmentType: value);
+    notifyListeners();
+  }
+
+  void updateCategory(String value) {
+    // when category changes, reset subcategory
+    _tx = _tx.copyWith(category: value, subcategory: null);
+    notifyListeners();
+  }
+
+  void updateSubcategory(String? value) {
+    _tx = _tx.copyWith(subcategory: value);
     notifyListeners();
   }
 
   void updateAmount(double value) {
-    _expense = _expense.copyWith(amount: value);
+    _tx = _tx.copyWith(amount: value);
     notifyListeners();
   }
 
   void updateDate(DateTime value) {
-    _expense = _expense.copyWith(
-      date: Timestamp.fromDate(value),
-    );
+    _tx = _tx.copyWith(date: Timestamp.fromDate(value));
     notifyListeners();
   }
 
   void updateDescription(String value) {
-    _expense = _expense.copyWith(description: value);
+    _tx = _tx.copyWith(description: value);
     notifyListeners();
   }
 
-  /// ---------------- FIRESTORE ----------------
-
-  Future<void> fetchExpensesByDay(DateTime day, String userUid) async {
+  Future<void> fetchByDay(DateTime day, String userUid) async {
     _isLoading = true;
     notifyListeners();
 
-    _expenses = await expenseRepository.getExpensesByDay(
-      userUid: userUid,
-      day: day,
-    );
+    _txs = await repository.getByDay(userUid: userUid, day: day);
 
     _isLoading = false;
     notifyListeners();
   }
 
-  Future<bool> saveExpense(String userUid) async {
+  Future<bool> save(String userUid) async {
     _isLoading = true;
     notifyListeners();
 
-    bool success;
-
-    if (_expense.id.isEmpty) {
-      success = await expenseRepository.addExpense(
-        userUid: userUid,
-        amount: _expense.amount,
-        date: _expense.date,
-        description: _expense.description,
-      );
-    } else {
-      success = await expenseRepository.updateExpense(
-        userUid: userUid,
-        expense: _expense,
-      );
-    }
+    final bool success = _tx.id.isEmpty
+        ? await repository.addTransaction(userUid: userUid, tx: _tx)
+        : await repository.updateTransaction(userUid: userUid, tx: _tx);
 
     if (success) {
-      resetExpense();
-      await fetchExpensesByDay(_expense.date.toDate(), userUid);
+      final day = _tx.date.toDate();
+      reset();
+      await fetchByDay(day, userUid);
     }
 
     _isLoading = false;
@@ -95,17 +110,14 @@ class ExpenseStateProvider extends ChangeNotifier {
     return success;
   }
 
-  Future<bool> deleteExpense(String expenseId, String userUid) async {
+  Future<bool> delete(String txId, String userUid) async {
     _isLoading = true;
     notifyListeners();
 
-    final success = await expenseRepository.deleteExpense(
-      userUid: userUid,
-      expenseId: expenseId,
-    );
-
+    final success =
+        await repository.deleteTransaction(userUid: userUid, txId: txId);
     if (success) {
-      _expenses.removeWhere((e) => e.id == expenseId);
+      _txs.removeWhere((t) => t.id == txId);
     }
 
     _isLoading = false;
@@ -113,9 +125,17 @@ class ExpenseStateProvider extends ChangeNotifier {
     return success;
   }
 
-  /// ---------------- DAILY TOTAL ----------------
-  /// Starts at 0, adds all expenses for the day
   double get dailyTotal {
-    return _expenses.fold(0.0, (sums, e) => sums + e.amount);
+    return _txs.fold(
+        0.0,
+        // ignore: avoid_types_as_parameter_names
+        (sum, t) => sum + (t.type == TransactionType.expense ? t.amount : 0.0));
+  }
+
+  double get dailyIncome {
+    return _txs.fold(
+        0.0,
+        // ignore: avoid_types_as_parameter_names
+        (sum, t) => sum + (t.type == TransactionType.income ? t.amount : 0.0));
   }
 }

@@ -67,7 +67,6 @@ class _SignupWidgetState extends State<SignupWidget> {
             ),
             onChanged: (value) {
               value = _emailController.text;
-              print(_emailController.text);
             },
           ),
         ),
@@ -96,7 +95,6 @@ class _SignupWidgetState extends State<SignupWidget> {
             ),
             onChanged: (value) {
               value = _emailController.text;
-              print(_emailController.text);
             },
           ),
         ),
@@ -136,7 +134,6 @@ class _SignupWidgetState extends State<SignupWidget> {
             ),
             onChanged: (value) {
               value = _passwordController.text;
-              print(_passwordController.text);
             },
           ),
         ),

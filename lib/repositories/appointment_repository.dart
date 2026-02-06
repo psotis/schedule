@@ -91,7 +91,6 @@ class AppointmentRepository {
       appointment = appointMentsFromFirebaseByDate!.docs
           .map((e) => AppointMent.fromDoc(e))
           .toList();
-      print(appointment);
       return appointment!;
     } catch (e) {
       throw CustomError(

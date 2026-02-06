@@ -21,7 +21,6 @@ class _SplashPageState extends State<SplashPage> {
 
   void initialization() async {
     await Future.delayed(const Duration(seconds: 1));
-    print('go!');
     FlutterNativeSplash.remove();
   }
 

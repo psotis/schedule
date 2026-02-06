@@ -73,8 +73,8 @@ class MyApp extends StatelessWidget {
         Provider<SearchEditUserRepository>(
           create: (context) => SearchEditUserRepository(),
         ),
-        Provider<ExpenseRepository>(
-          create: (context) => ExpenseRepository(),
+        Provider<TransactionRepository>(
+          create: (context) => TransactionRepository(),
         ),
         StreamProvider<fb_auth.User?>(
           create: (context) => context.read<AuthRepository>().user,
@@ -132,9 +132,9 @@ class MyApp extends StatelessWidget {
             employeeRepository: context.read<EmployeeRepository>(),
           ),
         ),
-        ChangeNotifierProvider<ExpenseStateProvider>(
-          create: (context) => ExpenseStateProvider(
-            expenseRepository: context.read<ExpenseRepository>(),
+        ChangeNotifierProvider<TransactionStateProvider>(
+          create: (context) => TransactionStateProvider(
+            repository: context.read<TransactionRepository>(),
           ),
         ),
       ],

@@ -1,77 +1,56 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:scheldule/models/expenses.dart';
 
-class ExpenseRepository {
-  QuerySnapshot<Map<String, dynamic>>? expenses;
+class TransactionRepository {
+  final FirebaseFirestore firestore;
 
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  TransactionRepository({FirebaseFirestore? firestore})
+      : firestore = firestore ?? FirebaseFirestore.instance;
 
-  Future<bool> addExpense({
-    required String userUid,
-    required double amount,
-    required Timestamp date,
-    required String description,
-  }) async {
-    try {
-      await firestore
-          .collection('users')
-          .doc(userUid)
-          .collection('expenses')
-          .add({
-        'amount': amount,
-        'date': date,
-        'description': description,
-      });
-
-      return true;
-    } catch (e) {
-      return false;
-    }
+  CollectionReference<Map<String, dynamic>> _txRef(String userUid) {
+    return firestore
+        .collection('users')
+        .doc(userUid)
+        .collection('transactions');
   }
 
-  Future<bool> updateExpense({
+  Future<bool> addTransaction({
     required String userUid,
-    required Expense expense,
+    required AppTransaction tx,
   }) async {
     try {
-      await firestore
-          .collection(userUid)
-          .doc(expense.id)
-          .update(expense.toMap());
+      await _txRef(userUid).add(tx.toMap());
       return true;
     } catch (_) {
       return false;
     }
   }
 
-  Future<bool> deleteExpense({
+  Future<bool> updateTransaction({
     required String userUid,
-    required String expenseId,
+    required AppTransaction tx,
   }) async {
     try {
-      await firestore.collection(userUid).doc(expenseId).delete();
+      await _txRef(userUid).doc(tx.id).update(tx.toMap());
       return true;
     } catch (_) {
       return false;
     }
   }
 
-  Future<List<Expense>> getExpenses({
+  Future<bool> deleteTransaction({
     required String userUid,
+    required String txId,
   }) async {
     try {
-      final snapshot = await firestore
-          .collection(userUid)
-          .orderBy('date', descending: true)
-          .get();
-
-      return snapshot.docs.map(Expense.fromDoc).toList();
+      await _txRef(userUid).doc(txId).delete();
+      return true;
     } catch (_) {
-      return [];
+      return false;
     }
   }
 
-  Future<List<Expense>> getExpensesByDay({
+  Future<List<AppTransaction>> getByDay({
     required String userUid,
     required DateTime day,
   }) async {
@@ -79,22 +58,51 @@ class ExpenseRepository {
       final start = DateTime(day.year, day.month, day.day);
       final end = start.add(const Duration(days: 1));
 
-      final snapshot = await firestore
-          .collection(userUid)
-          .where(
-            'date',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(start),
-          )
-          .where(
-            'date',
-            isLessThan: Timestamp.fromDate(end),
-          )
+      final snapshot = await _txRef(userUid)
+          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+          .where('date', isLessThan: Timestamp.fromDate(end))
           .orderBy('date', descending: true)
           .get();
 
-      return snapshot.docs.map(Expense.fromDoc).toList();
+      return snapshot.docs.map(AppTransaction.fromDoc).toList();
     } catch (_) {
       return [];
     }
+  }
+
+  DateTime monthStart(int year, int month) {
+    return DateTime(year, month, 1);
+  }
+
+  DateTime monthEnd(int year, int month) {
+    return (month == 12)
+        ? DateTime(year + 1, 1, 1)
+        : DateTime(year, month + 1, 1);
+  }
+
+  Future<List<AppTransaction>> getTransactionsByMonth({
+    required String uid,
+    required int year,
+    required int month,
+  }) async {
+    final start = monthStart(year, month);
+    final end = monthEnd(year, month);
+
+    final snap = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('transactions')
+        .where(
+          'date',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(start),
+        )
+        .where(
+          'date',
+          isLessThan: Timestamp.fromDate(end),
+        )
+        .orderBy('date')
+        .get();
+
+    return snap.docs.map(AppTransaction.fromDoc).toList();
   }
 }

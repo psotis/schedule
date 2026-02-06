@@ -44,24 +44,24 @@ class AddAppointmentRepository {
     try {
       if (await checkForUser(name: name, surname: surname, userUid: userUid) ==
           true) {
-        firestore.collection(userUid).add({
-          'name': name,
-          'surname': surname,
-          'phone': '',
-          'email': '',
-          'address': '',
-          'description': [''],
-          'amka': '',
-          'date': date,
-          'position': position ?? '',
-          'employee': employee ?? '',
-          'owes': '',
-          'paid': 0,
-        }).then((_) {
-          print("collection created");
-        }).catchError((error) {
-          print("An error occurred: $error");
-        });
+        firestore
+            .collection(userUid)
+            .add({
+              'name': name,
+              'surname': surname,
+              'phone': '',
+              'email': '',
+              'address': '',
+              'description': [''],
+              'amka': '',
+              'date': date,
+              'position': position ?? '',
+              'employee': employee ?? '',
+              'owes': '',
+              'paid': 0,
+            })
+            .then((_) {})
+            .catchError((error) {});
       } else {
         // ignore: use_build_context_synchronously
         context.read<AddUserProvider>().addUser(
@@ -77,24 +77,24 @@ class AddAppointmentRepository {
               paid: 0,
             );
         await Future.delayed(Duration(milliseconds: 500));
-        firestore.collection(userUid).add({
-          'name': name,
-          'surname': surname,
-          'phone': '',
-          'email': '',
-          'address': '',
-          'description': [''],
-          'amka': '',
-          'date': date,
-          'position': position ?? '',
-          'employee': employee ?? '',
-          'owes': '',
-          'paid': 0,
-        }).then((_) {
-          print("collection created");
-        }).catchError((error) {
-          print("An error occurred: $error");
-        });
+        firestore
+            .collection(userUid)
+            .add({
+              'name': name,
+              'surname': surname,
+              'phone': '',
+              'email': '',
+              'address': '',
+              'description': [''],
+              'amka': '',
+              'date': date,
+              'position': position ?? '',
+              'employee': employee ?? '',
+              'owes': '',
+              'paid': 0,
+            })
+            .then((_) {})
+            .catchError((error) {});
       }
     } catch (e) {
       throw CustomError(

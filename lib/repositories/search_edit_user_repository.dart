@@ -66,7 +66,6 @@ class SearchEditUserRepository {
           .get();
       patientLength =
           appointLength!.docs.map((e) => AppointMent.fromDoc(e)).toList();
-      print(patientLength);
       return patientLength.length - 1;
     } catch (e) {
       throw Exception(e);
@@ -164,8 +163,6 @@ class SearchEditUserRepository {
         'spot': spot,
         'missFunctions': missFunctions,
       });
-
-      print("Document updated successfully");
     } catch (e) {
       throw CustomError(
         code: 'Exception',

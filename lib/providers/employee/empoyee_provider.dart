@@ -41,8 +41,7 @@ class EmployeeProvider with ChangeNotifier {
       }
 
       return employees;
-    } on CustomError catch (e) {
-      print(e);
+    } on CustomError {
       rethrow;
     }
   }
@@ -61,7 +60,6 @@ class EmployeeProvider with ChangeNotifier {
       _employeeState =
           _employeeState?.copyWith(employeeStatus: EmployeeStatus.error);
       notifyListeners();
-      print("Error fetching employees: $e");
     }
   }
 

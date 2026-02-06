@@ -33,8 +33,6 @@ class AppointmentProvider extends ChangeNotifier {
         appointmentStatus: AppointmentStatus.loading);
     notifyListeners();
     await Future.delayed(Duration(milliseconds: 500));
-    print('$selectedDay1 and $endOfDay');
-
     //! This is for patient count appointments
     // var app = await firestore
     //     .collection(userid)

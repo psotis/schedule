@@ -89,7 +89,6 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
     await showAdaptiveDialog(
       context: context,
       builder: (context) {
-        print('This is the ID: ${appointment.id}');
         return Center(
           child: Container(
             height: 300,

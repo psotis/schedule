@@ -52,22 +52,22 @@ class EmployeeRepository {
     String? color,
   }) async {
     try {
-      FirebaseFirestore.instance.collection(userUid).add({
-        'name': name,
-        'surname': surname,
-        'phone': phone,
-        'email': email,
-        'address': address,
-        'amka': amka,
-        'afm': afm,
-        'specialiazation': specialiazation,
-        'contract_type': contractType,
-        'color': color ?? '',
-      }).then((_) {
-        print("collection created");
-      }).catchError((error) {
-        print("An error occurred: $error");
-      });
+      FirebaseFirestore.instance
+          .collection(userUid)
+          .add({
+            'name': name,
+            'surname': surname,
+            'phone': phone,
+            'email': email,
+            'address': address,
+            'amka': amka,
+            'afm': afm,
+            'specialiazation': specialiazation,
+            'contract_type': contractType,
+            'color': color ?? '',
+          })
+          .then((_) {})
+          .catchError((error) {});
     } catch (e) {
       throw CustomError(
         code: 'Exception',
@@ -105,22 +105,23 @@ class EmployeeRepository {
     String? color,
   }) async {
     try {
-      firestore.collection(userUid).doc(docId).update({
-        'name': name,
-        'surname': surname,
-        'phone': phone,
-        'email': email,
-        'address': address,
-        'amka': amka,
-        'afm': afm,
-        'specialiazation': specialiazation,
-        'contract_type': contractType,
-        'color': color ?? '',
-      }).then((_) {
-        print("collection created");
-      }).catchError((error) {
-        print("An error occurred: $error");
-      });
+      firestore
+          .collection(userUid)
+          .doc(docId)
+          .update({
+            'name': name,
+            'surname': surname,
+            'phone': phone,
+            'email': email,
+            'address': address,
+            'amka': amka,
+            'afm': afm,
+            'specialiazation': specialiazation,
+            'contract_type': contractType,
+            'color': color ?? '',
+          })
+          .then((_) {})
+          .catchError((error) {});
     } catch (e) {
       throw CustomError(
         code: 'Exception',

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/providers/themes/theme_status.dart';
+import 'package:scheldule/repositories/setup.dart';
 import 'package:scheldule/screens/calendar/syncfusion_calendar.dart';
 // import 'package:scheldule/screens/gemini%20chat/gemini_chat.dart';
 // import 'package:scheldule/screens/responsive_ui/desktop/appointments/add_appointment.dart';
@@ -37,7 +38,14 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
   @override
   void initState() {
     user = widget.user;
+    _init();
     super.initState();
+  }
+
+  Future<void> _init() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    // await AppSetupService().forceSeedLookup(uid);
+    await AppSetupService().seedLookupIfNeeded(uid);
   }
 
   Future logout() async {
