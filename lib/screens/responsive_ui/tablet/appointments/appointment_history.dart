@@ -85,7 +85,7 @@ class _AppointmentHistoryState extends State<AppointmentHistory> {
         spacing: 20,
         children: [
           SizedBox(
-            width: 300,
+            width: 350,
             child: InkWell(
               onTap: () => pickDate(),
               child: IgnorePointer(
@@ -144,7 +144,7 @@ class _AppointmentHistoryState extends State<AppointmentHistory> {
                         String paidValue = appointment.paid?.toString() ?? '';
                         return Center(
                           child: SizedBox(
-                            width: MediaQuery.of(context).size.width * .95,
+                            width: 650,
                             child: InkWell(
                               onTap: () async {
                                 final newPaid = int.tryParse(paidValue.trim());
@@ -194,77 +194,89 @@ class _AppointmentHistoryState extends State<AppointmentHistory> {
                                         .format(appointment.date!.toDate()),
                                     style: const TextStyle(
                                       color: Colors.red,
-                                      fontSize: 12,
+                                      fontSize: 13,
                                     ),
                                   ),
                                   subtitle: Padding(
                                     padding: const EdgeInsets.only(top: 8.0),
                                     child: Row(
-                                      spacing: 10,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Flexible(
+                                        Expanded(
                                           child: Text(
                                             appointment.employee ?? '',
                                             style:
-                                                const TextStyle(fontSize: 12),
+                                                const TextStyle(fontSize: 13),
                                           ),
                                         ),
-                                        SizedBox(
-                                          width: 35,
-                                          child: TextFormField(
-                                            initialValue:
-                                                appointment.paid?.toString() ??
-                                                    '',
-                                            keyboardType: TextInputType.number,
-                                            style:
-                                                const TextStyle(fontSize: 13),
-                                            decoration: const InputDecoration(
-                                              isDense: true,
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      vertical: 8,
-                                                      horizontal: 4),
+                                        Text(
+                                          'Πλήρωσε:',
+                                          style: const TextStyle(fontSize: 13),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Flexible(
+                                          child: SizedBox(
+                                            width: 40,
+                                            child: TextFormField(
+                                              initialValue: appointment.paid
+                                                      ?.toString() ??
+                                                  '',
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              style:
+                                                  const TextStyle(fontSize: 13),
+                                              decoration: const InputDecoration(
+                                                isDense: true,
+                                                contentPadding:
+                                                    EdgeInsets.symmetric(
+                                                        vertical: 8,
+                                                        horizontal: 4),
+                                              ),
+                                              onChanged: (value) {
+                                                paidValue = value;
+                                              },
+                                              // onFieldSubmitted: (value) async {
+                                              //   final newPaid =
+                                              //       int.tryParse(value);
+                                              //   if (newPaid != null) {
+                                              //     await context
+                                              //         .read<
+                                              //             AddAppointmentProvider>()
+                                              //         .editAppointment(context,
+                                              //             appointmentId:
+                                              //                 appointment.id,
+                                              //             name: appointment.name,
+                                              //             surname:
+                                              //                 appointment.surname,
+                                              //             date: appointment.date!,
+                                              //             employee: appointment
+                                              //                 .employee,
+                                              //             position: appointment
+                                              //                 .position,
+                                              //             paid: newPaid,
+                                              //             userUid:
+                                              //                 widget.user!.uid);
+                                              //     snackBarDialog(context,
+                                              //         color: Colors.blueGrey,
+                                              //         message:
+                                              //             'Ποσό ενημερώθηκε');
+                                              //   }
+                                              // },
                                             ),
-                                            onChanged: (value) {
-                                              paidValue = value;
-                                            },
-                                            // onFieldSubmitted: (value) async {
-                                            //   final newPaid = int.tryParse(value);
-                                            //   if (newPaid != null) {
-                                            //     await context
-                                            //         .read<
-                                            //             AddAppointmentProvider>()
-                                            //         .editAppointment(context,
-                                            //             appointmentId:
-                                            //                 appointment.id,
-                                            //             name: appointment.name,
-                                            //             surname:
-                                            //                 appointment.surname,
-                                            //             date: appointment.date!,
-                                            //             employee:
-                                            //                 appointment.employee,
-                                            //             position:
-                                            //                 appointment.position,
-                                            //             paid: newPaid,
-                                            //             userUid:
-                                            //                 widget.user!.uid);
-                                            //     snackBarDialog(context,
-                                            //         color: Colors.blueGrey,
-                                            //         message: 'Ποσό ενημερώθηκε');
-                                            //   }
-                                            // },
                                           ),
                                         ),
                                         Text(
                                           '€',
-                                          style: const TextStyle(fontSize: 12),
+                                          style: const TextStyle(fontSize: 13),
                                         ),
-                                        Flexible(
+                                        const SizedBox(width: 10),
+                                        Expanded(
                                           child: Text(
                                             appointment.position ?? '',
                                             overflow: TextOverflow.ellipsis,
                                             style:
-                                                const TextStyle(fontSize: 12),
+                                                const TextStyle(fontSize: 13),
                                           ),
                                         ),
                                       ],
