@@ -650,16 +650,60 @@ class _IncExpMainState extends State<IncExpMain> {
                       if (t.description.isNotEmpty)
                         subtitleParts.add(t.description);
 
-                      return Card(
-                        child: ListTile(
-                          leading: Icon(isIncome
-                              ? Icons.arrow_downward
-                              : Icons.arrow_upward),
-                          title: Text(title),
-                          subtitle: subtitleParts.isEmpty
-                              ? null
-                              : Text(subtitleParts.join(' • ')),
-                          trailing: Text(t.amount.toStringAsFixed(2)),
+                      return Dismissible(
+                        key: ValueKey(t.id),
+                        direction: DismissDirection.startToEnd,
+                        confirmDismiss: (direction) async {
+                          return await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Διαγραφή'),
+                              content: const Text(
+                                  'Θέλεις να διαγράψεις αυτή την κίνηση;'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text('Άκυρο'),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: const Text('Διαγραφή'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        onDismissed: (_) async {
+                          final removed = t;
+
+                          setState(() {
+                            _todayTx.removeWhere((x) => x.id == removed.id);
+                          });
+
+                          await TransactionRepository().deleteTransaction(
+                            userUid: widget.user!.uid,
+                            txId: removed.id,
+                          );
+                        },
+                        background: Container(
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.only(left: 16),
+                          color: Colors.red,
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                        child: Card(
+                          child: ListTile(
+                            leading: Icon(isIncome
+                                ? Icons.arrow_downward
+                                : Icons.arrow_upward),
+                            title: Text(title),
+                            subtitle: subtitleParts.isEmpty
+                                ? null
+                                : Text(subtitleParts.join(' • ')),
+                            trailing: Text(t.amount.toStringAsFixed(2)),
+                          ),
                         ),
                       );
                     }),
