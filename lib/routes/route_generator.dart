@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scheldule/screens/responsive_ui/homepage.dart';
 
 import '../screens/login/login_screen.dart';
+import '../screens/user_admin/user_admin_dashboard.dart';
 import '../splash_page.dart';
 
 class RouteGenerator {
@@ -13,6 +14,10 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (context) => LoginScreen());
       case '/home':
         return MaterialPageRoute(builder: (context) => HomeLayoutScreen());
+      case '/user-admin':
+        return MaterialPageRoute(
+          builder: (context) => const UserAdminDashboard(),
+        );
 
       default:
         return _errorRoute();

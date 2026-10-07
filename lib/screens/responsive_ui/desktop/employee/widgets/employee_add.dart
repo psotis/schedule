@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:scheldule/providers/employee/employee_state.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
@@ -10,8 +9,7 @@ import '../../../../../constants/logos/photos_gifs.dart';
 import '../../../../../utils/snackbar.dart';
 
 class EmployeeAdd extends StatefulWidget {
-  final User? user;
-  const EmployeeAdd({super.key, this.user});
+  const EmployeeAdd({super.key});
 
   @override
   State<EmployeeAdd> createState() => _EmployeeAddState();
@@ -53,7 +51,6 @@ class _EmployeeAddState extends State<EmployeeAdd> {
     userForm.save();
 
     await context.read<EmployeeProvider>().addEmployee(
-          userUid: widget.user!.uid,
           name: name!,
           surname: surname!,
           phone: phone!,

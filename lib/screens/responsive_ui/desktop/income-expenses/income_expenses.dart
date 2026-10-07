@@ -1,15 +1,12 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/income-expenses/inc_exp_main.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/send_button.dart';
 
 class IncomeExpenses extends StatefulWidget {
-  final User? user;
   const IncomeExpenses({
     super.key,
-    this.user,
   });
 
   @override
@@ -58,9 +55,7 @@ class _IncomeExpensesState extends State<IncomeExpenses> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => IncExpMain(
-                      user: widget.user,
-                    ),
+                    builder: (context) => IncExpMain(),
                   ),
                 );
               }

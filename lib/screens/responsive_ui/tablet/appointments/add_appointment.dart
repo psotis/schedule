@@ -1,6 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:scheldule/models/app_timestamp.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -15,10 +14,8 @@ import '../../../../utils/search/search.dart';
 import '../../../../utils/snackbar.dart';
 
 class AddAppointments extends StatefulWidget {
-  final User? user;
   AddAppointments({
     super.key,
-    this.user,
   });
 
   @override
@@ -52,7 +49,6 @@ class _AddAppointmentsState extends State<AddAppointments> {
     userForm.save();
     await context.read<AddAppointmentProvider>().addAppointment(
           context,
-          userUid: widget.user!.uid,
           name: name!,
           surname: surname!,
           date: timestampday,
@@ -151,7 +147,6 @@ class _AddAppointmentsState extends State<AddAppointments> {
           children: [
             SizedBox(height: 15),
             Search(
-              user: widget.user,
               width: ScreenSize.screenWidth * .25,
               selectSearch: SelectSearch.customer,
               setAppointment: (p0, p1) => setCustomer(p0, p1),
@@ -302,7 +297,6 @@ class _AddAppointmentsState extends State<AddAppointments> {
         children: [
           Text('Ανάθεση σε: '),
           Search(
-            user: widget.user,
             width: ScreenSize.screenWidth * .25,
             selectSearch: SelectSearch.employee,
             setAppointment: (p0, p1) => setEmployee(p0, p1),

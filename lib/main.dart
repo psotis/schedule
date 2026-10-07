@@ -1,8 +1,5 @@
 // ignore: depend_on_referenced_packages
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,15 +7,15 @@ import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:provider/provider.dart';
-import 'package:scheldule/constants/db_constans.dart';
-import 'package:scheldule/firebase_options.dart';
 import 'package:scheldule/keys/material_key.dart';
 import 'package:scheldule/providers/auth/auth_provider.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/repositories/appointment_repository.dart';
+import 'package:scheldule/repositories/api_client.dart';
 import 'package:scheldule/repositories/auth_repository.dart';
 import 'package:scheldule/repositories/expense_repository.dart';
 import 'package:scheldule/repositories/search_edit_user_repository.dart';
+import 'package:scheldule/repositories/user_admin_repository.dart';
 import 'package:scheldule/routes/route_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -30,63 +27,61 @@ SharedPreferences? prefs;
 
 //! Starting point
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  FlutterNativeSplash.preserve(
-      widgetsBinding: WidgetsFlutterBinding.ensureInitialized());
-  Gemini.init(apiKey: apiKey);
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await dotenv.load(fileName: ".env");
+  final geminiApiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+  if (geminiApiKey.isNotEmpty) Gemini.init(apiKey: geminiApiKey);
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle
         .loadString('assets/google_fonts/ibm_plex_sans/OFL.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
-  await dotenv.load(fileName: ".env");
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   prefs = await SharedPreferences.getInstance();
 
-  runApp(const MyApp());
+  final apiClient = ApiClient();
+  final authRepository = AuthRepository(apiClient: apiClient);
+  await authRepository.initialize();
+
+  runApp(MyApp(apiClient: apiClient, authRepository: authRepository));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final ApiClient apiClient;
+  final AuthRepository authRepository;
+
+  const MyApp({
+    super.key,
+    required this.apiClient,
+    required this.authRepository,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // final Future<FirebaseApp> _fbApp = Firebase.initializeApp();
     return MultiProvider(
       providers: [
-        Provider<AuthRepository>(
-          create: (context) => AuthRepository(
-            firebaseFirestore: FirebaseFirestore.instance,
-            firebaseAuth: fb_auth.FirebaseAuth.instance,
-          ),
-        ),
+        Provider<ApiClient>.value(value: apiClient),
+        Provider<AuthRepository>.value(value: authRepository),
         Provider<AppointmentRepository>(
-          create: (context) => AppointmentRepository(),
+          create: (context) => AppointmentRepository(apiClient: apiClient),
         ),
         Provider<AddAppointmentRepository>(
-          create: (context) => AddAppointmentRepository(),
+          create: (context) => AddAppointmentRepository(apiClient: apiClient),
         ),
         Provider<EmployeeRepository>(
-          create: (context) => EmployeeRepository(),
+          create: (context) => EmployeeRepository(apiClient: apiClient),
         ),
         Provider<SearchEditUserRepository>(
-          create: (context) => SearchEditUserRepository(),
+          create: (context) => SearchEditUserRepository(apiClient: apiClient),
         ),
         Provider<TransactionRepository>(
-          create: (context) => TransactionRepository(),
+          create: (context) => TransactionRepository(apiClient: apiClient),
         ),
-        StreamProvider<fb_auth.User?>(
-          create: (context) => context.read<AuthRepository>().user,
-          initialData: null,
+        Provider<UserAdminRepository>(
+          create: (context) => UserAdminRepository(apiClient: apiClient),
         ),
-        ChangeNotifierProxyProvider<fb_auth.User?, AuthProvider>(
-          create: (context) => AuthProvider(
-            authRepository: context.read<AuthRepository>(),
-          ),
-          update: (BuildContext context, fb_auth.User? userStream,
-                  AuthProvider? authProvider) =>
-              authProvider!..update(userStream),
+        ChangeNotifierProvider<AuthProvider>(
+          create: (context) => AuthProvider(authRepository: authRepository),
         ),
         ChangeNotifierProvider<SigninProvider>(
           create: (context) => SigninProvider(
@@ -103,7 +98,9 @@ class MyApp extends StatelessWidget {
               appointmentRepository: context.read<AppointmentRepository>()),
         ),
         ChangeNotifierProvider<AddUserProvider>(
-          create: (context) => AddUserProvider(),
+          create: (context) => AddUserProvider(
+            repository: context.read<SearchEditUserRepository>(),
+          ),
         ),
         ChangeNotifierProvider<SearchUserProvider>(
           create: (context) => SearchUserProvider(

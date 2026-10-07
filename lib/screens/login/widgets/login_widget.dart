@@ -161,7 +161,17 @@ class _LoginWidgetState extends State<LoginWidget> {
   }
 
   Future signIn() async {
-    context.read<SigninProvider>().signin(
-        email: _emailController.text, password: _passwordController.text);
+    try {
+      await context.read<SigninProvider>().signin(
+            email: _emailController.text,
+            password: _passwordController.text,
+          );
+    } catch (_) {
+      if (!mounted) return;
+      final error = context.read<SigninProvider>().state.error;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    }
   }
 }

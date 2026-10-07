@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/providers.dart';
@@ -6,8 +5,7 @@ import 'package:scheldule/providers/themes/theme_status.dart';
 import 'package:scheldule/utils/send_button.dart';
 
 class Settings extends StatelessWidget {
-  final User? user;
-  const Settings({super.key, this.user});
+  const Settings({super.key});
 
   @override
   Widget build(BuildContext context) {

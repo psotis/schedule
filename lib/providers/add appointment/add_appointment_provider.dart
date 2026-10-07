@@ -1,6 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../../models/app_timestamp.dart';
 import '../../models/appointment_model.dart';
 import '../../repositories/add_appointment_repository.dart';
 import 'add_appointment_status.dart';
@@ -20,7 +20,6 @@ class AddAppointmentProvider extends ChangeNotifier {
     required String name,
     required String surname,
     required Timestamp date,
-    required String userUid,
     String? position,
     String? employee,
   }) async {
@@ -33,7 +32,6 @@ class AddAppointmentProvider extends ChangeNotifier {
       await addAppointmentRepository.sendAppointments(
         // ignore: use_build_context_synchronously
         context,
-        userUid: userUid,
         surname: surname,
         date: date,
         name: name,
@@ -66,7 +64,6 @@ class AddAppointmentProvider extends ChangeNotifier {
     required String name,
     required String surname,
     required Timestamp date,
-    required String userUid,
     String? position,
     String? employee,
     int? paid,
@@ -84,7 +81,6 @@ class AddAppointmentProvider extends ChangeNotifier {
         name: name,
         surname: surname,
         date: date,
-        userUid: userUid,
         position: position,
         employee: employee,
         paid: paid,

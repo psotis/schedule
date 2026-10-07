@@ -1,16 +1,13 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-// import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutterfire_ui/auth.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/constants/device_sizes.dart';
 import 'package:scheldule/providers/login%20to%20sign%20up/change_page_state.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/screens/signup/signup_widget.dart';
 import 'package:sign_in_button/sign_in_button.dart';
+import 'package:scheldule/repositories/auth_repository.dart';
+import 'package:scheldule/repositories/api_client.dart';
 
 import '../../constants/logos/photos_gifs.dart';
 import '../../constants/screen%20sizes/screen_sizes.dart';
@@ -24,11 +21,65 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final providers = [GoogleAuthProvider()];
-
   static const mobileHeight = 600;
 
   bool isMobile = false;
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      String? storeType;
+      if (context.read<ChangePageProvider>().state.changePageStatus ==
+          ChangePageStatus.signup) {
+        storeType = await _selectStoreType();
+        if (storeType == null) return;
+      }
+      await context
+          .read<AuthRepository>()
+          .signInWithGoogle(storeType: storeType);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.toString())),
+      );
+    }
+  }
+
+  Future<String?> _selectStoreType() async {
+    try {
+      final response = await context.read<ApiClient>().get('/store-types');
+      final storeTypes = (response as List)
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .toList();
+      if (!mounted) return null;
+      return showDialog<String>(
+        context: context,
+        builder: (dialogContext) => SimpleDialog(
+          title: const Text('Select your business type'),
+          children: storeTypes
+              .map(
+                (storeType) => SimpleDialogOption(
+                  onPressed: () => Navigator.pop(
+                    dialogContext,
+                    storeType['code']?.toString(),
+                  ),
+                  child: ListTile(
+                    leading: const Icon(Icons.store),
+                    title: Text(storeType['name']?.toString() ?? ''),
+                    subtitle: Text(storeType['description']?.toString() ?? ''),
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return null;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not load store types')),
+      );
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,15 +132,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     SizedBox(
-                      height: ScreenSize.screenHeight * .3,
+                      height: ScreenSize.screenHeight * .06,
                       width: ScreenSize.screenWidth * .30,
-                      child: SignInScreen(
-                        providers: [
-                          GoogleProvider(
-                              clientId:
-                                  '124706936019-4h1tvjmgmadgeg05mnm1oa8do9beieqo.apps.googleusercontent.com')
-                        ],
-                        resizeToAvoidBottomInset: true,
+                      child: SignInButton(
+                        Buttons.googleDark,
+                        text: 'Sign in with Google',
+                        onPressed: _signInWithGoogle,
                       ),
                     ),
                   ],
@@ -145,36 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               shape: RoundedRectangleBorder(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(20))),
-                              onPressed: () => showModalBottomSheet(
-                                    context: context,
-                                    builder: (context) => Container(
-                                      decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(20),
-                                              topRight: Radius.circular(20))),
-                                      child: SignInScreen(
-                                        providers: [
-                                          GoogleProvider(
-                                              clientId:
-                                                  '124706936019-4h1tvjmgmadgeg05mnm1oa8do9beieqo.apps.googleusercontent.com')
-                                        ],
-                                        resizeToAvoidBottomInset: true,
-                                      ),
-                                    ),
-                                  )
-
-                              //  Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //         builder: (context) => SignInScreen(
-                              //               providers: [
-                              //                 GoogleProvider(
-                              //                     clientId:
-                              //                         '124706936019-4h1tvjmgmadgeg05mnm1oa8do9beieqo.apps.googleusercontent.com')
-                              //               ],
-                              //               resizeToAvoidBottomInset: true,
-                              //             ))),
-                              ),
+                              onPressed: _signInWithGoogle),
                         ),
                         SizedBox(height: ScreenSize.screenHeight * .02),
                         Text(

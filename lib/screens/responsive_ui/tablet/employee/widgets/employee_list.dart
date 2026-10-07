@@ -1,5 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scheldule/repositories/employee_repository.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/employee/widgets/employee_card.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
@@ -7,23 +7,21 @@ import 'package:scheldule/utils/custom_text_form.dart';
 import '../../../../../models/employee.dart';
 
 class EmployeeList extends StatefulWidget {
-  final User? user;
-  const EmployeeList({super.key, this.user});
+  const EmployeeList({super.key});
 
   @override
   State<EmployeeList> createState() => _EmployeeListState();
 }
 
 class _EmployeeListState extends State<EmployeeList> {
-  String? userId;
-  late final stream = EmployeeRepository().streamEmployee(userId: userId!);
+  late final Stream<List<Employee>> stream;
   String _searchTerm = '';
   bool isListView = true;
 
   @override
   void initState() {
-    userId = widget.user!.uid;
     super.initState();
+    stream = context.read<EmployeeRepository>().streamEmployee();
   }
 
   @override
@@ -105,10 +103,8 @@ class _EmployeeListState extends State<EmployeeList> {
             onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EmployeeCard(
-                      employe: employe,
-                      user: widget.user,
-                      title: 'Employee Details'),
+                  builder: (context) =>
+                      EmployeeCard(employe: employe, title: 'Employee Details'),
                 )),
             child: Card(
               elevation: 4,
@@ -198,7 +194,6 @@ class _EmployeeListState extends State<EmployeeList> {
               MaterialPageRoute(
                 builder: (context) => EmployeeCard(
                   employe: employe,
-                  user: widget.user,
                   title: 'Employee Details',
                 ),
               )),

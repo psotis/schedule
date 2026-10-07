@@ -1,5 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+
+import 'app_timestamp.dart';
 
 enum TransactionType { income, expense }
 
@@ -91,29 +92,28 @@ class AppTransaction extends Equatable {
     return {
       'type': type.name,
       'amount': amount,
-      'date': date,
+      'occurred_at': date.toIso8601String(),
       'category': category,
       'subcategory': subcategory,
-      'appointmentType': appointmentType?.name,
+      'appointment_type': appointmentType?.name ?? '',
       'counterparty': counterparty,
-      'paymentMethod': paymentMethod?.name,
+      'payment_method': paymentMethod?.name ?? '',
       'description': description,
     };
   }
 
-  static AppTransaction fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  static AppTransaction fromJson(Map<String, dynamic> data) {
     return AppTransaction(
-      id: doc.id,
+      id: (data['id'] ?? '').toString(),
       type: _parseType(data['type'] as String?),
-      amount: (data['amount'] as num).toDouble(),
-      date: data['date'] as Timestamp,
+      amount: num.tryParse(data['amount'].toString())?.toDouble() ?? 0,
+      date: Timestamp.fromJson(data['occurred_at']),
       category: (data['category'] as String?) ?? '',
       subcategory: data['subcategory'] as String?,
       appointmentType:
-          _parseAppointmentType(data['appointmentType'] as String?),
+          _parseAppointmentType(data['appointment_type'] as String?),
       counterparty: data['counterparty'] as String?,
-      paymentMethod: _parsePaymentMethod(data['paymentMethod'] as String?),
+      paymentMethod: _parsePaymentMethod(data['payment_method'] as String?),
       description: (data['description'] as String?) ?? '',
     );
   }

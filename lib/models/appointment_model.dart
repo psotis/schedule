@@ -1,5 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+
+import 'app_timestamp.dart';
 
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 class AppointMent extends Equatable {
@@ -83,47 +84,53 @@ class AppointMent extends Equatable {
     this.no,
   });
 
-  factory AppointMent.fromDoc(DocumentSnapshot doc) {
-    final userData = doc.data() as Map<String, dynamic>;
+  factory AppointMent.fromJson(Map<String, dynamic> json) {
+    final client = Map<String, dynamic>.from(
+      (json['client_record'] ?? json) as Map,
+    );
+    final customFields = Map<String, dynamic>.from(
+      (client['custom_fields'] ?? <String, dynamic>{}) as Map,
+    );
+    final rawDate = json['start_time'] ?? json['date'];
     return AppointMent(
-      id: doc.id,
-      name: userData['name'] ?? '',
-      surname: userData['surname'] ?? '',
-      phone: userData['phone'] ?? '',
-      email: userData['email'] ?? '',
-      address: userData['address'] ?? '',
-      description: List<String>.from(userData['description'] ?? []),
-      amka: userData['amka'] ?? '',
-      date: userData['date'],
-      employee: userData['employee'],
-      position: userData['position'],
-      owes: userData['owes'],
-      birthday: userData['birthday'],
-      allo: userData['allo'],
-      startingDate: userData['startingDate'],
-      mainIssue: userData['mainIssue'],
-      doctor: userData['doctor'],
-      surgeryPast: userData['surgeryPast'],
-      surgeryNow: userData['surgeryNow'],
-      pharmacy: userData['pharmacy'],
-      allergies: userData['allergies'],
-      spot: userData['spot'],
-      missFunctions: userData['missFunctions'],
-      paid: userData['paid'] ?? 0,
-      heart: userData['heart'] ?? false,
-      breathe: userData['breathe'] ?? false,
-      sugar: userData['sugar'] ?? false,
-      ypertash: userData['ypertash'] ?? false,
-      neuro: userData['neuro'] ?? false,
-      orthopedic: userData['orthopedic'] ?? false,
-      selfCare: userData['selfCare'] ?? false,
-      helpCare: userData['helpCare'] ?? false,
-      disabled: userData['disabled'] ?? false,
-      good: userData['good'] ?? false,
-      medium: userData['medium'] ?? false,
-      bad: userData['bad'] ?? false,
-      yes: userData['yes'] ?? false,
-      no: userData['no'] ?? false,
+      id: (json['uuid'] ?? client['uuid'] ?? '').toString(),
+      name: (client['first_name'] ?? '').toString(),
+      surname: (client['last_name'] ?? '').toString(),
+      phone: (client['phone'] ?? '').toString(),
+      email: (client['email'] ?? '').toString(),
+      address: (client['address'] ?? '').toString(),
+      description: List<String>.from(client['client_description'] ?? const []),
+      amka: (client['amka'] ?? '').toString(),
+      date: rawDate == null ? null : Timestamp.fromJson(rawDate),
+      employee: json['employee']?.toString(),
+      position: json['position_description']?.toString(),
+      owes: (client['owes'] ?? '').toString(),
+      birthday: customFields['birthday']?.toString(),
+      allo: customFields['allo']?.toString(),
+      startingDate: customFields['startingDate']?.toString(),
+      mainIssue: customFields['mainIssue']?.toString(),
+      doctor: customFields['doctor']?.toString(),
+      surgeryPast: customFields['surgeryPast']?.toString(),
+      surgeryNow: customFields['surgeryNow']?.toString(),
+      pharmacy: customFields['pharmacy']?.toString(),
+      allergies: customFields['allergies']?.toString(),
+      spot: customFields['spot']?.toString(),
+      missFunctions: customFields['missFunctions']?.toString(),
+      paid: (num.tryParse((json['paid'] ?? 0).toString()) ?? 0).round(),
+      heart: customFields['heart'] == true,
+      breathe: customFields['breathe'] == true,
+      sugar: customFields['sugar'] == true,
+      ypertash: customFields['ypertash'] == true,
+      neuro: customFields['neuro'] == true,
+      orthopedic: customFields['orthopedic'] == true,
+      selfCare: customFields['selfCare'] == true,
+      helpCare: customFields['helpCare'] == true,
+      disabled: customFields['disabled'] == true,
+      good: customFields['good'] == true,
+      medium: customFields['medium'] == true,
+      bad: customFields['bad'] == true,
+      yes: customFields['yes'] == true,
+      no: customFields['no'] == true,
     );
   }
 

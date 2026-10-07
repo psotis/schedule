@@ -1,21 +1,18 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:scheldule/models/app_timestamp.dart';
 import 'package:scheldule/models/expenses.dart';
+import 'package:scheldule/repositories/api_client.dart';
 import 'package:scheldule/repositories/expense_repository.dart';
-import 'package:scheldule/repositories/setup.dart';
 
 class IncExpMain extends StatefulWidget {
-  final User? user;
-  const IncExpMain({super.key, this.user});
+  const IncExpMain({super.key});
 
   @override
   State<IncExpMain> createState() => _IncExpMainState();
 }
 
 class _IncExpMainState extends State<IncExpMain> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
   bool _loading = true;
 
   // ---------------- LOOKUP (dropdown values) ----------------
@@ -93,32 +90,23 @@ class _IncExpMainState extends State<IncExpMain> {
   }
 
   Future<void> _loadMonth() async {
-    final uid = widget.user?.uid;
-    if (uid == null) return;
-
     setState(() => _monthLoading = true);
 
-    _monthTx = await TransactionRepository()
-        .getTransactionsByMonth(uid: uid, year: _year, month: _month);
+    _monthTx = await context
+        .read<TransactionRepository>()
+        .getTransactionsByMonth(year: _year, month: _month);
 
     setState(() => _monthLoading = false);
   }
 
   Future<void> _bootstrap() async {
-    final uid = widget.user?.uid;
-    if (uid == null) return;
-
     setState(() => _loading = true);
 
-    // 1) seed lookup once (if missing)
-    await AppSetupService(firestore: _firestore).seedLookupIfNeeded(uid);
-
-    // 2) load lookup doc
-    await _loadLookup(uid);
+    await _loadLookup();
 
     await _loadMonth();
     // 3) load today's transactions
-    await _loadByDay(uid, _selectedDay);
+    await _loadByDay(_selectedDay);
 
     setState(() => _loading = false);
   }
@@ -147,15 +135,11 @@ class _IncExpMainState extends State<IncExpMain> {
     await _loadMonth();
   }
 
-  Future<void> _loadLookup(String uid) async {
-    final doc = await _firestore
-        .collection('users')
-        .doc(uid)
-        .collection('settings')
-        .doc('lookup')
-        .get();
-
-    final data = (doc.data() ?? defaultLookupData);
+  Future<void> _loadLookup() async {
+    final settings = Map<String, dynamic>.from(
+      await context.read<ApiClient>().get('/finance/settings') as Map,
+    );
+    final data = Map<String, dynamic>.from(settings['lookup'] as Map);
 
     paymentMethods =
         List<Map<String, dynamic>>.from(data['paymentMethods'] ?? []);
@@ -189,20 +173,8 @@ class _IncExpMainState extends State<IncExpMain> {
     return (v is String) ? v : "";
   }
 
-  Future<void> _loadByDay(String uid, DateTime day) async {
-    final start = DateTime(day.year, day.month, day.day);
-    final end = start.add(const Duration(days: 1));
-
-    final snap = await _firestore
-        .collection('users')
-        .doc(uid)
-        .collection('transactions')
-        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-        .where('date', isLessThan: Timestamp.fromDate(end))
-        .orderBy('date', descending: true)
-        .get();
-
-    _todayTx = snap.docs.map(AppTransaction.fromDoc).toList();
+  Future<void> _loadByDay(DateTime day) async {
+    _todayTx = await context.read<TransactionRepository>().getByDay(day: day);
   }
 
   String _labelFor(List<Map<String, dynamic>> list, String id) {
@@ -237,12 +209,9 @@ class _IncExpMainState extends State<IncExpMain> {
     );
     if (picked == null) return;
 
-    final uid = widget.user?.uid;
-    if (uid == null) return;
-
     setState(() => _loading = true);
     _selectedDay = picked;
-    await _loadByDay(uid, _selectedDay);
+    await _loadByDay(_selectedDay);
     setState(() => _loading = false);
   }
 
@@ -263,9 +232,6 @@ class _IncExpMainState extends State<IncExpMain> {
   }
 
   Future<void> _save() async {
-    final uid = widget.user?.uid;
-    if (uid == null) return;
-
     final amount =
         double.tryParse(_amountCtrl.text.trim().replaceAll(',', '.')) ?? 0.0;
 
@@ -301,17 +267,15 @@ class _IncExpMainState extends State<IncExpMain> {
     );
 
     try {
-      await _firestore
-          .collection('users')
-          .doc(uid)
-          .collection('transactions')
-          .add(tx.toMap());
+      final saved =
+          await context.read<TransactionRepository>().addTransaction(tx: tx);
+      if (!saved) throw Exception('Transaction was not saved');
 
       _amountCtrl.clear();
       _descCtrl.clear();
 
       setState(() => _loading = true);
-      await _loadByDay(uid, _selectedDay);
+      await _loadByDay(_selectedDay);
       setState(() => _loading = false);
     } catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -322,14 +286,6 @@ class _IncExpMainState extends State<IncExpMain> {
 
   @override
   Widget build(BuildContext context) {
-    final uid = widget.user?.uid;
-
-    if (uid == null) {
-      return const Scaffold(
-        body: Center(child: Text('No user')),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Έσοδα / Έξοδα'),
@@ -345,7 +301,7 @@ class _IncExpMainState extends State<IncExpMain> {
           : RefreshIndicator(
               onRefresh: () async {
                 setState(() => _loading = true);
-                await _loadByDay(uid, _selectedDay);
+                await _loadByDay(_selectedDay);
                 setState(() => _loading = false);
               },
               child: ListView(
@@ -682,10 +638,20 @@ class _IncExpMainState extends State<IncExpMain> {
                             _todayTx.removeWhere((x) => x.id == removed.id);
                           });
 
-                          await TransactionRepository().deleteTransaction(
-                            userUid: widget.user!.uid,
-                            txId: removed.id,
-                          );
+                          final deleted = await context
+                              .read<TransactionRepository>()
+                              .deleteTransaction(
+                                txId: removed.id,
+                              );
+                          if (!deleted && mounted) {
+                            await _loadByDay(_selectedDay);
+                            setState(() {});
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Αποτυχία διαγραφής'),
+                              ),
+                            );
+                          }
                         },
                         background: Container(
                           alignment: Alignment.centerLeft,

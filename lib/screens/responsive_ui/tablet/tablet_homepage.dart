@@ -1,7 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:scheldule/repositories/setup.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/customer/customer.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/income-expenses/income_expenses.dart';
 
@@ -14,8 +12,7 @@ import '../tablet/employee/employee.dart';
 import '../tablet/settings/settings.dart';
 
 class TabletHomepage extends StatefulWidget {
-  final User? user;
-  TabletHomepage({super.key, this.user});
+  TabletHomepage({super.key});
 
   @override
   State<TabletHomepage> createState() => _TabletHomepageState();
@@ -25,12 +22,6 @@ class _TabletHomepageState extends State<TabletHomepage> {
   @override
   void initState() {
     super.initState();
-    _init();
-  }
-
-  Future<void> _init() async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    await AppSetupService().seedLookupIfNeeded(uid);
   }
 
   @override
@@ -65,20 +56,20 @@ class _TabletHomepageState extends State<TabletHomepage> {
 
   Widget pages(DrawerProvider provider) {
     if (provider.state.drawerStatus == DrawerStatus.customer) {
-      return Customer(user: widget.user!);
+      return Customer();
     }
     if (provider.state.drawerStatus == DrawerStatus.employee) {
-      return Employee(user: widget.user!);
+      return Employee();
     }
     if (provider.state.drawerStatus == DrawerStatus.appointments) {
-      return Appointments(user: widget.user!);
+      return Appointments();
     }
     if (provider.state.drawerStatus == DrawerStatus.incexp) {
-      return IncomeExpenses(user: widget.user!);
+      return IncomeExpenses();
     }
     if (provider.state.drawerStatus == DrawerStatus.settings) {
-      return Settings(user: widget.user!);
+      return Settings();
     }
-    return SyncFusionCalendar(user: widget.user!);
+    return SyncFusionCalendar();
   }
 }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:scheldule/models/appointment_model.dart';
 import 'package:scheldule/providers/toggle_screen/toggle_screen_provider.dart';
@@ -19,11 +18,9 @@ import '../../../../../repositories/search_edit_user_repository.dart';
 
 class CustomerCard extends StatefulWidget {
   final AppointMent customer;
-  final User? user;
   const CustomerCard({
     super.key,
     required this.customer,
-    this.user,
   });
 
   @override
@@ -280,7 +277,6 @@ class _CustomerCardState extends State<CustomerCard> {
               : "$descriptionDate:  $description",
           amka: amka!,
           owes: owes!,
-          userUid: widget.user!.uid,
           docId: widget.customer.id,
           heart: heart!,
           breathe: breathe,
@@ -310,24 +306,21 @@ class _CustomerCardState extends State<CustomerCard> {
         );
   }
 
-  void _removeUser({required String userId, required String userDoc}) async {
-    await context
-        .read<SearchUserProvider>()
-        .deleteUsers(userId: userId, userDoc: userDoc);
+  void _removeUser({required String clientId}) async {
+    await context.read<SearchUserProvider>().deleteUser(clientId: clientId);
   }
 
   void seeApp() async {
     if (!mounted) return;
-    var length = await SearchEditUserRepository().patientAppointmentLength(
-      userId: widget.user?.uid ?? '1',
-      name: widget.customer.name,
-      surename: widget.customer.surname,
-    );
-    paidRepo = await AppointmentRepository().fetchAppointmentPaid(
-      userid: widget.user?.uid ?? '1',
-      name: widget.customer.name,
-      surname: widget.customer.surname,
-    );
+    var length =
+        await context.read<SearchEditUserRepository>().patientAppointmentLength(
+              name: widget.customer.name,
+              surename: widget.customer.surname,
+            );
+    paidRepo = await context.read<AppointmentRepository>().fetchAppointmentPaid(
+          name: widget.customer.name,
+          surname: widget.customer.surname,
+        );
 
     for (var paid in paidRepo) {
       payment += paid.paid!;
@@ -445,8 +438,7 @@ class _CustomerCardState extends State<CustomerCard> {
         SendButton(
           onPressed: () async {
             _removeUser(
-              userId: widget.user!.uid,
-              userDoc: widget.customer.id,
+              clientId: widget.customer.id,
             );
 
             hideScreen();

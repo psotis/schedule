@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -19,8 +18,7 @@ import '../../constants/device_sizes.dart';
 import '../../repositories/appointment_repository.dart';
 
 class SyncFusionCalendar extends StatefulWidget {
-  final User user;
-  const SyncFusionCalendar({super.key, required this.user});
+  const SyncFusionCalendar({super.key});
 
   @override
   State<SyncFusionCalendar> createState() => _SyncFusionCalendarState();
@@ -29,20 +27,17 @@ class SyncFusionCalendar extends StatefulWidget {
 class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
   final CalendarController _controller = CalendarController();
   List<AppointMent> appointment = [];
-  String? userId;
-
   Stream<List<app.AppointMent>>? stream;
   Stream<List<app.AppointMent>>? streamToday;
 
   @override
   void initState() {
     super.initState();
-    userId = widget.user.uid;
-    stream = AppointmentRepository().streamAppointment(userId: userId!);
-    streamToday =
-        AppointmentRepository().streamTodayAppointment(userId: userId!);
+    final repository = context.read<AppointmentRepository>();
+    stream = repository.streamAppointment();
+    streamToday = repository.streamTodayAppointment();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<EmployeeProvider>().initEmployees(user: userId!);
+      context.read<EmployeeProvider>().initEmployees();
     });
   }
 
@@ -63,7 +58,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                           onPressed: () async {
                             context
                                 .read<AppointmentProvider>()
-                                .deleteAppointments(widget.user.uid,
+                                .deleteAppointments(
                                     details.appointments![0].id.toString());
                             Navigator.pop(context);
                           },
@@ -123,13 +118,10 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
   }
 
   Future<void> deleteAppointment({
-    required String userId,
     required DateTime selectedDay1,
     required DateTime endOfDay,
   }) async {
-    context
-        .read<AppointmentProvider>()
-        .getAppointMents(userId, selectedDay1, endOfDay);
+    context.read<AppointmentProvider>().getAppointMents(selectedDay1, endOfDay);
   }
 
   @override
@@ -287,7 +279,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                               final List<app.AppointMent> customer =
                                   await context
                                       .read<SearchUserProvider>()
-                                      .searchUsers(user: widget.user.uid);
+                                      .searchUsers();
 
                               final finalCustomer = customer.firstWhere(
                                 (cus) =>
@@ -317,7 +309,6 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                                                 context
                                                     .read<AppointmentProvider>()
                                                     .deleteAppointments(
-                                                        widget.user.uid,
                                                         appoint.id.toString());
                                                 snackBarDialog(context,
                                                     color: Colors.red,
@@ -421,7 +412,6 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                 child: CustomerSide(
                   customer: customer,
                   appointMent: appoint,
-                  user: widget.user,
                 ),
               ),
             ),
@@ -572,7 +562,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                               final List<app.AppointMent> customer =
                                   await context
                                       .read<SearchUserProvider>()
-                                      .searchUsers(user: widget.user.uid);
+                                      .searchUsers();
 
                               final finalCustomer = customer.firstWhere(
                                 (cus) =>
@@ -586,7 +576,6 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                                     builder: (context) => CustomerSideMobile(
                                       customer: finalCustomer,
                                       appointMent: appoint,
-                                      user: widget.user,
                                     ),
                                   ));
                             },
@@ -608,7 +597,6 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                                                 await context
                                                     .read<AppointmentProvider>()
                                                     .deleteAppointments(
-                                                        widget.user.uid,
                                                         appoint.id.toString());
                                                 snackBarDialog(context,
                                                     color: Colors.red,

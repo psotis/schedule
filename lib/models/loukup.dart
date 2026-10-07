@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class Lookup {
   final List<String> paymentMethods; // ["card","cash","iris"]
   final List<String> appointmentTypes; // ["katoikon","grafeio"]
@@ -24,11 +22,14 @@ class Lookup {
         'incomeCategories': incomeCategories,
       };
 
-  static Lookup fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  static Lookup fromJson(Map<String, dynamic> data) {
+    List<String> ids(Object? value) => (value as List? ?? const [])
+        .map((item) =>
+            item is Map ? (item['id'] ?? '').toString() : item.toString())
+        .toList();
     return Lookup(
-      paymentMethods: List<String>.from(data['paymentMethods'] ?? []),
-      appointmentTypes: List<String>.from(data['appointmentTypes'] ?? []),
+      paymentMethods: ids(data['paymentMethods']),
+      appointmentTypes: ids(data['appointmentTypes']),
       expenseCategories:
           List<Map<String, dynamic>>.from(data['expenseCategories'] ?? []),
       expenseSubcategories:

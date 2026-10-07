@@ -1,50 +1,33 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:scheldule/models/appointment_model.dart';
 
 import '../models/custom_errors.dart';
+import 'api_client.dart';
 
 class AppointmentRepository {
-  QuerySnapshot<Map<String, dynamic>>? appointMentsFromFirebase;
-  QuerySnapshot<Map<String, dynamic>>? appointMentsFromFirebaseByDate;
+  final ApiClient apiClient;
 
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  List<AppointMent>? appointment;
-  List<AppointMent>? appointmentPaid;
+  AppointmentRepository({required this.apiClient});
 
-  Stream<List<AppointMent>>? streamAppointment({required String userId}) {
-    return firestore
-        .collection(userId)
-        .where('date', isGreaterThanOrEqualTo: DateTime(2020))
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => AppointMent.fromDoc(doc)).toList());
+  Stream<List<AppointMent>> streamAppointment() async* {
+    while (true) {
+      yield await fetchAppointments();
+      await Future<void>.delayed(const Duration(seconds: 5));
+    }
   }
 
-  Stream<List<AppointMent>>? streamTodayAppointment({required String userId}) {
-    DateTime now = DateTime.now();
-    DateTime startOfDay = DateTime(now.year, now.month, now.day);
-    DateTime endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
-
-    return firestore
-        .collection(userId)
-        .where('date', isGreaterThanOrEqualTo: startOfDay)
-        .where('date', isLessThanOrEqualTo: endOfDay)
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => AppointMent.fromDoc(doc)).toList());
+  Stream<List<AppointMent>> streamTodayAppointment() async* {
+    while (true) {
+      yield await fetchAppointmentsByDate(date: DateTime.now());
+      await Future<void>.delayed(const Duration(seconds: 5));
+    }
   }
 
-  Future<List<AppointMent>> fetchAppointments({required String userid}) async {
+  Future<List<AppointMent>> fetchAppointments() async {
     try {
-      appointMentsFromFirebase = await firestore
-          .collection(userid)
-          .where('date', isGreaterThanOrEqualTo: DateTime(2020))
-          // .where('date', isLessThan: endOfDay)
-          .get();
-      appointment = appointMentsFromFirebase!.docs
-          .map((e) => AppointMent.fromDoc(e))
+      final data = await apiClient.get('/appointments') as List;
+      return data
+          .map((item) => AppointMent.fromJson(Map<String, dynamic>.from(item)))
           .toList();
-      return appointment!;
     } catch (e) {
       throw CustomError(
         code: 'Exception',
@@ -55,19 +38,12 @@ class AppointmentRepository {
   }
 
   Future<List<AppointMent>> fetchAppointmentPaid(
-      {required String userid,
-      required String name,
-      required String surname}) async {
+      {required String name, required String surname}) async {
     try {
-      appointMentsFromFirebase = await firestore
-          .collection(userid)
-          .where('name', isEqualTo: name)
-          .where('surname', isEqualTo: surname)
-          .get();
-      appointmentPaid = appointMentsFromFirebase!.docs
-          .map((e) => AppointMent.fromDoc(e))
+      final appointments = await fetchAppointments();
+      return appointments
+          .where((item) => item.name == name && item.surname == surname)
           .toList();
-      return appointmentPaid!;
     } catch (e) {
       throw CustomError(
         code: 'Exception',
@@ -78,20 +54,17 @@ class AppointmentRepository {
   }
 
   Future<List<AppointMent>> fetchAppointmentsByDate(
-      {required String userid, required DateTime date}) async {
+      {required DateTime date}) async {
     final startOfDay = DateTime(date.year, date.month, date.day);
     final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
     try {
-      appointMentsFromFirebaseByDate = await firestore
-          .collection(userid)
-          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
-          .where('date', isLessThan: Timestamp.fromDate(endOfDay))
-          .get();
-
-      appointment = appointMentsFromFirebaseByDate!.docs
-          .map((e) => AppointMent.fromDoc(e))
+      final data = await apiClient.get('/appointments', query: {
+        'from': _dateOnly(startOfDay),
+        'to': _dateOnly(endOfDay),
+      }) as List;
+      return data
+          .map((item) => AppointMent.fromJson(Map<String, dynamic>.from(item)))
           .toList();
-      return appointment!;
     } catch (e) {
       throw CustomError(
         code: 'Exception',
@@ -101,10 +74,9 @@ class AppointmentRepository {
     }
   }
 
-  Future<void> removeAppointment(
-      {required String userId, required String userDoc}) async {
+  Future<void> removeAppointment({required String appointmentId}) async {
     try {
-      firestore.collection(userId).doc(userDoc).delete();
+      await apiClient.delete('/appointment/$appointmentId');
     } catch (e) {
       throw CustomError(
         code: 'Exception',
@@ -113,4 +85,8 @@ class AppointmentRepository {
       );
     }
   }
+
+  String _dateOnly(DateTime date) => '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
 }

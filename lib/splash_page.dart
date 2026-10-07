@@ -29,7 +29,10 @@ class _SplashPageState extends State<SplashPage> {
     final authState = context.watch<AuthProvider>().state;
     if (authState.authStatus == AuthStatus.authenticated) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        Navigator.pushNamed(context, '/home');
+        Navigator.pushNamed(
+          context,
+          authState.user?.role == 'user-admin' ? '/user-admin' : '/home',
+        );
       });
     } else if (authState.authStatus == AuthStatus.unauthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {

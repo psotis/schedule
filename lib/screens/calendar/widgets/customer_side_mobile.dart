@@ -1,10 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:scheldule/models/app_timestamp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
 
 import 'package:scheldule/models/appointment_model.dart';
@@ -21,12 +20,10 @@ import '../../../../../repositories/search_edit_user_repository.dart';
 class CustomerSideMobile extends StatefulWidget {
   final AppointMent customer;
   final AppointMent appointMent;
-  final User? user;
   const CustomerSideMobile({
     super.key,
     required this.customer,
     required this.appointMent,
-    this.user,
   });
 
   @override
@@ -107,7 +104,6 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
     await addProvider.editAppointment(
       context,
       appointmentId: widget.appointMent.id,
-      userUid: widget.user!.uid,
       name: name ?? widget.appointMent.name,
       surname: surname ?? widget.appointMent.surname,
       date: timestampday ?? widget.appointMent.date!,
@@ -129,23 +125,20 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
           : "$descriptionDate:  $description",
       amka: amka ?? widget.customer.amka,
       owes: owes ?? widget.customer.owes!,
-      userUid: widget.user!.uid,
       docId: widget.customer.id,
     );
   }
 
-  void _removeUser({required String userId, required String userDoc}) async {
-    await context
-        .read<SearchUserProvider>()
-        .deleteUsers(userId: userId, userDoc: userDoc);
+  void _removeUser({required String clientId}) async {
+    await context.read<SearchUserProvider>().deleteUser(clientId: clientId);
   }
 
   void seeApp() async {
-    var length = await SearchEditUserRepository().patientAppointmentLength(
-      userId: widget.user?.uid ?? '1',
-      name: widget.customer.name,
-      surename: widget.customer.surname,
-    );
+    var length =
+        await context.read<SearchEditUserRepository>().patientAppointmentLength(
+              name: widget.customer.name,
+              surename: widget.customer.surname,
+            );
     if (mounted) {
       setState(() {
         appointmentLength = length;
@@ -324,8 +317,7 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
         SendButton(
           onPressed: () async {
             _removeUser(
-              userId: widget.user!.uid,
-              userDoc: widget.customer.id,
+              clientId: widget.customer.id,
             );
             Navigator.pop(context);
             snackBarDialog(context,
@@ -421,7 +413,6 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
                   initial: widget.appointMent.employee,
                 ),
                 Search(
-                  user: widget.user,
                   width: ScreenSize.screenWidth * .75,
                   selectSearch: SelectSearch.employee,
                   setAppointment: (p0, p1) => setEmployee(p0, p1),

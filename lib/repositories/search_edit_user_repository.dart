@@ -1,36 +1,25 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:scheldule/models/appointment_model.dart';
 import 'package:scheldule/models/custom_errors.dart';
+import 'api_client.dart';
 
 class SearchEditUserRepository {
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  QuerySnapshot<Map<String, dynamic>>? appointMentsFromFirebase;
-  QuerySnapshot<Map<String, dynamic>>? appointLength;
-  List<AppointMent> appointment = [];
-  List<AppointMent> patientLength = [];
-  AppointMent? appointMent;
+  final ApiClient apiClient;
 
-  Stream<List<AppointMent>> streamUser({required String userId}) {
-    return FirebaseFirestore.instance
-        .collection(userId)
-        .where('date', isEqualTo: Timestamp.fromMicrosecondsSinceEpoch(0))
-        // .orderBy('name')
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => AppointMent.fromDoc(doc)).toList());
+  SearchEditUserRepository({required this.apiClient});
+
+  Stream<List<AppointMent>> streamUser() async* {
+    while (true) {
+      yield await findUsers();
+      await Future<void>.delayed(const Duration(seconds: 5));
+    }
   }
 
-  Future<List<AppointMent>> findUsers({required String user}) async {
+  Future<List<AppointMent>> findUsers() async {
     try {
-      appointMentsFromFirebase = await firestore
-          .collection(user)
-          .where('date', isEqualTo: Timestamp.fromMicrosecondsSinceEpoch(0))
-          .get();
-
-      appointment = appointMentsFromFirebase!.docs
-          .map((e) => AppointMent.fromDoc(e))
+      final data = await apiClient.get('/client') as List;
+      return data
+          .map((item) => AppointMent.fromJson(Map<String, dynamic>.from(item)))
           .toList();
-      return appointment;
     } catch (e) {
       throw CustomError(
         code: 'Exception',
@@ -40,13 +29,9 @@ class SearchEditUserRepository {
     }
   }
 
-  Future<void> deleteUsers(
-      {required String userId, required String userDoc}) async {
+  Future<void> deleteUser({required String clientId}) async {
     try {
-      await firestore.collection(userId).doc(userDoc).delete();
-    } on FirebaseException catch (e) {
-      throw CustomError(
-          code: e.code, message: e.message.toString(), plugin: '');
+      await apiClient.delete('/client/$clientId');
     } catch (e) {
       throw CustomError(message: e.toString());
     }
@@ -54,19 +39,19 @@ class SearchEditUserRepository {
 
   //! *********** Patient appointment length *****************
   Future<int> patientAppointmentLength({
-    required String userId,
     required String name,
     required String surename,
   }) async {
     try {
-      appointLength = await firestore
-          .collection(userId)
-          .where('name', isEqualTo: name)
-          .where('surname', isEqualTo: surename)
-          .get();
-      patientLength =
-          appointLength!.docs.map((e) => AppointMent.fromDoc(e)).toList();
-      return patientLength.length - 1;
+      final clients = await findUsers();
+      final client = clients.where(
+        (item) => item.name == name && item.surname == surename,
+      );
+      if (client.isEmpty) return 0;
+      final appointments = await apiClient.get(
+        '/appointments/client/${client.first.id}',
+      ) as List;
+      return appointments.length;
     } catch (e) {
       throw Exception(e);
     }
@@ -80,7 +65,6 @@ class SearchEditUserRepository {
     required String address,
     String? description,
     required String amka,
-    required String userUid,
     required String docId,
     String? owes,
 
@@ -112,56 +96,83 @@ class SearchEditUserRepository {
     String? missFunctions,
   }) async {
     try {
-      final docRef = firestore.collection(userUid).doc(docId);
-      final docSnapshot = await docRef.get();
+      final customFields = <String, dynamic>{
+        'heart': heart ?? false,
+        'breathe': breathe ?? false,
+        'sugar': sugar ?? false,
+        'ypertash': ypertash ?? false,
+        'neuro': neuro ?? false,
+        'orthopedic': orthopedic ?? false,
+        'selfCare': selfCare ?? false,
+        'helpCare': helpCare ?? false,
+        'disabled': disabled ?? false,
+        'good': good ?? false,
+        'medium': medium ?? false,
+        'bad': bad ?? false,
+        'yes': yes ?? false,
+        'no': no ?? false,
+        'birthday': birthday ?? '',
+        'allo': allo ?? '',
+        'startingDate': startingDate ?? '',
+        'mainIssue': mainIssue ?? '',
+        'doctor': doctor ?? '',
+        'surgeryPast': surgeryPast ?? '',
+        'surgeryNow': surgeryNow ?? '',
+        'pharmacy': pharmacy ?? '',
+        'allergies': allergies ?? '',
+        'spot': spot ?? '',
+        'missFunctions': missFunctions ?? '',
+      };
+      final definitions = await apiClient.get('/store/client-fields') as List;
+      final supportedKeys = definitions
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .where((item) => item['is_active'] == true)
+          .map((item) => item['field_key']?.toString())
+          .whereType<String>()
+          .toSet();
+      customFields.removeWhere((key, value) => !supportedKeys.contains(key));
 
-      List<String> currentDescriptions = [];
-      if (docSnapshot.exists) {
-        final data = docSnapshot.data() as Map<String, dynamic>;
-        currentDescriptions = List<String>.from(data['description'] ?? []);
-      }
-
-      // Add new description to the list if it is not null or empty
-      if (description != null && description.isNotEmpty) {
-        currentDescriptions.add(description);
-      }
-
-      await docRef.update({
-        'name': name,
-        'surname': surname,
+      await apiClient.put('/client/$docId', body: {
+        'first_name': name,
+        'last_name': surname,
         'phone': phone,
         'email': email,
         'address': address,
         'amka': amka,
-        'description': currentDescriptions,
+        'client_description': description ?? '',
         'owes': owes ?? '',
+        if (customFields.isNotEmpty) 'custom_fields': customFields,
+      });
+    } catch (e) {
+      throw CustomError(
+        code: 'Exception',
+        message: e.toString(),
+        plugin: 'flutter_error/server_error',
+      );
+    }
+  }
 
-        // Add the new fields here, they will update or add in Firestore
-        'heart': heart,
-        'breathe': breathe,
-        'sugar': sugar,
-        'ypertash': ypertash,
-        'neuro': neuro,
-        'orthopedic': orthopedic,
-        'selfCare': selfCare,
-        'helpCare': helpCare,
-        'disabled': disabled,
-        'good': good,
-        'medium': medium,
-        'bad': bad,
-        'yes': yes,
-        'no': no,
-        'birthday': birthday,
-        'allo': allo,
-        'startingDate': startingDate,
-        'mainIssue': mainIssue,
-        'doctor': doctor,
-        'surgeryPast': surgeryPast,
-        'surgeryNow': surgeryNow,
-        'pharmacy': pharmacy,
-        'allergies': allergies,
-        'spot': spot,
-        'missFunctions': missFunctions,
+  Future<void> addPatient({
+    required String name,
+    required String surname,
+    required String phone,
+    required String email,
+    required String address,
+    required String description,
+    required String amka,
+    required String owes,
+  }) async {
+    try {
+      await apiClient.post('/client', body: {
+        'first_name': name,
+        'last_name': surname,
+        'phone': phone,
+        'email': email,
+        'address': address,
+        'afm': '',
+        'amka': amka,
+        'client_description': description,
+        'owes': num.tryParse(owes) ?? 0,
       });
     } catch (e) {
       throw CustomError(

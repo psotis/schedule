@@ -1,5 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 class Employee extends Equatable {
@@ -30,21 +29,20 @@ class Employee extends Equatable {
     this.color,
   });
 
-  factory Employee.fromDoc(DocumentSnapshot doc) {
-    final userData = doc.data() as Map<String, dynamic>;
+  factory Employee.fromJson(Map<String, dynamic> userData) {
     return Employee(
-      id: doc.id,
-      name: userData['name'],
-      surname: userData['surname'],
-      phone: userData['phone'],
-      email: userData['email'],
-      address: userData['address'],
-      afm: userData['afm'],
-      amka: userData['amka'],
-      specialiazation: userData['specialiazation'],
-      contractType: userData['contract_type'],
-      paid: userData['paid'] ?? '',
-      color: userData['color'] ?? '',
+      id: (userData['uuid'] ?? '').toString(),
+      name: (userData['first_name'] ?? '').toString(),
+      surname: (userData['last_name'] ?? '').toString(),
+      phone: (userData['phone'] ?? '').toString(),
+      email: (userData['email'] ?? '').toString(),
+      address: (userData['address'] ?? '').toString(),
+      afm: (userData['afm'] ?? '').toString(),
+      amka: (userData['amka'] ?? '').toString(),
+      specialiazation: (userData['specialization'] ?? '').toString(),
+      contractType: (userData['contract_type'] ?? '').toString(),
+      paid: (userData['paid'] ?? '').toString(),
+      color: (userData['color'] ?? '').toString(),
     );
   }
 

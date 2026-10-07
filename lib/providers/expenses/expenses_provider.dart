@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:scheldule/models/app_timestamp.dart';
 import 'package:scheldule/models/expenses.dart';
 import 'package:scheldule/repositories/expense_repository.dart';
 
@@ -81,28 +81,28 @@ class TransactionStateProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchByDay(DateTime day, String userUid) async {
+  Future<void> fetchByDay(DateTime day) async {
     _isLoading = true;
     notifyListeners();
 
-    _txs = await repository.getByDay(userUid: userUid, day: day);
+    _txs = await repository.getByDay(day: day);
 
     _isLoading = false;
     notifyListeners();
   }
 
-  Future<bool> save(String userUid) async {
+  Future<bool> save() async {
     _isLoading = true;
     notifyListeners();
 
     final bool success = _tx.id.isEmpty
-        ? await repository.addTransaction(userUid: userUid, tx: _tx)
-        : await repository.updateTransaction(userUid: userUid, tx: _tx);
+        ? await repository.addTransaction(tx: _tx)
+        : await repository.updateTransaction(tx: _tx);
 
     if (success) {
       final day = _tx.date.toDate();
       reset();
-      await fetchByDay(day, userUid);
+      await fetchByDay(day);
     }
 
     _isLoading = false;
@@ -110,12 +110,11 @@ class TransactionStateProvider extends ChangeNotifier {
     return success;
   }
 
-  Future<bool> delete(String txId, String userUid) async {
+  Future<bool> delete(String txId) async {
     _isLoading = true;
     notifyListeners();
 
-    final success =
-        await repository.deleteTransaction(userUid: userUid, txId: txId);
+    final success = await repository.deleteTransaction(txId: txId);
     if (success) {
       _txs.removeWhere((t) => t.id == txId);
     }

@@ -1,6 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:scheldule/repositories/appointment_repository.dart';
@@ -14,36 +12,20 @@ class AppointmentProvider extends ChangeNotifier {
   List<AppointMent> appointmentsByDate = [];
   AppointmentState _appointmentState = AppointmentState.initial();
   AppointmentState get appointmentState => _appointmentState;
-  late DocumentReference documentReference;
   late String deleteDoc;
-  User? user;
-
-  // QuerySnapshot<Map<String, dynamic>>? appointMentsFromFirebase;
-
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   final AppointmentRepository appointmentRepository;
   AppointmentProvider({
     required this.appointmentRepository,
   });
 
-  Future<void> getAppointMents(
-      String userid, DateTime selectedDay1, DateTime endOfDay) async {
+  Future<void> getAppointMents(DateTime selectedDay1, DateTime endOfDay) async {
     _appointmentState = _appointmentState.copyWith(
         appointmentStatus: AppointmentStatus.loading);
     notifyListeners();
     await Future.delayed(Duration(milliseconds: 500));
-    //! This is for patient count appointments
-    // var app = await firestore
-    //     .collection(userid)
-    //     .where('name', isEqualTo: 'Τασος')
-    //     .where('surname', isEqualTo: 'Ψαρρης')
-    //     .get();
-    // print(app.docs.length);
-
     try {
-      appointment =
-          await appointmentRepository.fetchAppointments(userid: userid);
+      appointment = await appointmentRepository.fetchAppointments();
       if (appointment.isEmpty) {
         _appointmentState = _appointmentState.copyWith(
             appointMent: [], appointmentStatus: AppointmentStatus.empty);
@@ -66,16 +48,15 @@ class AppointmentProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> getAppointMentsByDate(
-      {required String userid, required DateTime date}) async {
+  Future<void> getAppointMentsByDate({required DateTime date}) async {
     _appointmentState = _appointmentState.copyWith(
         appointmentStatus: AppointmentStatus.loading);
     notifyListeners();
     await Future.delayed(Duration(milliseconds: 500));
 
     try {
-      appointmentsByDate = await appointmentRepository.fetchAppointmentsByDate(
-          userid: userid, date: date);
+      appointmentsByDate =
+          await appointmentRepository.fetchAppointmentsByDate(date: date);
       if (appointmentsByDate.isEmpty) {
         _appointmentState = _appointmentState.copyWith(
             appointmentStatus: AppointmentStatus.empty);
@@ -95,9 +76,8 @@ class AppointmentProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteAppointments(String userId, String userDoc) async {
-    await appointmentRepository.removeAppointment(
-        userId: userId, userDoc: userDoc);
+  Future<void> deleteAppointments(String appointmentId) async {
+    await appointmentRepository.removeAppointment(appointmentId: appointmentId);
 
     _appointmentState =
         _appointmentState.copyWith(appointmentStatus: AppointmentStatus.delete);

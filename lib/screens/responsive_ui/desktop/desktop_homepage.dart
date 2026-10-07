@@ -1,9 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/providers.dart';
+import 'package:scheldule/providers/auth/auth_provider.dart';
 import 'package:scheldule/providers/themes/theme_status.dart';
-import 'package:scheldule/repositories/setup.dart';
 import 'package:scheldule/screens/calendar/syncfusion_calendar.dart';
 // import 'package:scheldule/screens/gemini%20chat/gemini_chat.dart';
 // import 'package:scheldule/screens/responsive_ui/desktop/appointments/add_appointment.dart';
@@ -16,8 +15,7 @@ import 'package:scheldule/screens/responsive_ui/desktop/appointments/appointment
 import '../../../constants/logos/photos_gifs.dart';
 
 class DesktopHomepage extends StatefulWidget {
-  final User? user;
-  DesktopHomepage({super.key, this.user});
+  DesktopHomepage({super.key});
 
   @override
   State<DesktopHomepage> createState() => _DesktopHomepageState();
@@ -25,7 +23,6 @@ class DesktopHomepage extends StatefulWidget {
 
 class _DesktopHomepageState extends State<DesktopHomepage> {
   int _selectedIndex = 0;
-  User? user;
 
   bool isChatOpen = false;
 
@@ -35,30 +32,17 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
     });
   }
 
-  @override
-  void initState() {
-    user = widget.user;
-    _init();
-    super.initState();
-  }
-
-  Future<void> _init() async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    // await AppSetupService().forceSeedLookup(uid);
-    await AppSetupService().seedLookupIfNeeded(uid);
-  }
-
   Future logout() async {
-    await FirebaseAuth.instance.signOut();
+    await context.read<AuthProvider>().signout();
   }
 
   late final List _screens = [
-    SyncFusionCalendar(user: user!),
-    Appointments(user: user!),
-    Customer(user: user!),
-    Employee(user: user!),
-    IncomeExpenses(user: user!),
-    Settings(user: user!),
+    SyncFusionCalendar(),
+    Appointments(),
+    Customer(),
+    Employee(),
+    IncomeExpenses(),
+    Settings(),
   ];
 
   @override
@@ -94,7 +78,7 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
                   //     right: 16,
                   //     bottom: 16,
                   //     child:
-                  //         GeminiChat(onClose: toggleChat, user: widget.user!),
+                  //         GeminiChat(onClose: toggleChat),
                   //   ),
                   // if (!isChatOpen)
                   //   Positioned(

@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/models/appointment_model.dart';
@@ -8,15 +7,13 @@ import 'package:scheldule/utils/custom_text_form.dart';
 import '../../../../../repositories/search_edit_user_repository.dart';
 
 class CustomerList extends StatefulWidget {
-  final User? user;
-  const CustomerList({super.key, this.user});
+  const CustomerList({super.key});
 
   @override
   State<CustomerList> createState() => _CustomerListState();
 }
 
 class _CustomerListState extends State<CustomerList> {
-  String? userId;
   late final Stream? stream;
 
   String _searchTerm = '';
@@ -30,8 +27,7 @@ class _CustomerListState extends State<CustomerList> {
   @override
   void initState() {
     super.initState();
-    userId = widget.user!.uid;
-    stream = SearchEditUserRepository().streamUser(userId: userId!);
+    stream = context.read<SearchEditUserRepository>().streamUser();
     _scrollController.addListener(_onScroll);
   }
 

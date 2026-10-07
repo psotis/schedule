@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:scheldule/models/employee.dart';
 import 'package:scheldule/providers/providers.dart';
@@ -16,13 +15,11 @@ import '../../../../../utils/cutom_text.dart';
 
 class EmployeeCard extends StatefulWidget {
   final Employee employe;
-  final User? user;
   final String title;
   const EmployeeCard({
     super.key,
     required this.employe,
     required this.title,
-    this.user,
   });
 
   @override
@@ -69,17 +66,15 @@ class _EmployeeCardState extends State<EmployeeCard> {
           amka: amka!,
           specialiazation: specialiazation!,
           contractType: contractType!,
-          userUid: widget.user!.uid,
           docId: widget.employe.id,
           color: colorHex,
         );
   }
 
-  void _removeEmployee(
-      {required String employeeId, required String userDoc}) async {
+  void _removeEmployee({required String employeeId}) async {
     await context
         .read<EmployeeProvider>()
-        .deleteEmployee(employeeId: employeeId, userDoc: userDoc);
+        .deleteEmployee(employeeId: employeeId);
   }
 
   @override
@@ -173,8 +168,7 @@ class _EmployeeCardState extends State<EmployeeCard> {
         SendButton(
           onPressed: () {
             _removeEmployee(
-              employeeId: widget.user!.uid,
-              userDoc: widget.employe.id,
+              employeeId: widget.employe.id,
             );
 
             Navigator.pop(context);

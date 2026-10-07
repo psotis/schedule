@@ -1,25 +1,16 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:scheldule/models/expenses.dart';
+import 'api_client.dart';
 
 class TransactionRepository {
-  final FirebaseFirestore firestore;
+  final ApiClient apiClient;
 
-  TransactionRepository({FirebaseFirestore? firestore})
-      : firestore = firestore ?? FirebaseFirestore.instance;
-
-  CollectionReference<Map<String, dynamic>> _txRef(String userUid) {
-    return firestore
-        .collection('users')
-        .doc(userUid)
-        .collection('transactions');
-  }
+  TransactionRepository({required this.apiClient});
 
   Future<bool> addTransaction({
-    required String userUid,
     required AppTransaction tx,
   }) async {
     try {
-      await _txRef(userUid).add(tx.toMap());
+      await apiClient.post('/transactions', body: tx.toMap());
       return true;
     } catch (_) {
       return false;
@@ -27,11 +18,10 @@ class TransactionRepository {
   }
 
   Future<bool> updateTransaction({
-    required String userUid,
     required AppTransaction tx,
   }) async {
     try {
-      await _txRef(userUid).doc(tx.id).update(tx.toMap());
+      await apiClient.put('/transactions/${tx.id}', body: tx.toMap());
       return true;
     } catch (_) {
       return false;
@@ -39,11 +29,10 @@ class TransactionRepository {
   }
 
   Future<bool> deleteTransaction({
-    required String userUid,
     required String txId,
   }) async {
     try {
-      await _txRef(userUid).doc(txId).delete();
+      await apiClient.delete('/transactions/$txId');
       return true;
     } catch (_) {
       return false;
@@ -51,20 +40,20 @@ class TransactionRepository {
   }
 
   Future<List<AppTransaction>> getByDay({
-    required String userUid,
     required DateTime day,
   }) async {
     try {
       final start = DateTime(day.year, day.month, day.day);
       final end = start.add(const Duration(days: 1));
 
-      final snapshot = await _txRef(userUid)
-          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-          .where('date', isLessThan: Timestamp.fromDate(end))
-          .orderBy('date', descending: true)
-          .get();
-
-      return snapshot.docs.map(AppTransaction.fromDoc).toList();
+      final data = await apiClient.get('/transactions', query: {
+        'from': start.toUtc().toIso8601String(),
+        'to': end.toUtc().toIso8601String(),
+      }) as List;
+      return data
+          .map((item) =>
+              AppTransaction.fromJson(Map<String, dynamic>.from(item)))
+          .toList();
     } catch (_) {
       return [];
     }
@@ -81,28 +70,18 @@ class TransactionRepository {
   }
 
   Future<List<AppTransaction>> getTransactionsByMonth({
-    required String uid,
     required int year,
     required int month,
   }) async {
     final start = monthStart(year, month);
     final end = monthEnd(year, month);
 
-    final snap = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('transactions')
-        .where(
-          'date',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(start),
-        )
-        .where(
-          'date',
-          isLessThan: Timestamp.fromDate(end),
-        )
-        .orderBy('date')
-        .get();
-
-    return snap.docs.map(AppTransaction.fromDoc).toList();
+    final data = await apiClient.get('/transactions', query: {
+      'from': start.toUtc().toIso8601String(),
+      'to': end.toUtc().toIso8601String(),
+    }) as List;
+    return data
+        .map((item) => AppTransaction.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
   }
 }

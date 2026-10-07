@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -9,8 +8,7 @@ import 'package:scheldule/utils/cutom_text.dart';
 import 'package:scheldule/utils/snackbar.dart';
 
 class AppointmentHistory extends StatefulWidget {
-  final User? user;
-  const AppointmentHistory({super.key, this.user});
+  const AppointmentHistory({super.key});
 
   @override
   State<AppointmentHistory> createState() => _AppointmentHistoryState();
@@ -38,7 +36,7 @@ class _AppointmentHistoryState extends State<AppointmentHistory> {
   void initHistory() {
     context
         .read<AppointmentProvider>()
-        .getAppointMentsByDate(userid: widget.user!.uid, date: DateTime.now());
+        .getAppointMentsByDate(date: DateTime.now());
   }
 
   Future pickDate() async {
@@ -56,9 +54,7 @@ class _AppointmentHistoryState extends State<AppointmentHistory> {
       _datePicker.text = formattedTime!;
     });
 
-    await context
-        .read<AppointmentProvider>()
-        .getAppointMentsByDate(userid: widget.user!.uid, date: date);
+    await context.read<AppointmentProvider>().getAppointMentsByDate(date: date);
   }
 
   Future<DateTime?> pickDates() {
@@ -221,9 +217,7 @@ class _AppointmentHistoryState extends State<AppointmentHistory> {
                                                             .employee,
                                                         position: appointment
                                                             .position,
-                                                        paid: newPaid,
-                                                        userUid:
-                                                            widget.user!.uid);
+                                                        paid: newPaid);
                                                 snackBarDialog(context,
                                                     color: Colors.blueGrey,
                                                     message:

@@ -1,5 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/appointments/add_appointment.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/appointments/appointment_history.dart';
@@ -7,10 +6,8 @@ import 'package:scheldule/screens/responsive_ui/tablet/appointments/appointment_
 import '../../../../constants/screen sizes/screen_sizes.dart';
 
 class Appointments extends StatefulWidget {
-  final User? user;
   const Appointments({
     super.key,
-    this.user,
   });
 
   @override
@@ -69,10 +66,10 @@ class _AppointmentsState extends State<Appointments>
               controller: _tabController,
               children: [
                 Tab(
-                  child: AddAppointments(user: widget.user),
+                  child: AddAppointments(),
                 ),
                 Tab(
-                  child: AppointmentHistory(user: widget.user),
+                  child: AppointmentHistory(),
                 )
               ],
             ),

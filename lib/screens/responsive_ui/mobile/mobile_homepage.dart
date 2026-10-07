@@ -1,8 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/drawer_nav/drawer_provider.dart';
-import 'package:scheldule/repositories/setup.dart';
+import 'package:scheldule/providers/auth/auth_provider.dart';
 import 'package:scheldule/screens/calendar/syncfusion_calendar.dart';
 import 'package:scheldule/screens/responsive_ui/mobile/appointments/appointments.dart';
 import 'package:scheldule/screens/responsive_ui/mobile/customer/customer.dart';
@@ -14,8 +13,7 @@ import 'package:scheldule/utils/nav_drawer.dart';
 import '../../../providers/drawer_nav/drawer_state.dart';
 
 class MobileHomepage extends StatefulWidget {
-  final User? user;
-  MobileHomepage({super.key, this.user});
+  MobileHomepage({super.key});
 
   @override
   State<MobileHomepage> createState() => _MobileHomepageState();
@@ -25,12 +23,6 @@ class _MobileHomepageState extends State<MobileHomepage> {
   @override
   void initState() {
     super.initState();
-    _init();
-  }
-
-  Future<void> _init() async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    await AppSetupService().seedLookupIfNeeded(uid);
   }
 
   @override
@@ -65,20 +57,20 @@ class _MobileHomepageState extends State<MobileHomepage> {
 
   Widget pages(DrawerProvider provider) {
     if (provider.state.drawerStatus == DrawerStatus.customer) {
-      return Customer(user: widget.user!);
+      return Customer();
     }
     if (provider.state.drawerStatus == DrawerStatus.employee) {
-      return Employee(user: widget.user!);
+      return Employee();
     }
     if (provider.state.drawerStatus == DrawerStatus.appointments) {
-      return Appointments(user: widget.user!);
+      return Appointments();
     }
     if (provider.state.drawerStatus == DrawerStatus.incexp) {
-      return IncomeExpenses(user: widget.user!);
+      return IncomeExpenses();
     }
     if (provider.state.drawerStatus == DrawerStatus.settings) {
-      return Settings(user: widget.user!);
+      return Settings();
     }
-    return SyncFusionCalendar(user: widget.user!);
+    return SyncFusionCalendar();
   }
 }

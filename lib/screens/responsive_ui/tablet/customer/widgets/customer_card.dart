@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:scheldule/models/appointment_model.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
@@ -17,13 +16,11 @@ import '../../../../../utils/cutom_text.dart';
 
 class CustomerCard extends StatefulWidget {
   final AppointMent customer;
-  final User? user;
   final String title;
   const CustomerCard({
     super.key,
     required this.customer,
     required this.title,
-    this.user,
   });
 
   @override
@@ -95,23 +92,20 @@ class _CustomerCardState extends State<CustomerCard> {
               : "$descriptionDate:  $description",
           amka: amka!,
           owes: owes!,
-          userUid: widget.user!.uid,
           docId: widget.customer.id,
         );
   }
 
-  void _removeUser({required String userId, required String userDoc}) async {
-    await context
-        .read<SearchUserProvider>()
-        .deleteUsers(userId: userId, userDoc: userDoc);
+  void _removeUser({required String clientId}) async {
+    await context.read<SearchUserProvider>().deleteUser(clientId: clientId);
   }
 
   void seeApp() async {
-    var length = await SearchEditUserRepository().patientAppointmentLength(
-      userId: widget.user!.uid,
-      name: widget.customer.name,
-      surename: widget.customer.surname,
-    );
+    var length =
+        await context.read<SearchEditUserRepository>().patientAppointmentLength(
+              name: widget.customer.name,
+              surename: widget.customer.surname,
+            );
     setState(() {
       appointmentLength = length;
     });
@@ -193,8 +187,7 @@ class _CustomerCardState extends State<CustomerCard> {
               SendButton(
                 onPressed: () {
                   _removeUser(
-                    userId: widget.user!.uid,
-                    userDoc: widget.customer.id,
+                    clientId: widget.customer.id,
                   );
 
                   Navigator.pop(context);

@@ -12,6 +12,19 @@
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
+		<key>GIDClientID</key>
+		<string>661685076637-m3qk55tjje5ps66takle9qca7esd3a0k.apps.googleusercontent.com</string>
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>com.googleusercontent.apps.661685076637-m3qk55tjje5ps66takle9qca7esd3a0k</string>
+				</array>
+			</dict>
+		</array>
 		<key>CFBundleName</key>
 		<string>scheldule</string>
 		<key>CFBundlePackageType</key>

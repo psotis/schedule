@@ -1,5 +1,4 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:scheldule/models/custom_errors.dart';
 
@@ -13,8 +12,6 @@ class SearchUserProvider extends ChangeNotifier {
   SearchUserState get searchUserState => _searchUserState;
   List<AppointMent> appointment = [];
   AppointMent? searchPatient;
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  QuerySnapshot<Map<String, dynamic>>? appointMentsFromFirebase;
   late int length;
 
   final SearchEditUserRepository searchEditUserRepository;
@@ -22,12 +19,12 @@ class SearchUserProvider extends ChangeNotifier {
     required this.searchEditUserRepository,
   });
 
-  Future<List<AppointMent>> searchUsers({required String user}) async {
+  Future<List<AppointMent>> searchUsers() async {
     _searchUserState =
         _searchUserState.copyWith(searchUserStatus: SearchUserStatus.loading);
     notifyListeners();
     try {
-      appointment = await searchEditUserRepository.findUsers(user: user);
+      appointment = await searchEditUserRepository.findUsers();
       if (appointment.isEmpty) {
         _searchUserState = _searchUserState.copyWith(
             appointMent: [], searchUserStatus: SearchUserStatus.empty);
@@ -47,17 +44,14 @@ class SearchUserProvider extends ChangeNotifier {
 
   // Future<int> getLength() async {
   //   length = await searchEditUserRepository.patientAppointmentLength(
-  //       userId: userId, name: name, surename: surename);
   // }
 
   //! ******** This is for search user to add for appointment **********
   // Future<AppointMent> searchPatients(
-  //     {required String userUid,
   //     required String name,
   //     required String surname}) async {
   //   try {
   //     final AppointMent searchPatient = await searchEditUserRepository.seeUser(
-  //         userUid: userUid, name: name, surname: surname);
   //     print(searchPatient);
   //     return searchPatient;
   //   } catch (e) {
@@ -73,7 +67,6 @@ class SearchUserProvider extends ChangeNotifier {
     required String address,
     required String description,
     required String amka,
-    required String userUid,
     required String docId,
     required String owes,
     bool? heart,
@@ -145,7 +138,6 @@ class SearchUserProvider extends ChangeNotifier {
           allergies: allergies,
           spot: spot,
           missFunctions: missFunctions,
-          userUid: userUid,
           docId: docId);
       _searchUserState =
           _searchUserState.copyWith(searchUserStatus: SearchUserStatus.sent);
@@ -166,11 +158,9 @@ class SearchUserProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteUsers(
-      {required String userId, required String userDoc}) async {
+  Future<void> deleteUser({required String clientId}) async {
     try {
-      await searchEditUserRepository.deleteUsers(
-          userId: userId, userDoc: userDoc);
+      await searchEditUserRepository.deleteUser(clientId: clientId);
       _searchUserState =
           _searchUserState.copyWith(searchUserStatus: SearchUserStatus.delete);
       notifyListeners();

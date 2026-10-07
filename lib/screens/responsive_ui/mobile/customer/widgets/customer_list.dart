@@ -1,5 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scheldule/models/appointment_model.dart';
 import 'package:scheldule/screens/responsive_ui/mobile/customer/widgets/customer_card.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
@@ -7,16 +7,14 @@ import 'package:scheldule/utils/custom_text_form.dart';
 import '../../../../../repositories/search_edit_user_repository.dart';
 
 class CustomerList extends StatefulWidget {
-  final User? user;
-  const CustomerList({super.key, this.user});
+  const CustomerList({super.key});
 
   @override
   State<CustomerList> createState() => _CustomerListState();
 }
 
 class _CustomerListState extends State<CustomerList> {
-  String? userId;
-  late final stream = SearchEditUserRepository().streamUser(userId: userId!);
+  late final Stream<List<AppointMent>> stream;
   String _searchTerm = '';
   bool isListView = true;
   final int _itemsPerPage = 10;
@@ -27,8 +25,8 @@ class _CustomerListState extends State<CustomerList> {
 
   @override
   void initState() {
-    userId = widget.user!.uid;
     super.initState();
+    stream = context.read<SearchEditUserRepository>().streamUser();
 
     _scrollController.addListener(_onScroll);
   }
@@ -176,7 +174,6 @@ class _CustomerListState extends State<CustomerList> {
                   MaterialPageRoute(
                     builder: (context) => CustomerCard(
                       customer: customer,
-                      user: widget.user,
                       title: '${customer.name} ${customer.surname}',
                     ),
                   )),
@@ -284,7 +281,6 @@ class _CustomerListState extends State<CustomerList> {
                 MaterialPageRoute(
                   builder: (context) => CustomerCard(
                     customer: customer,
-                    user: widget.user,
                     title: '${customer.name} ${customer.surname}',
                   ),
                 )),

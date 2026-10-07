@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/toggle_screen/toggle_screen_provider.dart';
@@ -8,23 +7,21 @@ import 'package:scheldule/utils/custom_text_form.dart';
 import '../../../../../models/employee.dart';
 
 class EmployeeList extends StatefulWidget {
-  final User? user;
-  const EmployeeList({super.key, this.user});
+  const EmployeeList({super.key});
 
   @override
   State<EmployeeList> createState() => _EmployeeListState();
 }
 
 class _EmployeeListState extends State<EmployeeList> {
-  String? userId;
-  late final stream = EmployeeRepository().streamEmployee(userId: userId!);
+  late final Stream<List<Employee>> stream;
   String _searchTerm = '';
   bool isListView = true;
 
   @override
   void initState() {
-    userId = widget.user!.uid;
     super.initState();
+    stream = context.read<EmployeeRepository>().streamEmployee();
   }
 
   @override

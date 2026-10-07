@@ -2,20 +2,19 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
+import 'package:provider/provider.dart';
 
+import 'package:scheldule/providers/auth/auth_provider.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 
 class GeminiChat extends StatefulWidget {
   final VoidCallback onClose;
-  final User user;
 
   GeminiChat({
     super.key,
     required this.onClose,
-    required this.user,
   });
 
   @override
@@ -84,6 +83,9 @@ class _GeminiChatState extends State<GeminiChat> {
 
   @override
   Widget build(BuildContext context) {
+    final displayName =
+        context.watch<AuthProvider>().state.user?.displayName ?? 'User';
+
     return Container(
       width: 300,
       height: 400,
@@ -132,9 +134,8 @@ class _GeminiChatState extends State<GeminiChat> {
                   return ChatBubble(
                     message: message["message"]!,
                     isUser: message["role"] == "user",
-                    senderName: message["role"] == "user"
-                        ? widget.user.displayName!
-                        : "Gemini",
+                    senderName:
+                        message["role"] == "user" ? displayName : "Gemini",
                   );
                 },
               ),

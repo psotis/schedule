@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/send_button.dart';
@@ -10,8 +9,7 @@ import '../../../../../providers/add user/add_user_status.dart';
 import '../../../../../utils/snackbar.dart';
 
 class CustomerAdd extends StatefulWidget {
-  final User? user;
-  const CustomerAdd({super.key, this.user});
+  const CustomerAdd({super.key});
 
   @override
   State<CustomerAdd> createState() => _CustomerAddState();
@@ -44,7 +42,6 @@ class _CustomerAddState extends State<CustomerAdd> {
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
     await context.read<AddUserProvider>().addUser(
-          userUid: widget.user!.uid,
           name: name!,
           surname: surname!,
           phone: phone!,

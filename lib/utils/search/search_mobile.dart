@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/utils/search/search_dialog.dart';
 
@@ -8,14 +7,12 @@ import '../../../providers/providers.dart';
 enum SelectSearchMob { customer, employee }
 
 class SearchMobile extends StatefulWidget {
-  final User? user;
   final double width;
   final void Function(String, String)? setAppointment;
   final SelectSearchMob? selectSearch;
 
   const SearchMobile({
     super.key,
-    this.user,
     required this.width,
     this.setAppointment,
     this.selectSearch,
@@ -33,9 +30,9 @@ class _SearchMobileState extends State<SearchMobile> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.selectSearch == SelectSearchMob.customer) {
-        context.read<SearchUserProvider>().searchUsers(user: widget.user!.uid);
+        context.read<SearchUserProvider>().searchUsers();
       } else {
-        context.read<EmployeeProvider>().searchEmployee(user: widget.user!.uid);
+        context.read<EmployeeProvider>().searchEmployee();
       }
     });
   }
