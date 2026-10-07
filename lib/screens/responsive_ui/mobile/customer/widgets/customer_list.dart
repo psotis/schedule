@@ -114,8 +114,11 @@ class _CustomerListState extends State<CustomerList> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Αδύνατη η φόρτωση πελατών'));
+                }
                 _allCustomers.clear();
-                _allCustomers.addAll(snapshot.data!);
+                _allCustomers.addAll(snapshot.data ?? <AppointMent>[]);
 
                 final filteredCustomers = _allCustomers.where((customer) {
                   final fullName =

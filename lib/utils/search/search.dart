@@ -79,7 +79,11 @@ class _SearchState extends State<Search> {
                 ),
               );
             }).toList(),
-            onSelected: (val) => widget.setAppointment!(val!.name, val.surname),
+            onSelected: (val) {
+              final setAppointment = widget.setAppointment;
+              if (val == null || setAppointment == null) return;
+              setAppointment(val.name, val.surname);
+            },
           )
         : DropdownMenu(
             controller: _search,
@@ -106,7 +110,11 @@ class _SearchState extends State<Search> {
                 ),
               );
             }).toList(),
-            onSelected: (val) => widget.setAppointment!(val!.name, val.surname),
+            onSelected: (val) {
+              final setAppointment = widget.setAppointment;
+              if (val == null || setAppointment == null) return;
+              setAppointment(val.name, val.surname);
+            },
           );
   }
 }

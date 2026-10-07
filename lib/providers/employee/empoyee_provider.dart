@@ -1,4 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:scheldule/models/employee.dart';
@@ -14,11 +16,30 @@ class EmployeeProvider with ChangeNotifier {
   List<Employee> employees = [];
 
   late String deleteDoc;
+  late final StreamSubscription<void> _changes;
 
   final EmployeeRepository employeeRepository;
   EmployeeProvider({
     required this.employeeRepository,
-  });
+  }) {
+    _changes = employeeRepository.changes.listen((_) => _refreshEmployees());
+  }
+
+  Future<void> _refreshEmployees() async {
+    try {
+      employees = await employeeRepository.findEmployee();
+      _employeeState = _employeeState?.copyWith(
+        employee: employees,
+        employeeStatus:
+            employees.isEmpty ? EmployeeStatus.empty : EmployeeStatus.loaded,
+      );
+      notifyListeners();
+    } catch (_) {
+      _employeeState =
+          _employeeState?.copyWith(employeeStatus: EmployeeStatus.error);
+      notifyListeners();
+    }
+  }
 
   Future<List<Employee>> searchEmployee() async {
     _employeeState =
@@ -171,5 +192,11 @@ class EmployeeProvider with ChangeNotifier {
     _employeeState =
         _employeeState?.copyWith(employeeStatus: EmployeeStatus.delete);
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _changes.cancel();
+    super.dispose();
   }
 }

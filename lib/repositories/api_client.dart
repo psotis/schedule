@@ -1,8 +1,9 @@
 import 'dart:convert';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+
+import 'realtime_client.dart';
 
 class ApiException implements Exception {
   final int statusCode;
@@ -22,6 +23,7 @@ class ApiClient {
   final http.Client _client;
   final FlutterSecureStorage _storage;
   final String baseUrl;
+  late final RealtimeClient realtime;
 
   String? _token;
   String? _storeId;
@@ -32,10 +34,13 @@ class ApiClient {
     String? baseUrl,
   })  : _client = client ?? http.Client(),
         _storage = storage ?? const FlutterSecureStorage(),
-        baseUrl = (baseUrl ?? dotenv.env['API_BASE_URL'] ?? '').replaceAll(
+        baseUrl = (baseUrl ?? const String.fromEnvironment('API_BASE_URL'))
+            .replaceAll(
           RegExp(r'/$'),
           '',
-        );
+        ) {
+    realtime = RealtimeClient(baseUrl: this.baseUrl);
+  }
 
   bool get hasSession => _token != null && _token!.isNotEmpty;
   String? get activeStoreId => _storeId;
@@ -43,6 +48,7 @@ class ApiClient {
   Future<void> restoreSession() async {
     _token = await _storage.read(key: _tokenKey);
     _storeId = await _storage.read(key: _storeKey);
+    await _connectRealtime();
   }
 
   Future<void> saveSession({required String token, String? storeId}) async {
@@ -54,6 +60,7 @@ class ApiClient {
     } else {
       await _storage.write(key: _storeKey, value: storeId);
     }
+    await _connectRealtime();
   }
 
   Future<void> selectStore(String storeId, {String? token}) async {
@@ -61,6 +68,7 @@ class ApiClient {
   }
 
   Future<void> clearSession() async {
+    await realtime.disconnect();
     _token = null;
     _storeId = null;
     await Future.wait([
@@ -79,6 +87,18 @@ class ApiClient {
       _send('PUT', path, body: body);
 
   Future<dynamic> delete(String path) => _send('DELETE', path);
+
+  Stream<void> watch(String resource) => realtime.watch(resource);
+
+  Future<void> _connectRealtime() async {
+    final token = _token;
+    final storeId = _storeId;
+    if (token == null || storeId == null || storeId.isEmpty) {
+      await realtime.disconnect();
+      return;
+    }
+    await realtime.connect(token: token, storeId: storeId);
+  }
 
   Future<dynamic> _send(
     String method,

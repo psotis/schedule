@@ -114,7 +114,11 @@ class _CustomerListState extends State<CustomerList> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 }
-                final List<AppointMent> sortedData = List.from(snapshot.data!);
+                if (snapshot.hasError) {
+                  return Center(child: Text('Αδύνατη η φόρτωση πελατών'));
+                }
+                final data = snapshot.data ?? <AppointMent>[];
+                final List<AppointMent> sortedData = List.from(data);
                 sortedData.sort((a, b) =>
                     a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 

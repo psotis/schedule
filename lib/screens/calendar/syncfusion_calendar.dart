@@ -149,6 +149,12 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               }
+              if (snapshot.hasError) {
+                return Center(child: Text('Αδύνατη η φόρτωση ραντεβού'));
+              }
+              final appointments = (snapshot.data ?? <app.AppointMent>[])
+                  .where((appointment) => appointment.date != null)
+                  .toList();
 
               final employeeProvider = context.watch<EmployeeProvider>();
 
@@ -202,7 +208,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                     appointmentDisplayMode:
                         MonthAppointmentDisplayMode.appointment,
                   ),
-                  dataSource: MeetingDataSource(snapshot.data!.map((e) {
+                  dataSource: MeetingDataSource(appointments.map((e) {
                     return AppointMent(
                       '${e.name} ${e.surname}',
                       e.id,
@@ -230,13 +236,17 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               }
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              if (snapshot.hasError) {
+                return Center(child: Text('Αδύνατη η φόρτωση ραντεβού'));
+              }
+              final appointments = snapshot.data ?? <app.AppointMent>[];
+              if (appointments.isEmpty) {
                 return Center(child: Text('Δεν βρέθηκαν σημερινά ραντεβού'));
               }
 
               int todaysIncome = 0;
-              for (var i = 0; i < snapshot.data!.length; i++) {
-                todaysIncome += snapshot.data![i].paid ?? 0;
+              for (var i = 0; i < appointments.length; i++) {
+                todaysIncome += appointments[i].paid ?? 0;
               }
 
               return Padding(
@@ -431,6 +441,12 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Αδύνατη η φόρτωση ραντεβού'));
+                }
+                final appointments = (snapshot.data ?? <app.AppointMent>[])
+                    .where((appointment) => appointment.date != null)
+                    .toList();
 
                 final employeeProvider = context.watch<EmployeeProvider>();
 
@@ -491,7 +507,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                         appointmentDisplayMode:
                             MonthAppointmentDisplayMode.appointment,
                       ),
-                      dataSource: MeetingDataSource(snapshot.data!.map((e) {
+                      dataSource: MeetingDataSource(appointments.map((e) {
                         return AppointMent(
                           '${e.name} ${e.surname}',
                           e.id,
@@ -518,13 +534,17 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 }
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Αδύνατη η φόρτωση ραντεβού'));
+                }
+                final appointments = snapshot.data ?? <app.AppointMent>[];
+                if (appointments.isEmpty) {
                   return Center(child: Text('Δεν βρέθηκαν σημερινά ραντεβού'));
                 }
 
                 int todaysIncome = 0;
-                for (var i = 0; i < snapshot.data!.length; i++) {
-                  todaysIncome += snapshot.data![i].paid ?? 0;
+                for (var i = 0; i < appointments.length; i++) {
+                  todaysIncome += appointments[i].paid ?? 0;
                 }
                 return Padding(
                   padding: EdgeInsets.only(top: 20, bottom: 25),
@@ -555,8 +575,8 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                             ),
                           ],
                         ),
-                        ...List.generate(snapshot.data!.length, (index) {
-                          var appoint = snapshot.data?[index];
+                        ...List.generate(appointments.length, (index) {
+                          var appoint = appointments[index];
                           return InkWell(
                             onTap: () async {
                               final List<app.AppointMent> customer =

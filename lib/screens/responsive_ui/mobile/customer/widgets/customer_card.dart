@@ -307,8 +307,8 @@ class _CustomerCardState extends State<CustomerCard> {
         );
   }
 
-  void _removeUser({required String clientId}) async {
-    await context.read<SearchUserProvider>().deleteUser(clientId: clientId);
+  Future<bool> _removeUser({required String clientId}) {
+    return context.read<SearchUserProvider>().deleteUser(clientId: clientId);
   }
 
   void seeApp() async {
@@ -448,9 +448,18 @@ class _CustomerCardState extends State<CustomerCard> {
       children: [
         SendButton(
           onPressed: () async {
-            _removeUser(
+            final deleted = await _removeUser(
               clientId: widget.customer.id,
             );
+
+            if (!mounted) return;
+            if (!deleted) {
+              snackBarDialog(context,
+                  color: Colors.red,
+                  message:
+                      'Ο πελάτης έχει ραντεβού και δεν μπορεί να διαγραφεί');
+              return;
+            }
 
             hideScreen();
             snackBarDialog(context,

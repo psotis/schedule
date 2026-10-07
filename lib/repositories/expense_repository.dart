@@ -6,6 +6,8 @@ class TransactionRepository {
 
   TransactionRepository({required this.apiClient});
 
+  Stream<void> get changes => apiClient.watch('transactions');
+
   Future<bool> addTransaction({
     required AppTransaction tx,
   }) async {

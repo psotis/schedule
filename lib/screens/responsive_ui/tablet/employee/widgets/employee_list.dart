@@ -49,8 +49,12 @@ class _EmployeeListState extends State<EmployeeList> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Αδύνατη η φόρτωση εργαζομένων'));
+                }
 
-                final filteredEmployee = snapshot.data!.where((employee) {
+                final data = snapshot.data ?? <Employee>[];
+                final filteredEmployee = data.where((employee) {
                   final fullName =
                       '${employee.name} ${employee.surname}'.toLowerCase();
                   return fullName.contains(_searchTerm.toLowerCase());

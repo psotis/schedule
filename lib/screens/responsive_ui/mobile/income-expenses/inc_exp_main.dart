@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/models/app_timestamp.dart';
@@ -46,18 +48,32 @@ class _IncExpMainState extends State<IncExpMain> {
 
   bool _monthLoading = false;
   List<AppTransaction> _monthTx = [];
+  StreamSubscription<void>? _transactionChanges;
 
   @override
   void initState() {
     super.initState();
+    _transactionChanges = context
+        .read<TransactionRepository>()
+        .changes
+        .listen((_) => _refreshTransactions());
     _bootstrap();
   }
 
   @override
   void dispose() {
+    _transactionChanges?.cancel();
     _amountCtrl.dispose();
     _descCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _refreshTransactions() async {
+    if (!mounted) return;
+    await Future.wait([
+      _loadMonth(),
+      _loadByDay(_selectedDay),
+    ]);
   }
 
   double get _monthlyIncome => _monthTx.fold(

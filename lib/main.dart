@@ -18,7 +18,6 @@ import 'package:scheldule/repositories/search_edit_user_repository.dart';
 import 'package:scheldule/repositories/user_admin_repository.dart';
 import 'package:scheldule/routes/route_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'repositories/add_appointment_repository.dart';
 import 'repositories/employee_repository.dart';
@@ -29,8 +28,7 @@ SharedPreferences? prefs;
 Future<void> main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  await dotenv.load(fileName: ".env");
-  final geminiApiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+  const geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
   if (geminiApiKey.isNotEmpty) Gemini.init(apiKey: geminiApiKey);
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle

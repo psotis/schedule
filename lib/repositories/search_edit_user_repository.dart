@@ -7,10 +7,12 @@ class SearchEditUserRepository {
 
   SearchEditUserRepository({required this.apiClient});
 
+  Stream<void> get changes => apiClient.watch('clients');
+
   Stream<List<AppointMent>> streamUser() async* {
-    while (true) {
+    yield await findUsers();
+    await for (final _ in changes) {
       yield await findUsers();
-      await Future<void>.delayed(const Duration(seconds: 5));
     }
   }
 

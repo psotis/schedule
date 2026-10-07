@@ -8,17 +8,19 @@ class AppointmentRepository {
 
   AppointmentRepository({required this.apiClient});
 
+  Stream<void> get changes => apiClient.watch('appointments');
+
   Stream<List<AppointMent>> streamAppointment() async* {
-    while (true) {
+    yield await fetchAppointments();
+    await for (final _ in changes) {
       yield await fetchAppointments();
-      await Future<void>.delayed(const Duration(seconds: 5));
     }
   }
 
   Stream<List<AppointMent>> streamTodayAppointment() async* {
-    while (true) {
+    yield await fetchAppointmentsByDate(date: DateTime.now());
+    await for (final _ in changes) {
       yield await fetchAppointmentsByDate(date: DateTime.now());
-      await Future<void>.delayed(const Duration(seconds: 5));
     }
   }
 

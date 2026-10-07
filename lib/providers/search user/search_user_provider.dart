@@ -1,4 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:scheldule/models/custom_errors.dart';
 
@@ -13,11 +15,33 @@ class SearchUserProvider extends ChangeNotifier {
   List<AppointMent> appointment = [];
   AppointMent? searchPatient;
   late int length;
+  late final StreamSubscription<void> _changes;
 
   final SearchEditUserRepository searchEditUserRepository;
   SearchUserProvider({
     required this.searchEditUserRepository,
-  });
+  }) {
+    _changes = searchEditUserRepository.changes.listen((_) => _refreshUsers());
+  }
+
+  Future<void> _refreshUsers() async {
+    try {
+      appointment = await searchEditUserRepository.findUsers();
+      _searchUserState = _searchUserState.copyWith(
+        appointMent: appointment,
+        searchUserStatus: appointment.isEmpty
+            ? SearchUserStatus.empty
+            : SearchUserStatus.loadedList,
+      );
+      notifyListeners();
+    } on CustomError catch (error) {
+      _searchUserState = _searchUserState.copyWith(
+        searchUserStatus: SearchUserStatus.error,
+        error: error,
+      );
+      notifyListeners();
+    }
+  }
 
   Future<List<AppointMent>> searchUsers() async {
     _searchUserState =
@@ -158,17 +182,24 @@ class SearchUserProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteUser({required String clientId}) async {
+  Future<bool> deleteUser({required String clientId}) async {
     try {
       await searchEditUserRepository.deleteUser(clientId: clientId);
       _searchUserState =
           _searchUserState.copyWith(searchUserStatus: SearchUserStatus.delete);
       notifyListeners();
+      return true;
     } on CustomError catch (e) {
       _searchUserState = _searchUserState.copyWith(
           searchUserStatus: SearchUserStatus.error, error: e);
       notifyListeners();
-      rethrow;
+      return false;
     }
+  }
+
+  @override
+  void dispose() {
+    _changes.cancel();
+    super.dispose();
   }
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../models/app_user.dart';
@@ -20,12 +19,13 @@ class AuthRepository {
       : _googleSignIn = googleSignIn ??
             GoogleSignIn(
               clientId: kIsWeb
-                  ? dotenv.env['GOOGLE_WEB_CLIENT_ID']
+                  ? const String.fromEnvironment('GOOGLE_WEB_CLIENT_ID')
                   : defaultTargetPlatform == TargetPlatform.iOS ||
                           defaultTargetPlatform == TargetPlatform.macOS
-                      ? dotenv.env['GOOGLE_IOS_CLIENT_ID']
+                      ? const String.fromEnvironment('GOOGLE_IOS_CLIENT_ID')
                       : null,
-              serverClientId: dotenv.env['GOOGLE_SERVER_CLIENT_ID'],
+              serverClientId:
+                  const String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID'),
               scopes: const ['email', 'profile'],
             );
 

@@ -8,10 +8,12 @@ class EmployeeRepository {
 
   EmployeeRepository({required this.apiClient});
 
+  Stream<void> get changes => apiClient.watch('employees');
+
   Stream<List<Employee>> streamEmployee() async* {
-    while (true) {
+    yield await findEmployee();
+    await for (final _ in changes) {
       yield await findEmployee();
-      await Future<void>.delayed(const Duration(seconds: 5));
     }
   }
 
