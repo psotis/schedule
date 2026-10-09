@@ -141,6 +141,30 @@ class AppTransaction extends Equatable {
     );
   }
 
+  static double totalForType(
+    Iterable<AppTransaction> transactions,
+    TransactionType type,
+  ) {
+    final cents = transactions.fold<int>(
+      0,
+      (sum, transaction) => transaction.type == type
+          ? sum + (transaction.amount * 100).round()
+          : sum,
+    );
+    return cents / 100;
+  }
+
+  static double netTotal(Iterable<AppTransaction> transactions) {
+    final cents = transactions.fold<int>(
+      0,
+      (sum, transaction) =>
+          sum +
+          (transaction.type == TransactionType.income ? 1 : -1) *
+              (transaction.amount * 100).round(),
+    );
+    return cents / 100;
+  }
+
   @override
   List<Object?> get props => [
         id,

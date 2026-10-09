@@ -8,6 +8,27 @@ class TransactionRepository {
 
   Stream<void> get changes => apiClient.watch('transactions');
 
+  Future<bool> hasFinancePin() async {
+    final data = Map<String, dynamic>.from(
+      await apiClient.get('/finance/access') as Map,
+    );
+    return data['has_pin'] == true;
+  }
+
+  Future<void> setFinancePin({
+    required String currentPassword,
+    required String pin,
+  }) async {
+    await apiClient.put('/finance/access/pin', body: {
+      'current_password': currentPassword,
+      'pin': pin,
+    });
+  }
+
+  Future<void> verifyFinancePin(String pin) async {
+    await apiClient.post('/finance/access/verify', body: {'pin': pin});
+  }
+
   Future<bool> addTransaction({
     required AppTransaction tx,
   }) async {
@@ -46,7 +67,7 @@ class TransactionRepository {
   }) async {
     try {
       final start = DateTime(day.year, day.month, day.day);
-      final end = start.add(const Duration(days: 1));
+      final end = DateTime(day.year, day.month, day.day + 1);
 
       final data = await apiClient.get('/transactions', query: {
         'from': start.toUtc().toIso8601String(),

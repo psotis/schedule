@@ -76,15 +76,13 @@ class _IncExpMainState extends State<IncExpMain> {
     ]);
   }
 
-  double get _monthlyIncome => _monthTx.fold(
-        0.0,
-        (s, t) => s + (t.type == TransactionType.income ? t.amount : 0.0),
-      );
+  double get _monthlyIncome =>
+      AppTransaction.totalForType(_monthTx, TransactionType.income);
 
-  double get _monthlyExpense => _monthTx.fold(
-        0.0,
-        (s, t) => s + (t.type == TransactionType.expense ? t.amount : 0.0),
-      );
+  double get _monthlyExpense =>
+      AppTransaction.totalForType(_monthTx, TransactionType.expense);
+
+  double get _monthlyNet => AppTransaction.netTotal(_monthTx);
 
   String _monthTitle(int y, int m) {
     const months = [
@@ -206,15 +204,13 @@ class _IncExpMainState extends State<IncExpMain> {
     return (found.first['label'] as String?) ?? (subId.isEmpty ? "—" : subId);
   }
 
-  double get _incomeTotal => _todayTx.fold(
-        0.0,
-        (s, t) => s + (t.type == TransactionType.income ? t.amount : 0.0),
-      );
+  double get _incomeTotal =>
+      AppTransaction.totalForType(_todayTx, TransactionType.income);
 
-  double get _expenseTotal => _todayTx.fold(
-        0.0,
-        (s, t) => s + (t.type == TransactionType.expense ? t.amount : 0.0),
-      );
+  double get _expenseTotal =>
+      AppTransaction.totalForType(_todayTx, TransactionType.expense);
+
+  double get _netTotal => AppTransaction.netTotal(_todayTx);
 
   Future<void> _pickDay() async {
     final picked = await showDatePicker(
@@ -291,7 +287,7 @@ class _IncExpMainState extends State<IncExpMain> {
       _descCtrl.clear();
 
       setState(() => _loading = true);
-      await _loadByDay(_selectedDay);
+      await _refreshTransactions();
       setState(() => _loading = false);
     } catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -317,7 +313,7 @@ class _IncExpMainState extends State<IncExpMain> {
           : RefreshIndicator(
               onRefresh: () async {
                 setState(() => _loading = true);
-                await _loadByDay(_selectedDay);
+                await _refreshTransactions();
                 setState(() => _loading = false);
               },
               child: ListView(
@@ -363,7 +359,7 @@ class _IncExpMainState extends State<IncExpMain> {
                                 'Μηνιαία Έξοδα: ${_monthlyExpense.toStringAsFixed(2)}'),
                             const Divider(),
                             Text(
-                              'Μηνιαίο Καθαρό: ${(_monthlyIncome - _monthlyExpense).toStringAsFixed(2)}',
+                              'Μηνιαίο Καθαρό: ${_monthlyNet.toStringAsFixed(2)}',
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
@@ -390,7 +386,7 @@ class _IncExpMainState extends State<IncExpMain> {
                           Text('Έξοδα: ${_expenseTotal.toStringAsFixed(2)}'),
                           const Divider(),
                           Text(
-                            'Καθαρό: ${(_incomeTotal - _expenseTotal).toStringAsFixed(2)}',
+                            'Καθαρό: ${_netTotal.toStringAsFixed(2)}',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -660,13 +656,15 @@ class _IncExpMainState extends State<IncExpMain> {
                                 txId: removed.id,
                               );
                           if (!deleted && mounted) {
-                            await _loadByDay(_selectedDay);
+                            await _refreshTransactions();
                             setState(() {});
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Αποτυχία διαγραφής'),
                               ),
                             );
+                          } else if (deleted && mounted) {
+                            await _refreshTransactions();
                           }
                         },
                         background: Container(

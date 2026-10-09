@@ -24,8 +24,9 @@ class AuthRepository {
                           defaultTargetPlatform == TargetPlatform.macOS
                       ? const String.fromEnvironment('GOOGLE_IOS_CLIENT_ID')
                       : null,
-              serverClientId:
-                  const String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID'),
+              serverClientId: kIsWeb
+                  ? null
+                  : const String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID'),
               scopes: const ['email', 'profile'],
             );
 
