@@ -5,8 +5,8 @@ import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/customer/widgets/customer_add.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/customer/widgets/customer_card.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/customer/widgets/customer_list.dart';
+import 'package:scheldule/screens/responsive_ui/widgets/section_tabs.dart';
 
-import '../../../../constants/screen sizes/screen_sizes.dart';
 import '../../../../providers/toggle_screen/toggle_screen_state.dart';
 
 class Customer extends StatefulWidget {
@@ -45,47 +45,19 @@ class _CustomerState extends State<Customer>
       child: Row(
         children: [
           Flexible(
-            child: Column(
-              children: [
-                TabBar(controller: _tabController, tabs: [
-                  SizedBox(
-                    height: ScreenSize.screenHeight * .08,
-                    width: ScreenSize.screenWidth * .2,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Λίστα πελατών',
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: ScreenSize.screenHeight * .08,
-                    width: ScreenSize.screenWidth * .2,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Προσθήκη πελάτη',
-                      ),
-                    ),
-                  ),
-                ]),
-                Flexible(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      Tab(
-                        child: CustomerList(),
-                      ),
-                      Tab(
-                        child: CustomerAdd(),
-                      )
-                    ],
-                  ),
+            child: SectionTabs(
+              controller: _tabController!,
+              tabs: const [
+                SectionTabItem('Λίστα πελατών', Icons.people_alt_outlined),
+                SectionTabItem(
+                  'Νέος πελάτης',
+                  Icons.person_add_alt_1_rounded,
                 ),
               ],
+              children: const [CustomerList(), CustomerAdd()],
             ),
           ),
-          VerticalDivider(),
+          const VerticalDivider(width: 1),
           Flexible(child: Consumer<ToggleScreenProvider>(
             builder: (context, state, child) {
               if (state.toggleState?.toggleStatus == ToggleStatus.yes) {

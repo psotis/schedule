@@ -6,8 +6,7 @@ import 'package:scheldule/providers/toggle_screen/toggle_screen_state.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/employee/widgets/employee_add.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/employee/widgets/employee_card.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/employee/widgets/employee_list.dart';
-
-import '../../../../constants/screen sizes/screen_sizes.dart';
+import 'package:scheldule/screens/responsive_ui/widgets/section_tabs.dart';
 
 class Employee extends StatefulWidget {
   const Employee({
@@ -41,47 +40,19 @@ class _EmployeeState extends State<Employee>
       child: Row(
         children: [
           Flexible(
-            child: Column(
-              children: [
-                TabBar(controller: _tabController, tabs: [
-                  SizedBox(
-                    height: ScreenSize.screenHeight * .08,
-                    width: ScreenSize.screenWidth * .2,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Λίστα εργαζομένων',
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: ScreenSize.screenHeight * .08,
-                    width: ScreenSize.screenWidth * .2,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Προσθήκη εργαζόμενου',
-                      ),
-                    ),
-                  ),
-                ]),
-                Flexible(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      Tab(
-                        child: EmployeeList(),
-                      ),
-                      Tab(
-                        child: EmployeeAdd(),
-                      )
-                    ],
-                  ),
+            child: SectionTabs(
+              controller: _tabController!,
+              tabs: const [
+                SectionTabItem('Ομάδα', Icons.badge_outlined),
+                SectionTabItem(
+                  'Νέος εργαζόμενος',
+                  Icons.person_add_alt_1_rounded,
                 ),
               ],
+              children: const [EmployeeList(), EmployeeAdd()],
             ),
           ),
-          VerticalDivider(),
+          const VerticalDivider(width: 1),
           Flexible(child: Consumer<ToggleScreenProvider>(
             builder: (context, state, child) {
               if (state.toggleState?.toggleStatus == ToggleStatus.yes) {

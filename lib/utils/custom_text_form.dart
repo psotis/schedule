@@ -102,7 +102,9 @@ class CustomTextForm extends StatelessWidget {
         ),
       ),
       style: TextStyle(
-        color: chooseText == ChooseText.owes ? Colors.redAccent : Colors.white,
+        color: chooseText == ChooseText.owes
+            ? Colors.redAccent
+            : Theme.of(context).colorScheme.onSurface,
         fontWeight:
             chooseText == ChooseText.owes ? FontWeight.bold : FontWeight.normal,
         fontSize: 16,

@@ -2,8 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:scheldule/screens/responsive_ui/appointments/appointment_editor.dart';
 import 'package:scheldule/screens/responsive_ui/appointments/appointment_history_view.dart';
-
-import '../../../../constants/screen sizes/screen_sizes.dart';
+import 'package:scheldule/screens/responsive_ui/widgets/section_tabs.dart';
 
 class Appointments extends StatefulWidget {
   const Appointments({
@@ -36,46 +35,13 @@ class _AppointmentsState extends State<Appointments>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      child: Column(
-        children: [
-          TabBar(controller: _tabController, tabs: [
-            SizedBox(
-              height: ScreenSize.screenHeight * .08,
-              width: ScreenSize.screenWidth * .2,
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Προσθήκη ραντεβού',
-                ),
-              ),
-            ),
-            SizedBox(
-              height: ScreenSize.screenHeight * .08,
-              width: ScreenSize.screenWidth * .2,
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Ιστορικό',
-                ),
-              ),
-            ),
-          ]),
-          Flexible(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                Tab(
-                  child: AppointmentEditor(),
-                ),
-                Tab(
-                  child: AppointmentHistoryView(),
-                )
-              ],
-            ),
-          ),
-        ],
-      ),
+    return SectionTabs(
+      controller: _tabController!,
+      tabs: const [
+        SectionTabItem('Νέο', Icons.add_circle_outline_rounded),
+        SectionTabItem('Ιστορικό', Icons.history_rounded),
+      ],
+      children: const [AppointmentEditor(), AppointmentHistoryView()],
     );
   }
 }

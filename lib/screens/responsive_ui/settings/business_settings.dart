@@ -538,8 +538,8 @@ class _SettingsList extends StatelessWidget {
           spacing: 12,
           runSpacing: 12,
           children: [
-            SizedBox(
-              width: 600,
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -648,8 +648,8 @@ class _ServiceDialogState extends State<_ServiceDialog> {
     return AlertDialog(
       title: Text(
           widget.service == null ? 'Νέα υπηρεσία' : 'Επεξεργασία υπηρεσίας'),
-      content: SizedBox(
-        width: 450,
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 450),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -737,8 +737,8 @@ class _StationDialogState extends State<_StationDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.station == null ? 'Νέος χώρος' : 'Επεξεργασία χώρου'),
-      content: SizedBox(
-        width: 400,
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -798,8 +798,8 @@ class _EmployeeServicesDialogState extends State<_EmployeeServicesDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Υπηρεσίες: ${widget.employee.name}'),
-      content: SizedBox(
-        width: 480,
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
         child: ListView(
           shrinkWrap: true,
           children: widget.services
@@ -884,8 +884,8 @@ class _AvailabilityDialogState extends State<_AvailabilityDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Ωράριο: ${widget.employee.name}'),
-      content: SizedBox(
-        width: 520,
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -991,8 +991,8 @@ class _TimeOffDialogState extends State<_TimeOffDialog> {
     final format = DateFormat('dd/MM/yyyy HH:mm');
     return AlertDialog(
       title: const Text('Νέα άδεια / μη διαθεσιμότητα'),
-      content: SizedBox(
-        width: 480,
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1073,8 +1073,8 @@ class _MemberDialogState extends State<_MemberDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Προσθήκη χρήστη στο κατάστημα'),
-      content: SizedBox(
-        width: 420,
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

@@ -14,9 +14,9 @@ class HomeLayoutScreen extends StatelessWidget {
     return PopScope(
       canPop: false,
       child: ResponsiveLayout(
-        mobile: MobileHomepage(),
-        tablet: TabletHomepage(),
-        desktop: DesktopHomepage(),
+        mobile: const MobileHomepage(),
+        tablet: const TabletHomepage(),
+        desktop: const DesktopHomepage(),
       ),
     );
   }

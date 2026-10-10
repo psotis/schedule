@@ -2,8 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/customer/widgets/customer_add.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/customer/widgets/customer_list.dart';
-
-import '../../../../constants/screen sizes/screen_sizes.dart';
+import 'package:scheldule/screens/responsive_ui/widgets/section_tabs.dart';
 
 class Customer extends StatefulWidget {
   const Customer({
@@ -36,46 +35,13 @@ class _CustomerState extends State<Customer>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      child: Column(
-        children: [
-          TabBar(controller: _tabController, tabs: [
-            SizedBox(
-              height: ScreenSize.screenHeight * .08,
-              width: ScreenSize.screenWidth * .2,
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Λίστα πελατών',
-                ),
-              ),
-            ),
-            SizedBox(
-              height: ScreenSize.screenHeight * .08,
-              width: ScreenSize.screenWidth * .2,
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Προσθήκη πελάτη',
-                ),
-              ),
-            ),
-          ]),
-          Flexible(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                Tab(
-                  child: CustomerList(),
-                ),
-                Tab(
-                  child: CustomerAdd(),
-                )
-              ],
-            ),
-          ),
-        ],
-      ),
+    return SectionTabs(
+      controller: _tabController!,
+      tabs: const [
+        SectionTabItem('Λίστα πελατών', Icons.people_alt_outlined),
+        SectionTabItem('Νέος πελάτης', Icons.person_add_alt_1_rounded),
+      ],
+      children: const [CustomerList(), CustomerAdd()],
     );
   }
 }

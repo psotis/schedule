@@ -2,8 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/employee/widgets/employee_add.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/employee/widgets/employee_list.dart';
-
-import '../../../../constants/screen sizes/screen_sizes.dart';
+import 'package:scheldule/screens/responsive_ui/widgets/section_tabs.dart';
 
 class Employee extends StatefulWidget {
   const Employee({
@@ -32,46 +31,13 @@ class _EmployeeState extends State<Employee>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      child: Column(
-        children: [
-          TabBar(controller: _tabController, tabs: [
-            SizedBox(
-              height: ScreenSize.screenHeight * .08,
-              width: ScreenSize.screenWidth * .2,
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Λίστα εργαζομένων',
-                ),
-              ),
-            ),
-            SizedBox(
-              height: ScreenSize.screenHeight * .08,
-              width: ScreenSize.screenWidth * .2,
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Προσθήκη εργαζόμενου',
-                ),
-              ),
-            ),
-          ]),
-          Flexible(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                Tab(
-                  child: EmployeeList(),
-                ),
-                Tab(
-                  child: EmployeeAdd(),
-                )
-              ],
-            ),
-          ),
-        ],
-      ),
+    return SectionTabs(
+      controller: _tabController!,
+      tabs: const [
+        SectionTabItem('Ομάδα', Icons.badge_outlined),
+        SectionTabItem('Νέος εργαζόμενος', Icons.person_add_alt_1_rounded),
+      ],
+      children: const [EmployeeList(), EmployeeAdd()],
     );
   }
 }

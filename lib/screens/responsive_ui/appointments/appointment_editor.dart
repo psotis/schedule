@@ -281,7 +281,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
     }
 
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600 ? 12 : 20),
       children: [
         Text('Νέο ραντεβού', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 16),
@@ -290,8 +290,8 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
           runSpacing: 12,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            SizedBox(
-              width: 420,
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
               child: Autocomplete<AppointMent>(
                 displayStringForOption: _clientLabel,
                 optionsBuilder: (value) {
@@ -621,8 +621,8 @@ class _NewClientDialogState extends State<_NewClientDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Νέα πελάτισσα / πελάτης'),
-      content: SizedBox(
-        width: 420,
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,

@@ -132,7 +132,7 @@ class _AppointmentHistoryState extends State<AppointmentHistory> {
                     children: [
                       CustomText(
                         text: 'Ημερήσιο Εισόδημα: $todaysIncome €',
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.normal,
                       ),

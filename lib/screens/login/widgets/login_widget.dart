@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import 'package:scheldule/providers/log_in/login_state.dart';
 
-import '../../../constants/screen%20sizes/screen_sizes.dart';
 import '../../../providers/providers.dart';
 
 class LoginWidget extends StatefulWidget {
@@ -48,9 +47,7 @@ class _LoginWidgetState extends State<LoginWidget> {
         //* ****************** Email textfield ***************************
         SizedBox(
           // height: ScreenSize.screenHeight * .1,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
+          width: double.infinity,
           child: TextFormField(
             style: TextStyle(color: Colors.black),
             controller: _emailController,
@@ -75,9 +72,7 @@ class _LoginWidgetState extends State<LoginWidget> {
         //* ****************** Password textfield ***************************
         SizedBox(
           // height: ScreenSize.screenHeight * .1,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
+          width: double.infinity,
           child: TextFormField(
             style: TextStyle(color: Colors.black),
             controller: _passwordController,
@@ -112,10 +107,8 @@ class _LoginWidgetState extends State<LoginWidget> {
           ),
         ),
         SizedBox(
-          height: ScreenSize.screenHeight * .06,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
+          height: 48,
+          width: double.infinity,
           child: ElevatedButton(
             style: ButtonStyle(
                 foregroundColor: WidgetStatePropertyAll(Colors.white),
@@ -125,8 +118,8 @@ class _LoginWidgetState extends State<LoginWidget> {
             onPressed: loginStatus == SigninStatus.submitting ? null : signIn,
             child: loginStatus == SigninStatus.submitting
                 ? SizedBox(
-                    height: ScreenSize.screenHeight * .04,
-                    width: ScreenSize.screenWidth * .03,
+                    height: 22,
+                    width: 22,
                     child: Center(
                       child: CircularProgressIndicator(
                         color: Colors.red,
@@ -143,10 +136,8 @@ class _LoginWidgetState extends State<LoginWidget> {
         ),
         // SizedBox(height: ScreenSize.screenHeight * .02),
         SizedBox(
-          height: ScreenSize.screenHeight * .06,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
+          height: 48,
+          width: double.infinity,
           child: OutlinedButton(
             onPressed: () => context.read<ChangePageProvider>().changePage(),
             child: Text('Create Account',

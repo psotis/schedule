@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../constants/screen%20sizes/screen_sizes.dart';
 import '../../providers/providers.dart';
 import '../../providers/sign_up/signup_state.dart';
 import '../../repositories/api_client.dart';
@@ -82,9 +81,7 @@ class _SignupWidgetState extends State<SignupWidget> {
         //* ****************** Name textfield ***************************
         SizedBox(
           // height: ScreenSize.screenHeight * .1,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
+          width: double.infinity,
           child: TextFormField(
             style: TextStyle(color: Colors.black),
             controller: _nameController,
@@ -108,9 +105,7 @@ class _SignupWidgetState extends State<SignupWidget> {
         ),
 
         SizedBox(
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
+          width: double.infinity,
           child: _loadingStoreTypes
               ? const Center(child: CircularProgressIndicator())
               : _storeTypesError != null
@@ -153,9 +148,7 @@ class _SignupWidgetState extends State<SignupWidget> {
         //* ****************** Email textfield ***************************
         SizedBox(
           // height: ScreenSize.screenHeight * .1,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
+          width: double.infinity,
           child: TextFormField(
             style: TextStyle(color: Colors.black),
             controller: _emailController,
@@ -181,9 +174,7 @@ class _SignupWidgetState extends State<SignupWidget> {
         //* ****************** Password textfield ***************************
         SizedBox(
           // height: ScreenSize.screenHeight * .1,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
+          width: double.infinity,
           child: TextFormField(
             style: TextStyle(color: Colors.black),
             controller: _passwordController,
@@ -218,10 +209,8 @@ class _SignupWidgetState extends State<SignupWidget> {
         ),
         // SizedBox(height: ScreenSize.screenHeight * .02),
         SizedBox(
-          height: ScreenSize.screenHeight * .06,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
+          height: 48,
+          width: double.infinity,
           child: ElevatedButton(
             style: ButtonStyle(
                 foregroundColor: WidgetStatePropertyAll(Colors.white),
@@ -231,8 +220,8 @@ class _SignupWidgetState extends State<SignupWidget> {
             onPressed: signupStatus == SignupStatus.submitting ? null : signUp,
             child: signupStatus == SignupStatus.submitting
                 ? SizedBox(
-                    height: ScreenSize.screenHeight * .04,
-                    width: ScreenSize.screenWidth * .03,
+                    height: 22,
+                    width: 22,
                     child: Center(
                       child: CircularProgressIndicator(
                         color: Colors.red,
@@ -249,10 +238,8 @@ class _SignupWidgetState extends State<SignupWidget> {
         ),
         // SizedBox(height: ScreenSize.screenHeight * .02),
         SizedBox(
-          height: ScreenSize.screenHeight * .06,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
+          height: 48,
+          width: double.infinity,
           child: ElevatedButton(
             onPressed: () => context.read<ChangePageProvider>().changePage(),
             child: Text('Back to login',

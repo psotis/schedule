@@ -138,7 +138,7 @@ class _AppointmentHistoryViewState extends State<AppointmentHistoryView> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600 ? 12 : 20),
       child: Column(
         children: [
           Wrap(

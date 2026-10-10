@@ -87,6 +87,16 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   # fonts:
+  fonts:
+    - family: IBMPlexSans
+      fonts:
+        - asset: assets/google_fonts/ibm_plex_sans/IBMPlexSans-Regular.ttf
+        - asset: assets/google_fonts/ibm_plex_sans/IBMPlexSans-Medium.ttf
+          weight: 500
+        - asset: assets/google_fonts/ibm_plex_sans/IBMPlexSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/google_fonts/ibm_plex_sans/IBMPlexSans-Bold.ttf
+          weight: 700
   #   - family: Schyler
   #     fonts:
   #       - asset: fonts/Schyler-Regular.ttf

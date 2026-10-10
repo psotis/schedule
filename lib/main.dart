@@ -138,6 +138,7 @@ class MyApp extends StatelessWidget {
           title: 'My Schedule',
           debugShowCheckedModeBanner: false,
           theme: context.watch<ThemeProvider>().state?.themeData,
+          themeAnimationDuration: Duration.zero,
           onGenerateRoute: RouteGenerator.generateRoute,
           navigatorKey: AppMaterialKey.materialKey,
           initialRoute: '/',

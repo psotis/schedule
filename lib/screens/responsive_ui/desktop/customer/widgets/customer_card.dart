@@ -777,7 +777,7 @@ class _CustomerCardState extends State<CustomerCard> {
                   children: [
                     CustomText(
                         text: 'Κίνηση:',
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.normal),
                     CustomCheckbox(
@@ -819,7 +819,7 @@ class _CustomerCardState extends State<CustomerCard> {
                   children: [
                     CustomText(
                         text: 'Ισορροπία/Στάση:',
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.normal),
                     CustomCheckbox(
@@ -859,7 +859,7 @@ class _CustomerCardState extends State<CustomerCard> {
                   children: [
                     CustomText(
                         text: 'Αίσθηση πόνου:',
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.normal),
                     CustomCheckbox(

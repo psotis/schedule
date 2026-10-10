@@ -258,19 +258,19 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                       children: [
                         CustomText(
                           text: 'Σημερινά Ραντεβού',
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
                         CustomText(
                           text: '-',
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
                         CustomText(
                           text: 'Σημερινό Εισόδημα: $todaysIncome €',
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
@@ -557,19 +557,19 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                           children: [
                             CustomText(
                               text: 'Σημερινά Ραντεβού',
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),
                             CustomText(
                               text: '-',
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),
                             CustomText(
                               text: 'Σημερινό Εισόδημα: $todaysIncome €',
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),
