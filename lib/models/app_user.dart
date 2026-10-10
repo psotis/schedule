@@ -7,6 +7,7 @@ class AppUser extends Equatable {
   final String photoUrl;
   final String role;
   final String activeStoreId;
+  final String storeRole;
 
   const AppUser({
     required this.uid,
@@ -15,6 +16,7 @@ class AppUser extends Equatable {
     required this.photoUrl,
     required this.role,
     required this.activeStoreId,
+    required this.storeRole,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class AppUser extends Equatable {
       photoUrl: (json['profile_image'] ?? '').toString(),
       role: (json['role'] ?? 'admin').toString(),
       activeStoreId: (json['active_store_id'] ?? '').toString(),
+      storeRole: (json['active_store_role'] ?? 'owner').toString(),
     );
   }
 
@@ -36,6 +39,7 @@ class AppUser extends Equatable {
       photoUrl: photoUrl,
       role: role,
       activeStoreId: activeStoreId ?? this.activeStoreId,
+      storeRole: storeRole,
     );
   }
 
@@ -47,5 +51,6 @@ class AppUser extends Equatable {
         photoUrl,
         role,
         activeStoreId,
+        storeRole,
       ];
 }

@@ -14,11 +14,13 @@ void main() {
       'profile_image': '',
       'role': 'admin',
       'active_store_id': 'store-id',
+      'active_store_role': 'owner',
     });
     final timestamp = Timestamp.fromJson('2026-10-07T10:30:00.000Z');
 
     expect(user.uid, 'user-id');
     expect(user.activeStoreId, 'store-id');
+    expect(user.storeRole, 'owner');
     expect(timestamp.toDate().toUtc().hour, 10);
   });
 

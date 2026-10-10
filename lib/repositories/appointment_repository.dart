@@ -88,6 +88,50 @@ class AppointmentRepository {
     }
   }
 
+  Future<AppointMent> updateStatus({
+    required AppointMent appointment,
+    required String status,
+  }) async {
+    final data = await apiClient.put('/appointment/${appointment.id}', body: {
+      'status': status,
+    }) as Map;
+    return AppointMent.fromJson(Map<String, dynamic>.from(data));
+  }
+
+  Future<void> addPayment({
+    required String appointmentId,
+    required double amount,
+    required String method,
+    bool complete = false,
+  }) async {
+    await apiClient.post('/appointment/$appointmentId/payments', body: {
+      'amount': amount,
+      'method': method,
+      'complete': complete,
+    });
+  }
+
+  Future<Map<String, dynamic>> getReport({
+    DateTime? from,
+    DateTime? to,
+  }) async {
+    final query = <String, String>{};
+    if (from != null) query['from'] = from.toUtc().toIso8601String();
+    if (to != null) query['to'] = to.toUtc().toIso8601String();
+    return Map<String, dynamic>.from(
+      await apiClient.get(
+        '/reports/overview',
+        query: query.isEmpty ? null : query,
+      ) as Map,
+    );
+  }
+
+  Future<Map<String, dynamic>> getClientReport(String clientId) async {
+    return Map<String, dynamic>.from(
+      await apiClient.get('/reports/client/$clientId') as Map,
+    );
+  }
+
   String _dateOnly(DateTime date) => '${date.year.toString().padLeft(4, '0')}-'
       '${date.month.toString().padLeft(2, '0')}-'
       '${date.day.toString().padLeft(2, '0')}';

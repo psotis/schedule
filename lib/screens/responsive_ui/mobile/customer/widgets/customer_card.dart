@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:scheldule/models/appointment_model.dart';
 import 'package:scheldule/providers/toggle_screen/toggle_screen_provider.dart';
 import 'package:scheldule/repositories/appointment_repository.dart';
+import 'package:scheldule/screens/responsive_ui/customer/customer_insights.dart';
 import 'package:scheldule/utils/check_box.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/cutom_text.dart';
@@ -403,6 +404,7 @@ class _CustomerCardState extends State<CustomerCard> {
                   ],
                 ),
                 const SizedBox(height: 10),
+                CustomerInsights(customerId: widget.customer.id),
                 _form(context),
                 const SizedBox(height: 20),
                 _descriptionList(descriptions),

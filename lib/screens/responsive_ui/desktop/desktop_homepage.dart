@@ -36,18 +36,20 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
     await context.read<AuthProvider>().signout();
   }
 
-  late final List _screens = [
-    SyncFusionCalendar(),
-    Appointments(),
-    Customer(),
-    Employee(),
-    IncomeExpenses(),
-    Settings(),
-  ];
-
   @override
   Widget build(BuildContext context) {
     var checkTheme = context.watch<ThemeProvider>().state?.themeStatus;
+    final storeRole = context.watch<AuthProvider>().state.user?.storeRole;
+    final canManage = storeRole == 'owner' || storeRole == 'manager';
+    final screens = <Widget>[
+      SyncFusionCalendar(),
+      Appointments(),
+      Customer(),
+      if (canManage) Employee(),
+      if (canManage) IncomeExpenses(),
+      if (canManage) Settings(),
+    ];
+    if (_selectedIndex >= screens.length) _selectedIndex = 0;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -66,13 +68,13 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
         child: Row(
           children: [
             // Navigation Rail
-            _navigationRail(context, checkTheme),
+            _navigationRail(context, checkTheme, canManage),
 
             // Main Content
             Expanded(
               child: Stack(
                 children: [
-                  _screens[_selectedIndex],
+                  screens[_selectedIndex],
                   // if (isChatOpen)
                   //   Positioned(
                   //     right: 16,
@@ -99,7 +101,7 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
   }
 
   NavigationRail _navigationRail(
-      BuildContext context, ThemeStatus? checkTheme) {
+      BuildContext context, ThemeStatus? checkTheme, bool canManage) {
     return NavigationRail(
       destinations: [
         NavigationRailDestination(
@@ -117,21 +119,24 @@ class _DesktopHomepageState extends State<DesktopHomepage> {
           selectedIcon: Icon(Icons.people),
           label: Text('Customer'),
         ),
-        NavigationRailDestination(
-          icon: Icon(Icons.work_outline),
-          selectedIcon: Icon(Icons.work),
-          label: Text('Employee'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.password_outlined),
-          selectedIcon: Icon(Icons.password),
-          label: Text('Incomes/Expenses'),
-        ),
-        NavigationRailDestination(
-          icon: Icon(Icons.settings_outlined),
-          selectedIcon: Icon(Icons.settings),
-          label: Text('Settings'),
-        ),
+        if (canManage)
+          NavigationRailDestination(
+            icon: Icon(Icons.work_outline),
+            selectedIcon: Icon(Icons.work),
+            label: Text('Employee'),
+          ),
+        if (canManage)
+          NavigationRailDestination(
+            icon: Icon(Icons.password_outlined),
+            selectedIcon: Icon(Icons.password),
+            label: Text('Incomes/Expenses'),
+          ),
+        if (canManage)
+          NavigationRailDestination(
+            icon: Icon(Icons.settings_outlined),
+            selectedIcon: Icon(Icons.settings),
+            label: Text('Settings'),
+          ),
       ],
       labelType: NavigationRailLabelType.all,
       elevation: 8,

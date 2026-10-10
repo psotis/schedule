@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:scheldule/models/appointment_model.dart';
+import 'package:scheldule/screens/responsive_ui/customer/customer_insights.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/get%20layout/get_layout.dart';
 import 'package:scheldule/utils/send_button.dart';
@@ -162,6 +163,7 @@ class _CustomerCardState extends State<CustomerCard> {
                   Text(appointmentLength.toString()),
                 ],
               ),
+              CustomerInsights(customerId: widget.customer.id),
               _form(context, layoutWidth),
               SizedBox(height: 15),
               _descriptionList(descriptions),

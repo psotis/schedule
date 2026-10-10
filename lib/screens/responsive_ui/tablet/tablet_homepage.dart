@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:scheldule/providers/auth/auth_provider.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/customer/customer.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/income-expenses/income_expenses.dart';
 
@@ -47,27 +48,29 @@ class _TabletHomepageState extends State<TabletHomepage> {
           drawer: DrawerNavigation(),
           body: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: pages(state),
+            child: pages(context, state),
           ),
         ),
       );
     });
   }
 
-  Widget pages(DrawerProvider provider) {
+  Widget pages(BuildContext context, DrawerProvider provider) {
+    final role = context.read<AuthProvider>().state.user?.storeRole;
+    final canManage = role == 'owner' || role == 'manager';
     if (provider.state.drawerStatus == DrawerStatus.customer) {
       return Customer();
     }
-    if (provider.state.drawerStatus == DrawerStatus.employee) {
+    if (provider.state.drawerStatus == DrawerStatus.employee && canManage) {
       return Employee();
     }
     if (provider.state.drawerStatus == DrawerStatus.appointments) {
       return Appointments();
     }
-    if (provider.state.drawerStatus == DrawerStatus.incexp) {
+    if (provider.state.drawerStatus == DrawerStatus.incexp && canManage) {
       return IncomeExpenses();
     }
-    if (provider.state.drawerStatus == DrawerStatus.settings) {
+    if (provider.state.drawerStatus == DrawerStatus.settings && canManage) {
       return Settings();
     }
     return SyncFusionCalendar();

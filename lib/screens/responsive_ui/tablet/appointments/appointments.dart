@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
-import 'package:scheldule/screens/responsive_ui/tablet/appointments/add_appointment.dart';
-import 'package:scheldule/screens/responsive_ui/tablet/appointments/appointment_history.dart';
+import 'package:scheldule/screens/responsive_ui/appointments/appointment_editor.dart';
+import 'package:scheldule/screens/responsive_ui/appointments/appointment_history_view.dart';
 
 import '../../../../constants/screen sizes/screen_sizes.dart';
 
@@ -66,10 +66,10 @@ class _AppointmentsState extends State<Appointments>
               controller: _tabController,
               children: [
                 Tab(
-                  child: AddAppointments(),
+                  child: AppointmentEditor(),
                 ),
                 Tab(
-                  child: AppointmentHistory(),
+                  child: AppointmentHistoryView(),
                 )
               ],
             ),

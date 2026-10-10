@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scheldule/models/appointment_model.dart';
+import 'package:scheldule/models/booking_models.dart';
+import 'package:scheldule/models/employee.dart';
 
 import '../models/app_timestamp.dart';
 import '../models/custom_errors.dart';
@@ -9,6 +11,210 @@ class AddAppointmentRepository {
   final ApiClient apiClient;
 
   AddAppointmentRepository({required this.apiClient});
+
+  Future<List<AppointMent>> getClients({String query = ''}) async {
+    final data = await apiClient.get(
+      '/client',
+      query: query.trim().isEmpty ? null : {'q': query.trim()},
+    ) as List;
+    return data
+        .map((item) => AppointMent.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
+  }
+
+  Future<AppointMent?> findDuplicateClient(String phone) async {
+    final data = await apiClient.get(
+      '/client-duplicate',
+      query: {'phone': phone},
+    );
+    if (data == null) return null;
+    return AppointMent.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<AppointMent> createClient({
+    required String name,
+    required String surname,
+    required String phone,
+    String email = '',
+    String source = '',
+    bool allowDuplicate = false,
+  }) async {
+    final data = await apiClient.post('/client', body: {
+      'first_name': name,
+      'last_name': surname,
+      'phone': phone,
+      'email': email,
+      'source': source,
+      'address': '',
+      'afm': '',
+      'amka': '',
+      'client_description': '',
+      'owes': 0,
+      'allow_duplicate': allowDuplicate,
+    }) as Map;
+    return AppointMent.fromJson(Map<String, dynamic>.from(data));
+  }
+
+  Future<List<ServiceOffering>> getServices() async {
+    final data = await apiClient.get('/services') as List;
+    return data
+        .map((item) =>
+            ServiceOffering.fromJson(Map<String, dynamic>.from(item as Map)))
+        .where((service) => service.isActive)
+        .toList();
+  }
+
+  Future<List<Employee>> getEmployees({String? serviceId}) async {
+    final data = await apiClient.get(
+      '/employee',
+      query: serviceId == null ? null : {'service_id': serviceId},
+    ) as List;
+    return data
+        .map(
+            (item) => Employee.fromJson(Map<String, dynamic>.from(item as Map)))
+        .toList();
+  }
+
+  Future<List<StoreStation>> getStations() async {
+    final data = await apiClient.get('/position') as List;
+    return data
+        .map((item) =>
+            StoreStation.fromJson(Map<String, dynamic>.from(item as Map)))
+        .where((station) => station.isActive)
+        .toList();
+  }
+
+  Future<AppointMent> createBooking({
+    required String clientId,
+    required DateTime start,
+    required List<Map<String, dynamic>> services,
+    String? stationId,
+    String notes = '',
+  }) async {
+    final totalMinutes = services.fold<int>(
+      0,
+      (sum, item) =>
+          sum +
+          (num.tryParse(item['duration_minutes'].toString())?.round() ?? 0),
+    );
+    final end = start.add(Duration(minutes: totalMinutes));
+    final data = await apiClient.post('/appointment', body: {
+      'client_id': clientId,
+      'date': _dateOnly(start),
+      'start_time': start.toUtc().toIso8601String(),
+      'end_time': end.toUtc().toIso8601String(),
+      if (stationId != null && stationId.isNotEmpty) 'positions_id': stationId,
+      'services': services,
+      'status': 'scheduled',
+      'notes': notes,
+    }) as Map;
+    return AppointMent.fromJson(Map<String, dynamic>.from(data));
+  }
+
+  Future<ServiceOffering> saveService({
+    String? id,
+    required String name,
+    required String category,
+    required String subcategory,
+    required double price,
+    required int durationMinutes,
+  }) async {
+    final body = {
+      'name': name,
+      'category': category,
+      'subcategory': subcategory,
+      'price': price,
+      'duration_minutes': durationMinutes,
+      'is_active': true,
+    };
+    final data = id == null
+        ? await apiClient.post('/services', body: body)
+        : await apiClient.put('/services/$id', body: body);
+    return ServiceOffering.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<StoreStation> saveStation({
+    String? id,
+    required String name,
+    required int capacity,
+  }) async {
+    final body = {
+      'description': name,
+      'max_persons': capacity,
+      'is_active': true,
+    };
+    final data = id == null
+        ? await apiClient.post('/position', body: body)
+        : await apiClient.put('/position/$id', body: body);
+    return StoreStation.fromJson(Map<String, dynamic>.from(data as Map));
+  }
+
+  Future<void> setEmployeeServices({
+    required String employeeId,
+    required List<String> serviceIds,
+  }) async {
+    await apiClient.put('/employee/$employeeId/services', body: {
+      'service_ids': serviceIds,
+    });
+  }
+
+  Future<void> setEmployeeAvailability({
+    required String employeeId,
+    required List<Map<String, dynamic>> availability,
+  }) async {
+    await apiClient.put('/employee/$employeeId/availability', body: {
+      'availability': availability,
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getEmployeeTimeOff() async {
+    final data = await apiClient.get('/employee-time-off') as List;
+    return data.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+  }
+
+  Future<void> addEmployeeTimeOff({
+    required String employeeId,
+    required DateTime startsAt,
+    required DateTime endsAt,
+    String reason = '',
+  }) async {
+    await apiClient.post('/employee-time-off', body: {
+      'employee_id': employeeId,
+      'starts_at': startsAt.toUtc().toIso8601String(),
+      'ends_at': endsAt.toUtc().toIso8601String(),
+      'reason': reason,
+    });
+  }
+
+  Future<void> deleteEmployeeTimeOff(String id) async {
+    await apiClient.delete('/employee-time-off/$id');
+  }
+
+  Future<List<Map<String, dynamic>>> getStoreMembers() async {
+    final data = await apiClient.get('/store/members') as List;
+    return data.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+  }
+
+  Future<void> addStoreMember({
+    required String email,
+    required String role,
+  }) async {
+    await apiClient.post('/store/members', body: {
+      'email': email,
+      'role': role,
+    });
+  }
+
+  Future<void> updateStoreMember({
+    required String membershipId,
+    required String role,
+    required bool isActive,
+  }) async {
+    await apiClient.put('/store/members/$membershipId', body: {
+      'role': role,
+      'is_active': isActive,
+    });
+  }
 
   Future<Map<String, dynamic>?> _findClient(
     String name,

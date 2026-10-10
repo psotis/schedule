@@ -14,6 +14,8 @@ class Employee extends Equatable {
   final String contractType;
   final String? paid;
   final String? color;
+  final List<String> serviceIds;
+  final List<Map<String, dynamic>> availability;
   Employee({
     required this.id,
     required this.name,
@@ -27,6 +29,8 @@ class Employee extends Equatable {
     required this.contractType,
     this.paid,
     this.color,
+    this.serviceIds = const [],
+    this.availability = const [],
   });
 
   factory Employee.fromJson(Map<String, dynamic> userData) {
@@ -43,6 +47,14 @@ class Employee extends Equatable {
       contractType: (userData['contract_type'] ?? '').toString(),
       paid: (userData['paid'] ?? '').toString(),
       color: (userData['color'] ?? '').toString(),
+      serviceIds: ((userData['serviceCapabilities'] ?? const []) as List)
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .map((item) => (item['service_id'] ?? '').toString())
+          .where((id) => id.isNotEmpty)
+          .toList(),
+      availability: ((userData['availability'] ?? const []) as List)
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .toList(),
     );
   }
 
@@ -60,6 +72,8 @@ class Employee extends Equatable {
       contractType: '',
       paid: '',
       color: '',
+      serviceIds: const [],
+      availability: const [],
     );
   }
 
@@ -76,6 +90,8 @@ class Employee extends Equatable {
     String? contractType,
     String? paid,
     String? color,
+    List<String>? serviceIds,
+    List<Map<String, dynamic>>? availability,
   }) {
     return Employee(
       id: id ?? this.id,
@@ -90,6 +106,8 @@ class Employee extends Equatable {
       contractType: contractType ?? this.contractType,
       paid: paid ?? this.paid,
       color: color ?? this.color,
+      serviceIds: serviceIds ?? this.serviceIds,
+      availability: availability ?? this.availability,
     );
   }
 
@@ -110,5 +128,7 @@ class Employee extends Equatable {
         contractType,
         paid,
         color,
+        serviceIds,
+        availability,
       ];
 }
