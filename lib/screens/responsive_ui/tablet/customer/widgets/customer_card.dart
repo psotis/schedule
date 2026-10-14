@@ -192,7 +192,7 @@ class _CustomerCardState extends State<CustomerCard> {
                     clientId: widget.customer.id,
                   );
 
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   if (!deleted) {
                     snackBarDialog(context,
                         color: Colors.red,

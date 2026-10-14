@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 
 import 'providers/auth/auth_provider.dart';
 import 'providers/auth/auth_state.dart';
+import 'screens/login/login_screen.dart';
+import 'screens/responsive_ui/homepage.dart';
+import 'screens/user_admin/user_admin_dashboard.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -27,18 +30,17 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthProvider>().state;
-    if (authState.authStatus == AuthStatus.authenticated) {
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        Navigator.pushNamed(
-          context,
-          authState.user?.role == 'user-admin' ? '/user-admin' : '/home',
+    switch (authState.authStatus) {
+      case AuthStatus.authenticated:
+        return authState.user?.role == 'user-admin'
+            ? const UserAdminDashboard()
+            : HomeLayoutScreen();
+      case AuthStatus.unauthenticated:
+        return const LoginScreen();
+      case AuthStatus.unknown:
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
         );
-      });
-    } else if (authState.authStatus == AuthStatus.unauthenticated) {
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        Navigator.pushNamed(context, '/login');
-      });
     }
-    return Scaffold();
   }
 }

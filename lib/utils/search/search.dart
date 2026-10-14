@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../models/employee.dart';
 import '../../../providers/providers.dart';
 
 enum SelectSearch { customer, employee }
@@ -10,11 +11,13 @@ enum SelectSearch { customer, employee }
 class Search extends StatefulWidget {
   final double width;
   final void Function(String, String)? setAppointment;
+  final List<Employee>? employees;
   SelectSearch? selectSearch;
   Search({
     super.key,
     required this.width,
     this.setAppointment,
+    this.employees,
     this.selectSearch,
   });
 
@@ -30,7 +33,7 @@ class _SearchState extends State<Search> {
     _search = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       fetchUsers();
-      fetchEmployees();
+      if (widget.employees == null) fetchEmployees();
     });
     super.initState();
   }
@@ -52,7 +55,8 @@ class _SearchState extends State<Search> {
   @override
   Widget build(BuildContext context) {
     var searchUser = context.watch<SearchUserProvider>().appointment;
-    var employee = context.watch<EmployeeProvider>().employees;
+    final employee =
+        widget.employees ?? context.watch<EmployeeProvider>().employees;
     return widget.selectSearch == SelectSearch.customer
         ? DropdownMenu(
             controller: _search,

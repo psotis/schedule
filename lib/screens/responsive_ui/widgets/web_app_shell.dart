@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/constants/logos/photos_gifs.dart';
 import 'package:scheldule/providers/auth/auth_provider.dart';
-import 'package:scheldule/providers/drawer_nav/drawer_provider.dart';
 import 'package:scheldule/providers/drawer_nav/drawer_state.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/providers/themes/theme_status.dart';
@@ -365,7 +364,7 @@ class _DesktopSidebar extends StatelessWidget {
     return Container(
       width: 236,
       decoration: BoxDecoration(
-        color: dark ? const Color(0xF21A211F) : const Color(0xF2FFFFFF),
+        color: dark ? const Color(0xF21B1E24) : const Color(0xF2FFFFFF),
         borderRadius: BorderRadius.circular(24),
         boxShadow: const [
           BoxShadow(color: Color(0x26001816), blurRadius: 28),

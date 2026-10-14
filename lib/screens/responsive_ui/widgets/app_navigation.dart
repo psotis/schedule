@@ -151,7 +151,7 @@ class AppContentSurface extends StatelessWidget {
     final dark = Theme.of(context).brightness == Brightness.dark;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: dark ? const Color(0xFF151B1A) : const Color(0xFFF7FAF9),
+        color: dark ? const Color(0xFF181B20) : const Color(0xFFF8FAFC),
         borderRadius: borderRadius,
         border: Border.all(color: Colors.white.withAlpha(dark ? 18 : 70)),
         boxShadow: const [

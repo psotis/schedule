@@ -120,25 +120,24 @@ class _EmployeeCardState extends State<EmployeeCard> {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
-      child: SizedBox(
-        height: 900,
-        child: Center(
-          child: Column(
-            children: [
-              _form(context),
-              _buttons(context),
-            ],
-          ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        child: Column(
+          children: [
+            Expanded(child: _form(context)),
+            const SizedBox(height: 12),
+            _buttons(context),
+          ],
         ),
       ),
     );
   }
 
-  Row _buttons(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      spacing: 20,
+  Widget _buttons(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 12,
+      runSpacing: 8,
       children: [
         SendButton(
           onPressed: () {
@@ -174,17 +173,16 @@ class _EmployeeCardState extends State<EmployeeCard> {
     );
   }
 
-  Padding _form(
+  Widget _form(
     BuildContext context,
   ) {
-    return Padding(
-      padding: EdgeInsets.only(top: 30),
-      child: SizedBox(
-        width: 400,
-        height: MediaQuery.of(context).size.height * .8,
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
+            padding: const EdgeInsets.only(top: 22, bottom: 8),
             child: Column(
               spacing: 20,
               children: [
@@ -275,7 +273,7 @@ class _EmployeeCardState extends State<EmployeeCard> {
                   text: 'Χρώμα',
                   onPressed: _openColorPicker,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 8),
               ],
             ),
           ),

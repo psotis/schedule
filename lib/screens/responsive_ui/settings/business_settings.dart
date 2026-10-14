@@ -25,6 +25,7 @@ class _BusinessSettingsState extends State<BusinessSettings> {
   Map<String, dynamic> _report = {};
   bool _loading = true;
   String? _error;
+  int _selectedTab = 0;
 
   @override
   void initState() {
@@ -228,14 +229,16 @@ class _BusinessSettingsState extends State<BusinessSettings> {
     }
     return DefaultTabController(
       length: 6,
+      initialIndex: _selectedTab,
       child: Column(
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: TabBar(
                   isScrollable: true,
-                  tabs: [
+                  onTap: (index) => _selectedTab = index,
+                  tabs: const [
                     Tab(text: 'Υπηρεσίες'),
                     Tab(text: 'Χώροι'),
                     Tab(text: 'Ομάδα'),
@@ -345,26 +348,10 @@ class _BusinessSettingsState extends State<BusinessSettings> {
           'Όρισε ποιες υπηρεσίες εκτελεί κάθε εργαζόμενος και πότε είναι διαθέσιμος.',
       children: _employees
           .map(
-            (employee) => ListTile(
-              leading: const Icon(Icons.badge),
-              title: Text('${employee.name} ${employee.surname}'),
-              subtitle: Text(
-                employee.serviceIds.isEmpty
-                    ? 'Όλες οι υπηρεσίες (δεν έχουν οριστεί περιορισμοί)'
-                    : '${employee.serviceIds.length} υπηρεσίες • ${employee.availability.length} κανόνες ωραρίου',
-              ),
-              trailing: Wrap(
-                children: [
-                  TextButton(
-                    onPressed: () => _editEmployeeServices(employee),
-                    child: const Text('Υπηρεσίες'),
-                  ),
-                  TextButton(
-                    onPressed: () => _editAvailability(employee),
-                    child: const Text('Ωράριο'),
-                  ),
-                ],
-              ),
+            (employee) => _EmployeeSettingsTile(
+              employee: employee,
+              onServices: () => _editEmployeeServices(employee),
+              onAvailability: () => _editAvailability(employee),
             ),
           )
           .toList(),
@@ -572,6 +559,98 @@ class _SettingsList extends StatelessWidget {
   }
 }
 
+class _EmployeeSettingsTile extends StatelessWidget {
+  final Employee employee;
+  final VoidCallback onServices;
+  final VoidCallback onAvailability;
+
+  const _EmployeeSettingsTile({
+    required this.employee,
+    required this.onServices,
+    required this.onAvailability,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final subtitle = employee.serviceIds.isEmpty
+        ? 'Όλες οι υπηρεσίες (δεν έχουν οριστεί περιορισμοί)'
+        : '${employee.serviceIds.length} υπηρεσίες • '
+            '${employee.availability.length} κανόνες ωραρίου';
+    final info = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(top: 2),
+          child: Icon(Icons.badge_outlined),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${employee.name} ${employee.surname}',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+    final actions = Wrap(
+      alignment: WrapAlignment.end,
+      spacing: 4,
+      runSpacing: 4,
+      children: [
+        TextButton.icon(
+          onPressed: onServices,
+          icon: const Icon(Icons.design_services_outlined, size: 18),
+          label: const Text('Υπηρεσίες'),
+        ),
+        TextButton.icon(
+          onPressed: onAvailability,
+          icon: const Icon(Icons.schedule_outlined, size: 18),
+          label: const Text('Ωράριο'),
+        ),
+      ],
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 620;
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 10, 10),
+          child: compact
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    info,
+                    const SizedBox(height: 8),
+                    Align(alignment: Alignment.centerRight, child: actions),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(child: info),
+                    const SizedBox(width: 12),
+                    actions,
+                  ],
+                ),
+        );
+      },
+    );
+  }
+}
+
 class _MetricCard extends StatelessWidget {
   final String label;
   final dynamic value;
@@ -653,6 +732,7 @@ class _ServiceDialogState extends State<_ServiceDialog> {
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            spacing: 12,
             children: [
               TextField(
                   controller: _name,
@@ -689,7 +769,9 @@ class _ServiceDialogState extends State<_ServiceDialog> {
                 price == null ||
                 price < 0 ||
                 duration == null ||
-                duration < 1) return;
+                duration < 1) {
+              return;
+            }
             Navigator.pop(context, {
               'name': _name.text.trim(),
               'category': _category.text.trim(),
@@ -741,6 +823,7 @@ class _StationDialogState extends State<_StationDialog> {
         constraints: const BoxConstraints(maxWidth: 400),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          spacing: 12,
           children: [
             TextField(
                 controller: _name,
@@ -761,8 +844,9 @@ class _StationDialogState extends State<_StationDialog> {
         FilledButton(
           onPressed: () {
             final capacity = int.tryParse(_capacity.text);
-            if (_name.text.trim().isEmpty || capacity == null || capacity < 1)
+            if (_name.text.trim().isEmpty || capacity == null || capacity < 1) {
               return;
+            }
             Navigator.pop(
                 context, {'name': _name.text.trim(), 'capacity': capacity});
           },
@@ -796,24 +880,35 @@ class _EmployeeServicesDialogState extends State<_EmployeeServicesDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight =
+        (MediaQuery.sizeOf(context).height * .62).clamp(240.0, 560.0);
     return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       title: Text('Υπηρεσίες: ${widget.employee.name}'),
-      content: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: ListView(
-          shrinkWrap: true,
-          children: widget.services
-              .map((service) => CheckboxListTile(
-                    value: _selected.contains(service.id),
-                    title: Text(service.name),
-                    subtitle: Text([service.category, service.subcategory]
-                        .where((value) => value.isNotEmpty)
-                        .join(' • ')),
-                    onChanged: (value) => setState(() => value == true
-                        ? _selected.add(service.id)
-                        : _selected.remove(service.id)),
-                  ))
-              .toList(),
+      content: SizedBox(
+        width: 480,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxHeight),
+          child: widget.services.isEmpty
+              ? const Center(child: Text('Δεν υπάρχουν διαθέσιμες υπηρεσίες.'))
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: widget.services.length,
+                  itemBuilder: (context, index) {
+                    final service = widget.services[index];
+                    return CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: _selected.contains(service.id),
+                      title: Text(service.name),
+                      subtitle: Text([service.category, service.subcategory]
+                          .where((value) => value.isNotEmpty)
+                          .join(' • ')),
+                      onChanged: (value) => setState(() => value == true
+                          ? _selected.add(service.id)
+                          : _selected.remove(service.id)),
+                    );
+                  },
+                ),
         ),
       ),
       actions: [
@@ -882,69 +977,136 @@ class _AvailabilityDialogState extends State<_AvailabilityDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Ωράριο: ${widget.employee.name}'),
-      content: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 520),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Το κοινό ωράριο εφαρμόζεται στις επιλεγμένες ημέρες.'),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              children: List.generate(
-                  _days.length,
-                  (index) => FilterChip(
-                        selected: _selectedDays.contains(index),
-                        label: Text(_days[index]),
-                        onSelected: (selected) => setState(() => selected
-                            ? _selectedDays.add(index)
-                            : _selectedDays.remove(index)),
-                      )),
-            ),
-            Row(
-              children: [
-                Expanded(
-                    child: TextField(
-                        controller: _start,
-                        decoration:
-                            const InputDecoration(labelText: 'Από (HH:mm)'))),
-                const SizedBox(width: 12),
-                Expanded(
-                    child: TextField(
-                        controller: _end,
-                        decoration:
-                            const InputDecoration(labelText: 'Έως (HH:mm)'))),
-              ],
-            ),
-          ],
+    final availableHeight = MediaQuery.sizeOf(context).height - 48;
+    final dialogHeight = availableHeight.clamp(360.0, 620.0);
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: SizedBox(
+        width: 560,
+        height: dialogHeight,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(22, 18, 22, 14),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Ωράριο: ${widget.employee.name}',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Κλείσιμο',
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Το κοινό ωράριο εφαρμόζεται στις επιλεγμένες ημέρες.',
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: List.generate(
+                          _days.length,
+                          (index) => FilterChip(
+                            selected: _selectedDays.contains(index),
+                            label: Text(_days[index]),
+                            onSelected: (selected) => setState(
+                              () => selected
+                                  ? _selectedDays.add(index)
+                                  : _selectedDays.remove(index),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final fields = [
+                            TextField(
+                              controller: _start,
+                              decoration: const InputDecoration(
+                                labelText: 'Από (HH:mm)',
+                              ),
+                            ),
+                            TextField(
+                              controller: _end,
+                              decoration: const InputDecoration(
+                                labelText: 'Έως (HH:mm)',
+                              ),
+                            ),
+                          ];
+                          if (constraints.maxWidth < 360) {
+                            return Column(
+                              children: [
+                                fields.first,
+                                const SizedBox(height: 16),
+                                fields.last,
+                              ],
+                            );
+                          }
+                          return Row(
+                            children: [
+                              Expanded(child: fields.first),
+                              const SizedBox(width: 16),
+                              Expanded(child: fields.last),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const Divider(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Άκυρο'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: _save,
+                    child: const Text('Αποθήκευση'),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Άκυρο')),
-        FilledButton(
-          onPressed: () {
-            final validTime = RegExp(r'^([01]\d|2[0-3]):[0-5]\d$');
-            if (_selectedDays.isEmpty ||
-                !validTime.hasMatch(_start.text) ||
-                !validTime.hasMatch(_end.text) ||
-                _end.text.compareTo(_start.text) <= 0) return;
-            Navigator.pop(
-                context,
-                _selectedDays
-                    .map((day) => {
-                          'weekday': day,
-                          'start_time': _start.text,
-                          'end_time': _end.text,
-                        })
-                    .toList());
-          },
-          child: const Text('Αποθήκευση'),
-        ),
-      ],
+    );
+  }
+
+  void _save() {
+    final validTime = RegExp(r'^([01]\d|2[0-3]):[0-5]\d$');
+    if (_selectedDays.isEmpty ||
+        !validTime.hasMatch(_start.text) ||
+        !validTime.hasMatch(_end.text) ||
+        _end.text.compareTo(_start.text) <= 0) {
+      return;
+    }
+    Navigator.pop(
+      context,
+      _selectedDays
+          .map((day) => {
+                'weekday': day,
+                'start_time': _start.text,
+                'end_time': _end.text,
+              })
+          .toList(),
     );
   }
 }

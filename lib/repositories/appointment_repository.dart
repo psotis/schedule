@@ -98,6 +98,35 @@ class AppointmentRepository {
     return AppointMent.fromJson(Map<String, dynamic>.from(data));
   }
 
+  Future<AppointMent> rescheduleAppointment({
+    required AppointMent appointment,
+    required DateTime start,
+  }) async {
+    final durationMinutes = appointment.totalDurationMinutes > 0
+        ? appointment.totalDurationMinutes
+        : 60;
+    final services = appointment.serviceItems
+        .where((item) => item.serviceId.isNotEmpty)
+        .map((item) => {
+              'service_id': item.serviceId,
+              if (item.employeeId.isNotEmpty) 'employee_id': item.employeeId,
+              'price': item.price,
+              'duration_minutes': item.durationMinutes,
+            })
+        .toList();
+    final end = start.add(Duration(minutes: durationMinutes));
+    final data = await apiClient.put(
+      '/appointment/${appointment.id}',
+      body: {
+        'date': _dateOnly(start),
+        'start_time': start.toUtc().toIso8601String(),
+        'end_time': end.toUtc().toIso8601String(),
+        if (services.isNotEmpty) 'services': services,
+      },
+    ) as Map;
+    return AppointMent.fromJson(Map<String, dynamic>.from(data));
+  }
+
   Future<void> addPayment({
     required String appointmentId,
     required double amount,

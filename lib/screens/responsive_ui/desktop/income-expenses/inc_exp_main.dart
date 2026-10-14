@@ -282,14 +282,17 @@ class _IncExpMainState extends State<IncExpMain> {
       final saved =
           await context.read<TransactionRepository>().addTransaction(tx: tx);
       if (!saved) throw Exception('Transaction was not saved');
+      if (!mounted) return;
 
       _amountCtrl.clear();
       _descCtrl.clear();
 
       setState(() => _loading = true);
       await _refreshTransactions();
+      if (!mounted) return;
       setState(() => _loading = false);
     } catch (_) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Αποτυχία αποθήκευσης')),
       );
@@ -611,12 +614,15 @@ class _IncExpMainState extends State<IncExpMain> {
                           : t.appointmentType!.name;
 
                       final subtitleParts = <String>[];
-                      if (methodText.isNotEmpty)
+                      if (methodText.isNotEmpty) {
                         subtitleParts.add('method: $methodText');
-                      if (apptText.isNotEmpty)
+                      }
+                      if (apptText.isNotEmpty) {
                         subtitleParts.add('ραντεβού: $apptText');
-                      if (t.description.isNotEmpty)
+                      }
+                      if (t.description.isNotEmpty) {
                         subtitleParts.add(t.description);
+                      }
 
                       return Dismissible(
                         key: ValueKey(t.id),
@@ -655,15 +661,17 @@ class _IncExpMainState extends State<IncExpMain> {
                               .deleteTransaction(
                                 txId: removed.id,
                               );
-                          if (!deleted && mounted) {
+                          if (!context.mounted) return;
+                          if (!deleted) {
                             await _refreshTransactions();
+                            if (!context.mounted) return;
                             setState(() {});
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Αποτυχία διαγραφής'),
                               ),
                             );
-                          } else if (deleted && mounted) {
+                          } else {
                             await _refreshTransactions();
                           }
                         },

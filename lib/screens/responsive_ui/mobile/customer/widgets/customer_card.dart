@@ -319,10 +319,12 @@ class _CustomerCardState extends State<CustomerCard> {
               name: widget.customer.name,
               surename: widget.customer.surname,
             );
+    if (!mounted) return;
     paidRepo = await context.read<AppointmentRepository>().fetchAppointmentPaid(
           name: widget.customer.name,
           surname: widget.customer.surname,
         );
+    if (!mounted) return;
 
     for (var paid in paidRepo) {
       payment += paid.paid!;
@@ -454,7 +456,7 @@ class _CustomerCardState extends State<CustomerCard> {
               clientId: widget.customer.id,
             );
 
-            if (!mounted) return;
+            if (!context.mounted) return;
             if (!deleted) {
               snackBarDialog(context,
                   color: Colors.red,

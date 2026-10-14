@@ -42,6 +42,7 @@ class _AppointmentHistoryState extends State<AppointmentHistory> {
   Future pickDate() async {
     DateTime? date = await pickDates();
     if (date == null) return;
+    if (!mounted) return;
 
     final dateTime = DateTime(
       date.year,
@@ -218,6 +219,7 @@ class _AppointmentHistoryState extends State<AppointmentHistory> {
                                                         position: appointment
                                                             .position,
                                                         paid: newPaid);
+                                                if (!context.mounted) return;
                                                 snackBarDialog(context,
                                                     color: Colors.blueGrey,
                                                     message:

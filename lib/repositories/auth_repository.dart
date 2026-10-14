@@ -80,6 +80,32 @@ class AuthRepository {
     });
   }
 
+  Future<void> requestPasswordReset({required String email}) async {
+    try {
+      await apiClient.post('/user/password-reset/request', body: {
+        'email': email.trim(),
+      });
+    } on ApiException catch (error) {
+      throw _customError(error);
+    }
+  }
+
+  Future<void> confirmPasswordReset({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    try {
+      await apiClient.post('/user/password-reset/confirm', body: {
+        'email': email.trim(),
+        'code': code.trim(),
+        'new_password': newPassword,
+      });
+    } on ApiException catch (error) {
+      throw _customError(error);
+    }
+  }
+
   Future<void> signInWithGoogle({String? storeType}) async {
     try {
       final account = await _googleSignIn.signIn();

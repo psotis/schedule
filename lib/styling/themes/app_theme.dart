@@ -5,7 +5,7 @@ ThemeData buildAppTheme(Brightness brightness) {
   final colorScheme = ColorScheme.fromSeed(
     seedColor: const Color(0xFF08766D),
     brightness: brightness,
-    surface: dark ? const Color(0xFF151B1A) : const Color(0xFFF9FBFA),
+    surface: dark ? const Color(0xFF181B20) : const Color(0xFFFAFBFC),
   );
   final base = ThemeData(
     useMaterial3: true,
@@ -13,7 +13,7 @@ ThemeData buildAppTheme(Brightness brightness) {
     colorScheme: colorScheme,
     fontFamily: 'IBMPlexSans',
     scaffoldBackgroundColor:
-        dark ? const Color(0xFF101514) : const Color(0xFFF1F5F4),
+        dark ? const Color(0xFF111318) : const Color(0xFFF3F5F8),
     visualDensity: VisualDensity.standard,
   );
 
@@ -42,7 +42,7 @@ ThemeData buildAppTheme(Brightness brightness) {
     cardTheme: CardThemeData(
       elevation: 0,
       margin: const EdgeInsets.symmetric(vertical: 6),
-      color: dark ? const Color(0xFF1D2523) : Colors.white,
+      color: dark ? const Color(0xFF202329) : Colors.white,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
@@ -53,7 +53,7 @@ ThemeData buildAppTheme(Brightness brightness) {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: dark ? const Color(0xFF202826) : const Color(0xFFF4F7F6),
+      fillColor: dark ? const Color(0xFF24282F) : const Color(0xFFF4F6F8),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
@@ -95,7 +95,7 @@ ThemeData buildAppTheme(Brightness brightness) {
     navigationBarTheme: NavigationBarThemeData(
       elevation: 0,
       height: 66,
-      backgroundColor: dark ? const Color(0xFF18201E) : Colors.white,
+      backgroundColor: dark ? const Color(0xFF1B1E24) : Colors.white,
       indicatorColor: colorScheme.primaryContainer,
       labelTextStyle: WidgetStateProperty.resolveWith(
         (states) => TextStyle(

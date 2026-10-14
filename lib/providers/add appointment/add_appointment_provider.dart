@@ -27,10 +27,10 @@ class AddAppointmentProvider extends ChangeNotifier {
         appointmentStatus: AddAppointmentStatus.loading);
     notifyListeners();
     await Future.delayed(Duration(milliseconds: 500));
+    if (!context.mounted) return;
 
     try {
       await addAppointmentRepository.sendAppointments(
-        // ignore: use_build_context_synchronously
         context,
         surname: surname,
         date: date,
@@ -73,6 +73,7 @@ class AddAppointmentProvider extends ChangeNotifier {
     );
     notifyListeners();
     await Future.delayed(Duration(milliseconds: 500));
+    if (!context.mounted) return;
 
     try {
       await addAppointmentRepository.editAppointment(
@@ -105,7 +106,7 @@ class AddAppointmentProvider extends ChangeNotifier {
         appointmentStatus: AddAppointmentStatus.error,
       );
       notifyListeners();
-      throw Exception("Failed to edit appointment: $e");
+      rethrow;
     }
   }
 }

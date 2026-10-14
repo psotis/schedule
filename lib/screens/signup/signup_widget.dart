@@ -83,18 +83,13 @@ class _SignupWidgetState extends State<SignupWidget> {
           // height: ScreenSize.screenHeight * .1,
           width: double.infinity,
           child: TextFormField(
-            style: TextStyle(color: Colors.black),
+            style: const TextStyle(color: Color(0xFF14213D)),
             controller: _nameController,
             decoration: InputDecoration(
-              label: Text('Name',
-                  style: TextStyle(
-                    fontSize: widget.isMobile == true ? 16 : 18,
-                  )),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              labelText: 'Name',
+              floatingLabelStyle: const TextStyle(height: 1.2),
               prefixIcon: Icon(
-                Icons.person,
+                Icons.person_outline_rounded,
                 size: widget.isMobile == true ? 18 : 22,
               ),
             ),
@@ -117,17 +112,10 @@ class _SignupWidgetState extends State<SignupWidget> {
                   : DropdownButtonFormField<String>(
                       initialValue: _selectedStoreType,
                       decoration: InputDecoration(
-                        label: Text(
-                          'Business type',
-                          style: TextStyle(
-                            fontSize: widget.isMobile == true ? 16 : 18,
-                          ),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                        labelText: 'Business type',
+                        floatingLabelStyle: const TextStyle(height: 1.2),
                         prefixIcon: Icon(
-                          Icons.store,
+                          Icons.storefront_outlined,
                           size: widget.isMobile == true ? 18 : 22,
                         ),
                       ),
@@ -150,18 +138,13 @@ class _SignupWidgetState extends State<SignupWidget> {
           // height: ScreenSize.screenHeight * .1,
           width: double.infinity,
           child: TextFormField(
-            style: TextStyle(color: Colors.black),
+            style: const TextStyle(color: Color(0xFF14213D)),
             controller: _emailController,
             decoration: InputDecoration(
-              label: Text('E-mail',
-                  style: TextStyle(
-                    fontSize: widget.isMobile == true ? 16 : 18,
-                  )),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              labelText: 'E-mail',
+              floatingLabelStyle: const TextStyle(height: 1.2),
               prefixIcon: Icon(
-                Icons.email,
+                Icons.email_outlined,
                 size: widget.isMobile == true ? 18 : 22,
               ),
             ),
@@ -176,19 +159,14 @@ class _SignupWidgetState extends State<SignupWidget> {
           // height: ScreenSize.screenHeight * .1,
           width: double.infinity,
           child: TextFormField(
-            style: TextStyle(color: Colors.black),
+            style: const TextStyle(color: Color(0xFF14213D)),
             controller: _passwordController,
             obscureText: obscureText,
             decoration: InputDecoration(
-              label: Text('Password',
-                  style: TextStyle(
-                    fontSize: widget.isMobile == true ? 16 : 18,
-                  )),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              labelText: 'Password',
+              floatingLabelStyle: const TextStyle(height: 1.2),
               prefixIcon: Icon(
-                Icons.password,
+                Icons.lock_outline_rounded,
                 size: widget.isMobile == true ? 18 : 22,
               ),
               suffixIcon: IconButton(
@@ -209,40 +187,41 @@ class _SignupWidgetState extends State<SignupWidget> {
         ),
         // SizedBox(height: ScreenSize.screenHeight * .02),
         SizedBox(
-          height: 48,
+          height: 50,
           width: double.infinity,
-          child: ElevatedButton(
-            style: ButtonStyle(
-                foregroundColor: WidgetStatePropertyAll(Colors.white),
-                backgroundColor: signupStatus == SignupStatus.submitting
-                    ? WidgetStatePropertyAll(Colors.grey)
-                    : WidgetStatePropertyAll(Color.fromARGB(255, 226, 48, 24))),
+          child: FilledButton.icon(
             onPressed: signupStatus == SignupStatus.submitting ? null : signUp,
-            child: signupStatus == SignupStatus.submitting
+            icon: signupStatus == SignupStatus.submitting
                 ? SizedBox(
                     height: 22,
                     width: 22,
                     child: Center(
                       child: CircularProgressIndicator(
-                        color: Colors.red,
+                        color: Colors.white,
+                        strokeWidth: 2,
                       ),
                     ),
                   )
-                : Text(
-                    'Sign Up',
-                    style: TextStyle(
-                      fontSize: widget.isMobile == true ? 16 : 18,
-                    ),
-                  ),
+                : const Icon(Icons.arrow_forward_rounded),
+            label: Text(
+              signupStatus == SignupStatus.submitting
+                  ? 'Δημιουργία...'
+                  : 'Δημιουργία λογαριασμού',
+              style: TextStyle(
+                fontSize: widget.isMobile == true ? 16 : 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ),
         // SizedBox(height: ScreenSize.screenHeight * .02),
         SizedBox(
           height: 48,
           width: double.infinity,
-          child: ElevatedButton(
+          child: OutlinedButton.icon(
             onPressed: () => context.read<ChangePageProvider>().changePage(),
-            child: Text('Back to login',
+            icon: const Icon(Icons.arrow_back_rounded),
+            label: Text('Πίσω στη σύνδεση',
                 style: TextStyle(
                   fontSize: widget.isMobile == true ? 16 : 18,
                 )),

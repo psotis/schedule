@@ -16,6 +16,9 @@ class AppointmentEditor extends StatefulWidget {
 
 class _AppointmentEditorState extends State<AppointmentEditor> {
   final TextEditingController _notesController = TextEditingController();
+  final TextEditingController _clientNameController = TextEditingController();
+  final TextEditingController _clientSurnameController =
+      TextEditingController();
   TextEditingController? _clientSearchController;
   List<AppointMent> _clients = [];
   List<ServiceOffering> _services = [];
@@ -34,7 +37,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
       );
 
   int get _totalDuration => _lines.fold<int>(
-        0,
+        _lines.isEmpty ? 60 : 0,
         (sum, line) => sum + (int.tryParse(line.durationController.text) ?? 0),
       );
 
@@ -47,6 +50,8 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
   @override
   void dispose() {
     _notesController.dispose();
+    _clientNameController.dispose();
+    _clientSurnameController.dispose();
     for (final line in _lines) {
       line.dispose();
     }
@@ -99,6 +104,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
       _start =
           DateTime(date.year, date.month, date.day, time.hour, time.minute);
     });
+    await _refreshAvailableEmployees();
   }
 
   Future<void> _addService() async {
@@ -132,9 +138,22 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
     );
     if (selected == null || !mounted) return;
     try {
-      final employees = await context
-          .read<AddAppointmentRepository>()
-          .getEmployees(serviceId: selected.id);
+      final offset = _lines.fold<int>(
+        0,
+        (sum, line) =>
+            sum +
+            (int.tryParse(line.durationController.text) ??
+                line.service.durationMinutes),
+      );
+      final serviceStart = _start.add(Duration(minutes: offset));
+      final employees =
+          await context.read<AddAppointmentRepository>().getEmployees(
+                serviceId: selected.id,
+                start: serviceStart,
+                end: serviceStart.add(
+                  Duration(minutes: selected.durationMinutes),
+                ),
+              );
       if (!mounted) return;
       setState(() {
         _lines.add(_ServiceLineDraft(selected, employees));
@@ -177,6 +196,8 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
           setState(() {
             _client = duplicate;
             _clientSearchController?.text = _clientLabel(duplicate);
+            _clientNameController.text = duplicate.name;
+            _clientSurnameController.text = duplicate.surname;
           });
           return;
         }
@@ -195,6 +216,8 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
         _clients = [..._clients, client];
         _client = client;
         _clientSearchController?.text = _clientLabel(client);
+        _clientNameController.text = client.name;
+        _clientSurnameController.text = client.surname;
       });
     } on ApiException catch (error) {
       if (mounted) setState(() => _error = error.message);
@@ -203,16 +226,20 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
 
   Future<void> _save() async {
     if (_saving) return;
-    if (_client == null) {
-      setState(() => _error = 'Επίλεξε πελάτη.');
+    final clientName = _clientNameController.text.trim();
+    final clientSurname = _clientSurnameController.text.trim();
+    if (clientName.isEmpty || clientSurname.isEmpty) {
+      setState(() => _error = 'Συμπλήρωσε όνομα και επώνυμο πελάτη.');
       return;
     }
-    if (_lines.isEmpty) {
-      setState(() => _error = 'Πρόσθεσε τουλάχιστον μία υπηρεσία.');
-      return;
-    }
-    if (_lines.any((line) => line.employee == null)) {
-      setState(() => _error = 'Επίλεξε εργαζόμενο για κάθε υπηρεσία.');
+    final removedUnavailableSelection = await _refreshAvailableEmployees();
+    if (removedUnavailableSelection || !mounted) {
+      if (mounted) {
+        setState(() {
+          _error =
+              'Ο επιλεγμένος εργαζόμενος δεν είναι διαθέσιμος αυτή την ώρα. Επίλεξε άλλον εργαζόμενο.';
+        });
+      }
       return;
     }
     final servicePayload = <Map<String, dynamic>>[];
@@ -226,7 +253,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
       }
       servicePayload.add({
         'service_id': line.service.id,
-        'employee_id': line.employee!.id,
+        if (line.employee != null) 'employee_id': line.employee!.id,
         'price': price,
         'duration_minutes': duration,
       });
@@ -237,8 +264,33 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
       _error = null;
     });
     try {
+      var selectedClient = _client;
+      if (selectedClient == null) {
+        final matchingClients = _clients.where(
+          (client) =>
+              client.name.trim().toLowerCase() == clientName.toLowerCase() &&
+              client.surname.trim().toLowerCase() ==
+                  clientSurname.toLowerCase(),
+        );
+        if (matchingClients.length > 1) {
+          setState(() {
+            _error =
+                'Υπάρχουν περισσότεροι πελάτες με αυτό το όνομα. Επίλεξε τον σωστό από την αναζήτηση.';
+          });
+          return;
+        }
+        selectedClient = matchingClients.isEmpty
+            ? await context.read<AddAppointmentRepository>().createClient(
+                  name: clientName,
+                  surname: clientSurname,
+                  phone: '',
+                  email: '',
+                )
+            : matchingClients.first;
+      }
+      if (!mounted) return;
       await context.read<AddAppointmentRepository>().createBooking(
-            clientId: _client!.id,
+            clientId: selectedClient.id,
             start: _start,
             services: servicePayload,
             stationId: _station?.id,
@@ -252,6 +304,8 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
         _lines.clear();
         _client = null;
         _clientSearchController?.clear();
+        _clientNameController.clear();
+        _clientSurnameController.clear();
         _station = null;
         _notesController.clear();
       });
@@ -304,7 +358,13 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
                     return searchable.contains(query);
                   }).take(20);
                 },
-                onSelected: (value) => setState(() => _client = value),
+                onSelected: (value) {
+                  setState(() {
+                    _client = value;
+                    _clientNameController.text = value.name;
+                    _clientSurnameController.text = value.surname;
+                  });
+                },
                 fieldViewBuilder: (context, controller, focusNode, onSubmit) {
                   _clientSearchController = controller;
                   return TextField(
@@ -359,6 +419,35 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
             ),
           ],
         ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            SizedBox(
+              width: 260,
+              child: TextField(
+                controller: _clientNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Όνομα',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (_) => _clearSelectedClientIfNameChanged(),
+              ),
+            ),
+            SizedBox(
+              width: 260,
+              child: TextField(
+                controller: _clientSurnameController,
+                decoration: const InputDecoration(
+                  labelText: 'Επώνυμο',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (_) => _clearSelectedClientIfNameChanged(),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
         Wrap(
           spacing: 12,
@@ -397,7 +486,8 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
         const SizedBox(height: 18),
         Row(
           children: [
-            Text('Υπηρεσίες', style: Theme.of(context).textTheme.titleLarge),
+            Text('Υπηρεσίες (προαιρετικά)',
+                style: Theme.of(context).textTheme.titleLarge),
             const Spacer(),
             FilledButton.icon(
               onPressed: _addService,
@@ -411,7 +501,9 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
           const Card(
             child: Padding(
               padding: EdgeInsets.all(20),
-              child: Text('Δεν έχουν προστεθεί υπηρεσίες.'),
+              child: Text(
+                'Χωρίς υπηρεσία το ραντεβού θα έχει διάρκεια 60 λεπτά.',
+              ),
             ),
           ),
         ..._lines.asMap().entries.map(
@@ -468,13 +560,59 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
     );
   }
 
-  String _clientLabel(AppointMent client) =>
-      '${client.name} ${client.surname} • ${client.phone}';
+  String _clientLabel(AppointMent client) => [
+        '${client.name} ${client.surname}',
+        if (client.phone.trim().isNotEmpty) client.phone,
+      ].join(' • ');
+
+  Future<bool> _refreshAvailableEmployees() async {
+    if (_lines.isEmpty) return false;
+    var offset = 0;
+    var removedSelection = false;
+    try {
+      for (final line in _lines) {
+        final duration = int.tryParse(line.durationController.text) ??
+            line.service.durationMinutes;
+        final lineStart = _start.add(Duration(minutes: offset));
+        final employees =
+            await context.read<AddAppointmentRepository>().getEmployees(
+                  serviceId: line.service.id,
+                  start: lineStart,
+                  end: lineStart.add(Duration(minutes: duration)),
+                );
+        final selectedId = line.employee?.id;
+        line.employees = employees;
+        if (selectedId != null &&
+            !employees.any((employee) => employee.id == selectedId)) {
+          line.employee = null;
+          removedSelection = true;
+        }
+        offset += duration;
+      }
+      if (mounted) setState(() {});
+      return removedSelection;
+    } on ApiException catch (error) {
+      if (mounted) setState(() => _error = error.message);
+      return true;
+    }
+  }
+
+  void _clearSelectedClientIfNameChanged() {
+    final client = _client;
+    if (client == null) return;
+    if (_clientNameController.text.trim() != client.name ||
+        _clientSurnameController.text.trim() != client.surname) {
+      setState(() {
+        _client = null;
+        _clientSearchController?.clear();
+      });
+    }
+  }
 }
 
 class _ServiceLineDraft {
   final ServiceOffering service;
-  final List<Employee> employees;
+  List<Employee> employees;
   final TextEditingController priceController;
   final TextEditingController durationController;
   Employee? employee;
@@ -538,20 +676,28 @@ class _ServiceLineCard extends StatelessWidget {
               children: [
                 SizedBox(
                   width: 280,
-                  child: DropdownButtonFormField<Employee>(
+                  child: DropdownButtonFormField<Employee?>(
+                    key: ValueKey(
+                      '${line.service.id}-${line.employee?.id ?? 'none'}-'
+                      '${line.employees.map((employee) => employee.id).join(',')}',
+                    ),
                     initialValue: line.employee,
                     decoration: const InputDecoration(
-                      labelText: 'Εργαζόμενος',
+                      labelText: 'Εργαζόμενος (προαιρετικό)',
                       border: OutlineInputBorder(),
                     ),
-                    items: line.employees
-                        .map(
-                          (employee) => DropdownMenuItem(
-                            value: employee,
-                            child: Text('${employee.name} ${employee.surname}'),
-                          ),
-                        )
-                        .toList(),
+                    items: [
+                      const DropdownMenuItem<Employee?>(
+                        value: null,
+                        child: Text('Χωρίς εργαζόμενο'),
+                      ),
+                      ...line.employees.map(
+                        (employee) => DropdownMenuItem<Employee?>(
+                          value: employee,
+                          child: Text('${employee.name} ${employee.surname}'),
+                        ),
+                      ),
+                    ],
                     onChanged: (value) {
                       line.employee = value;
                       onChanged();
@@ -637,7 +783,9 @@ class _NewClientDialogState extends State<_NewClientDialog> {
               ),
               TextField(
                 controller: _phone,
-                decoration: const InputDecoration(labelText: 'Κινητό'),
+                decoration: const InputDecoration(
+                  labelText: 'Κινητό (προαιρετικό)',
+                ),
               ),
               TextField(
                 controller: _email,
@@ -661,9 +809,7 @@ class _NewClientDialogState extends State<_NewClientDialog> {
         ),
         FilledButton(
           onPressed: () {
-            if (_name.text.trim().isEmpty ||
-                _surname.text.trim().isEmpty ||
-                _phone.text.trim().isEmpty) {
+            if (_name.text.trim().isEmpty || _surname.text.trim().isEmpty) {
               return;
             }
             Navigator.pop(context, {

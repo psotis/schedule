@@ -64,10 +64,22 @@ class AddAppointmentRepository {
         .toList();
   }
 
-  Future<List<Employee>> getEmployees({String? serviceId}) async {
+  Future<List<Employee>> getEmployees({
+    String? serviceId,
+    DateTime? start,
+    DateTime? end,
+    String? excludeAppointmentId,
+  }) async {
+    final query = <String, String>{
+      if (serviceId != null) 'service_id': serviceId,
+      if (start != null) 'start_time': start.toUtc().toIso8601String(),
+      if (end != null) 'end_time': end.toUtc().toIso8601String(),
+      if (excludeAppointmentId != null)
+        'exclude_appointment_id': excludeAppointmentId,
+    };
     final data = await apiClient.get(
       '/employee',
-      query: serviceId == null ? null : {'service_id': serviceId},
+      query: query.isEmpty ? null : query,
     ) as List;
     return data
         .map(
@@ -91,12 +103,13 @@ class AddAppointmentRepository {
     String? stationId,
     String notes = '',
   }) async {
-    final totalMinutes = services.fold<int>(
+    final serviceMinutes = services.fold<int>(
       0,
       (sum, item) =>
           sum +
           (num.tryParse(item['duration_minutes'].toString())?.round() ?? 0),
     );
+    final totalMinutes = serviceMinutes > 0 ? serviceMinutes : 60;
     final end = start.add(Duration(minutes: totalMinutes));
     final data = await apiClient.post('/appointment', body: {
       'client_id': clientId,
@@ -319,6 +332,8 @@ class AddAppointmentRepository {
         'positions_id': positionId,
         'paid': paid ?? 0,
       });
+    } on ApiException {
+      rethrow;
     } catch (e) {
       throw CustomError(
         code: 'Exception',

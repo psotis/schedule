@@ -7,7 +7,10 @@ import 'package:provider/provider.dart';
 import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
 
 import 'package:scheldule/models/appointment_model.dart';
+import 'package:scheldule/models/employee.dart';
 import 'package:scheldule/providers/add%20appointment/add_appointment_provider.dart';
+import 'package:scheldule/repositories/add_appointment_repository.dart';
+import 'package:scheldule/repositories/api_client.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/search/search.dart';
 import 'package:scheldule/utils/send_button.dart';
@@ -45,6 +48,8 @@ class _CustomerSideState extends State<CustomerSide> {
   final _formKey = GlobalKey<FormState>();
   final DateTime? date = DateTime.now();
   String? descriptionDate;
+  List<Employee> _availableEmployees = [];
+  bool _loadingEmployees = true;
 
   final ScrollController _scrollController = ScrollController();
   bool _isFabVisible = true;
@@ -58,9 +63,10 @@ class _CustomerSideState extends State<CustomerSide> {
 
   @override
   void initState() {
+    super.initState();
     seeApp();
     _scrollController.addListener(_scrollListener);
-    super.initState();
+    _loadAvailableEmployees();
   }
 
   void _scrollListener() {
@@ -81,7 +87,7 @@ class _CustomerSideState extends State<CustomerSide> {
     }
   }
 
-  void _submit() async {
+  Future<bool> _submit() async {
     if (mounted) {
       setState(() {
         autovalidateUser = AutovalidateMode.always;
@@ -97,35 +103,49 @@ class _CustomerSideState extends State<CustomerSide> {
 
     final userForm = _formKey.currentState;
 
-    if (userForm == null || !userForm.validate()) return;
+    if (userForm == null || !userForm.validate()) return false;
     userForm.save();
+    try {
+      await addProvider.editAppointment(
+        context,
+        appointmentId: widget.appointMent.id,
+        name: name ?? widget.appointMent.name,
+        surname: surname ?? widget.appointMent.surname,
+        date: timestampday ?? widget.appointMent.date!,
+        employee: employee ?? widget.appointMent.employee,
+        position: position ?? widget.appointMent.position,
+        paid: paid ?? widget.appointMent.paid,
+      );
 
-    await addProvider.editAppointment(
-      context,
-      appointmentId: widget.appointMent.id,
-      name: name ?? widget.appointMent.name,
-      surname: surname ?? widget.appointMent.surname,
-      date: timestampday ?? widget.appointMent.date!,
-      employee: employee ?? widget.appointMent.employee,
-      position: position ?? widget.appointMent.position,
-      paid: paid ?? widget.appointMent.paid,
-    );
-
-    await Future.delayed(Duration(milliseconds: 200));
-
-    await searchProvider.editUser(
-      name: name ?? widget.customer.name,
-      surname: surname ?? widget.customer.surname,
-      phone: phone ?? widget.customer.phone,
-      email: email ?? widget.customer.email,
-      address: address ?? widget.customer.address,
-      description: (description == null || description!.isEmpty)
-          ? ''
-          : "$descriptionDate:  $description",
-      amka: amka ?? widget.customer.amka,
-      owes: owes ?? widget.customer.owes!,
-      docId: widget.customer.id,
-    );
+      await searchProvider.editUser(
+        name: name ?? widget.customer.name,
+        surname: surname ?? widget.customer.surname,
+        phone: phone ?? widget.customer.phone,
+        email: email ?? widget.customer.email,
+        address: address ?? widget.customer.address,
+        description: (description == null || description!.isEmpty)
+            ? ''
+            : "$descriptionDate:  $description",
+        amka: amka ?? widget.customer.amka,
+        owes: owes ?? widget.customer.owes!,
+        docId: widget.customer.id,
+      );
+      return true;
+    } on ApiException catch (error) {
+      if (mounted) {
+        snackBarDialog(context, color: Colors.red, message: error.message);
+      }
+      return false;
+    } catch (_) {
+      if (mounted) {
+        snackBarDialog(
+          context,
+          color: Colors.red,
+          message: 'Δεν ήταν δυνατή η ενημέρωση του ραντεβού',
+        );
+      }
+      return false;
+    }
   }
 
   Future<bool> _removeUser({required String clientId}) {
@@ -164,6 +184,7 @@ class _CustomerSideState extends State<CustomerSide> {
       formattedTime = DateFormat('dd-MM-yyyy HH:mm').format(finalDate!);
       timestampday = Timestamp.fromDate(finalDate!);
     });
+    await _loadAvailableEmployees();
   }
 
   Future<DateTime?> pickDate() {
@@ -199,6 +220,42 @@ class _CustomerSideState extends State<CustomerSide> {
     setState(() {
       employee = '$name $surename';
     });
+  }
+
+  Future<void> _loadAvailableEmployees() async {
+    final start = (timestampday ?? widget.appointMent.date)?.toDate();
+    if (start == null) return;
+    if (mounted) setState(() => _loadingEmployees = true);
+    try {
+      final duration = widget.appointMent.totalDurationMinutes > 0
+          ? widget.appointMent.totalDurationMinutes
+          : 60;
+      final serviceId = widget.appointMent.serviceItems.isEmpty
+          ? null
+          : widget.appointMent.serviceItems.first.serviceId;
+      final employees =
+          await context.read<AddAppointmentRepository>().getEmployees(
+                serviceId: serviceId,
+                start: start,
+                end: start.add(Duration(minutes: duration)),
+                excludeAppointmentId: widget.appointMent.id,
+              );
+      if (!mounted) return;
+      setState(() {
+        _availableEmployees = employees;
+        _loadingEmployees = false;
+        if (employee != null &&
+            !employees.any(
+              (item) => '${item.name} ${item.surname}' == employee,
+            )) {
+          employee = null;
+        }
+      });
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      setState(() => _loadingEmployees = false);
+      snackBarDialog(context, color: Colors.red, message: error.message);
+    }
   }
 
   @override
@@ -291,7 +348,7 @@ class _CustomerSideState extends State<CustomerSide> {
             final deleted = await _removeUser(
               clientId: widget.customer.id,
             );
-            if (!mounted) return;
+            if (!context.mounted) return;
             if (!deleted) {
               snackBarDialog(context,
                   color: Colors.red,
@@ -311,7 +368,8 @@ class _CustomerSideState extends State<CustomerSide> {
         ),
         SendButton(
           onPressed: () async {
-            _submit();
+            final updated = await _submit();
+            if (!context.mounted || !updated) return;
             Navigator.pop(context);
 
             snackBarDialog(context,
@@ -419,11 +477,21 @@ class _CustomerSideState extends State<CustomerSide> {
                     ),
                   ],
                 ),
-                Search(
-                  width: ScreenSize.screenWidth * .25,
-                  selectSearch: SelectSearch.employee,
-                  setAppointment: (p0, p1) => setEmployee(p0, p1),
-                ),
+                if (_loadingEmployees)
+                  const LinearProgressIndicator()
+                else if (_availableEmployees.isEmpty)
+                  const Text('Δεν υπάρχει διαθέσιμος εργαζόμενος αυτή την ώρα')
+                else
+                  Search(
+                    key: ValueKey(
+                      '${timestampday?.toDate().toIso8601String()}-'
+                      '${_availableEmployees.map((item) => item.id).join(',')}',
+                    ),
+                    width: ScreenSize.screenWidth * .25,
+                    selectSearch: SelectSearch.employee,
+                    employees: _availableEmployees,
+                    setAppointment: (p0, p1) => setEmployee(p0, p1),
+                  ),
                 Row(
                   spacing: 10,
                   children: [
