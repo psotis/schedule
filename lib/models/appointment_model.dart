@@ -88,6 +88,14 @@ class AppointmentPaymentEntry extends Equatable {
 
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 class AppointMent extends Equatable {
+  bool matchesSearch(String query) {
+    final text = query.trim().toLowerCase();
+    final digits = text.replaceAll(RegExp(r'\D'), '');
+    return '$name $surname'.toLowerCase().contains(text) ||
+        (digits.isNotEmpty &&
+            phone.replaceAll(RegExp(r'\D'), '').contains(digits));
+  }
+
   final String id;
   final String name;
   final String surname;
@@ -99,6 +107,25 @@ class AppointMent extends Equatable {
   final Timestamp? date;
   final String? employee;
   final String? position;
+  final String clientId;
+  final String employeeId;
+  final String stationId;
+  final double? recordedPaid;
+  final Timestamp? endDate;
+
+  double get paidAmount => payments.isEmpty
+      ? recordedPaid ?? (paid ?? 0).toDouble()
+      : payments.fold<double>(0, (sum, payment) => sum + payment.amount);
+
+  int get effectiveDurationMinutes {
+    if (totalDurationMinutes > 0) return totalDurationMinutes;
+    if (date != null && endDate != null) {
+      final minutes = endDate!.toDate().difference(date!.toDate()).inMinutes;
+      if (minutes > 0) return minutes;
+    }
+    return 60;
+  }
+
   final String? owes;
   final String? birthday;
   final String? allo;
@@ -146,6 +173,11 @@ class AppointMent extends Equatable {
     this.date,
     this.employee,
     this.position,
+    this.clientId = '',
+    this.employeeId = '',
+    this.stationId = '',
+    this.recordedPaid,
+    this.endDate,
     this.owes,
     this.birthday,
     this.allo,
@@ -201,9 +233,18 @@ class AppointMent extends Equatable {
       amka: (client['amka'] ?? '').toString(),
       date: rawDate == null ? null : Timestamp.fromJson(rawDate),
       employee: json['employee']?.toString(),
+      clientId: (json['client_id'] ?? client['uuid'] ?? '').toString(),
+      employeeId: (json['employee_id'] ?? '').toString(),
+      stationId: (json['positions_id'] ?? '').toString(),
+      recordedPaid: num.tryParse((json['paid'] ?? 0).toString())?.toDouble(),
+      endDate: json['end_time'] == null
+          ? null
+          : Timestamp.fromJson(json['end_time']),
       position: json['position_description']?.toString(),
       owes: (client['owes'] ?? '').toString(),
-      birthday: customFields['birthday']?.toString(),
+      birthday: (client['date_of_birth'] ?? '').toString().isNotEmpty
+          ? client['date_of_birth'].toString()
+          : customFields['birthday']?.toString(),
       allo: customFields['allo']?.toString(),
       startingDate: customFields['startingDate']?.toString(),
       mainIssue: customFields['mainIssue']?.toString(),
@@ -315,6 +356,11 @@ class AppointMent extends Equatable {
       date ?? Timestamp.now(),
       employee ?? '',
       position ?? '',
+      clientId,
+      employeeId,
+      stationId,
+      recordedPaid ?? -1,
+      endDate?.toDate().toIso8601String() ?? '',
       owes ?? '',
       birthday ?? '',
       allo ?? '',
@@ -413,6 +459,11 @@ class AppointMent extends Equatable {
       amka: amka ?? this.amka,
       date: date ?? this.date,
       employee: employee ?? this.employee,
+      clientId: clientId,
+      employeeId: employeeId,
+      stationId: stationId,
+      recordedPaid: recordedPaid,
+      endDate: endDate,
       position: position ?? this.position,
       owes: owes ?? this.owes,
       birthday: birthday ?? this.birthday,

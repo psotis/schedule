@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -25,6 +26,16 @@ class ApiClient {
   final String baseUrl;
   late final RealtimeClient realtime;
 
+  final StreamController<int> _sessionChanges = StreamController.broadcast();
+  int _sessionRevision = 0;
+  Stream<int> get sessionChanges => _sessionChanges.stream;
+  int get sessionRevision => _sessionRevision;
+
+  void _sessionChanged() {
+    _sessionRevision++;
+    _sessionChanges.add(_sessionRevision);
+  }
+
   String? _token;
   String? _storeId;
 
@@ -48,6 +59,7 @@ class ApiClient {
   Future<void> restoreSession() async {
     _token = await _storage.read(key: _tokenKey);
     _storeId = await _storage.read(key: _storeKey);
+    _sessionChanged();
     await _connectRealtime();
   }
 
@@ -60,6 +72,7 @@ class ApiClient {
     } else {
       await _storage.write(key: _storeKey, value: storeId);
     }
+    _sessionChanged();
     await _connectRealtime();
   }
 
@@ -71,6 +84,7 @@ class ApiClient {
     await realtime.disconnect();
     _token = null;
     _storeId = null;
+    _sessionChanged();
     await Future.wait([
       _storage.delete(key: _tokenKey),
       _storage.delete(key: _storeKey),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/repositories/appointment_repository.dart';
+import 'customer_profile_form.dart';
 
 class CustomerInsights extends StatefulWidget {
   final String customerId;
@@ -79,6 +80,37 @@ class _CustomerInsightsState extends State<CustomerInsights> {
         leading: const Icon(Icons.insights),
         title: const Text('Σύνοψη και ιστορικό πελάτη'),
         children: [
+          Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Βασικά στοιχεία πελάτη'),
+                onPressed: () async {
+                  await showDialog<void>(
+                      context: context,
+                      builder: (dialogContext) => Dialog(
+                            child: SizedBox(
+                              width: 600,
+                              height:
+                                  MediaQuery.sizeOf(dialogContext).height * .85,
+                              child: Column(children: [
+                                Align(
+                                    alignment: Alignment.centerRight,
+                                    child: IconButton(
+                                        onPressed: () =>
+                                            Navigator.pop(dialogContext),
+                                        icon: const Icon(Icons.close))),
+                                Expanded(
+                                    child: CustomerProfileForm(
+                                        customer: client,
+                                        onSaved: () =>
+                                            Navigator.pop(dialogContext))),
+                              ]),
+                            ),
+                          ));
+                  await _load();
+                },
+              )),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: Wrap(
@@ -111,6 +143,16 @@ class _CustomerInsightsState extends State<CustomerInsights> {
             )
           else
             ...history.map(_historyTile),
+          const Divider(),
+          const ListTile(title: Text('Ανάλυση ανά υπηρεσία')),
+          ...((report['services'] ?? const []) as List).map((value) {
+            final service = Map<String, dynamic>.from(value as Map);
+            return ListTile(
+              title: Text(service['name'].toString()),
+              subtitle: Text('${service['count']} υπηρεσίες'),
+              trailing: Text('${_money(service['value'])} €'),
+            );
+          }),
         ],
       ),
     );

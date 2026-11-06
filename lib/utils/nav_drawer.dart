@@ -55,7 +55,7 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
   @override
   Widget build(BuildContext context) {
     final storeRole = context.watch<AuthProvider>().state.user?.storeRole;
-    final canManage = storeRole == 'owner' || storeRole == 'manager';
+    final canManage = storeRole == 'owner' || storeRole == 'admin';
     final visibleNav = nav
         .where(
           (item) =>

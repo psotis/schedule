@@ -1,5 +1,6 @@
 import 'package:scheldule/models/appointment_model.dart';
 import 'package:scheldule/models/custom_errors.dart';
+import 'package:intl/intl.dart';
 import 'api_client.dart';
 
 class SearchEditUserRepository {
@@ -43,8 +44,14 @@ class SearchEditUserRepository {
   Future<int> patientAppointmentLength({
     required String name,
     required String surename,
+    String? clientId,
   }) async {
     try {
+      if (clientId != null && clientId.isNotEmpty) {
+        final appointments =
+            await apiClient.get('/appointments/client/$clientId') as List;
+        return appointments.length;
+      }
       final clients = await findUsers();
       final client = clients.where(
         (item) => item.name == name && item.surname == surename,
@@ -125,6 +132,34 @@ class SearchEditUserRepository {
         'spot': spot ?? '',
         'missFunctions': missFunctions ?? '',
       };
+      final suppliedValues = <String, dynamic>{
+        'heart': heart,
+        'breathe': breathe,
+        'sugar': sugar,
+        'ypertash': ypertash,
+        'neuro': neuro,
+        'orthopedic': orthopedic,
+        'selfCare': selfCare,
+        'helpCare': helpCare,
+        'disabled': disabled,
+        'good': good,
+        'medium': medium,
+        'bad': bad,
+        'yes': yes,
+        'no': no,
+        'birthday': birthday,
+        'allo': allo,
+        'startingDate': startingDate,
+        'mainIssue': mainIssue,
+        'doctor': doctor,
+        'surgeryPast': surgeryPast,
+        'surgeryNow': surgeryNow,
+        'pharmacy': pharmacy,
+        'allergies': allergies,
+        'spot': spot,
+        'missFunctions': missFunctions,
+      };
+      customFields.removeWhere((key, value) => suppliedValues[key] == null);
       final definitions = await apiClient.get('/store/client-fields') as List;
       final supportedKeys = definitions
           .map((item) => Map<String, dynamic>.from(item as Map))
@@ -133,6 +168,15 @@ class SearchEditUserRepository {
           .whereType<String>()
           .toSet();
       customFields.removeWhere((key, value) => !supportedKeys.contains(key));
+
+      String? normalizedBirthday = birthday;
+      if (birthday != null &&
+          birthday.isNotEmpty &&
+          !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(birthday)) {
+        final parsed =
+            DateFormat('dd/MM/yyyy').parseStrict(birthday.replaceAll('-', '/'));
+        normalizedBirthday = DateFormat('yyyy-MM-dd').format(parsed);
+      }
 
       await apiClient.put('/client/$docId', body: {
         'first_name': name,
@@ -143,6 +187,7 @@ class SearchEditUserRepository {
         'amka': amka,
         'client_description': description ?? '',
         'owes': owes ?? '',
+        if (normalizedBirthday != null) 'date_of_birth': normalizedBirthday,
         if (customFields.isNotEmpty) 'custom_fields': customFields,
       });
     } catch (e) {

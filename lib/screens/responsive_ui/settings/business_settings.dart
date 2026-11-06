@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -16,7 +17,8 @@ class BusinessSettings extends StatefulWidget {
   State<BusinessSettings> createState() => _BusinessSettingsState();
 }
 
-class _BusinessSettingsState extends State<BusinessSettings> {
+class _BusinessSettingsState extends State<BusinessSettings>
+    with SingleTickerProviderStateMixin {
   List<ServiceOffering> _services = [];
   List<StoreStation> _stations = [];
   List<Employee> _employees = [];
@@ -25,12 +27,36 @@ class _BusinessSettingsState extends State<BusinessSettings> {
   Map<String, dynamic> _report = {};
   bool _loading = true;
   String? _error;
-  int _selectedTab = 0;
+  late final TabController _tabs;
+  StreamSubscription<void>? _reportChanges;
+  DateTimeRange? _reportRange;
 
   @override
   void initState() {
     super.initState();
+    _tabs = TabController(length: 6, vsync: this);
     _load();
+    _reportChanges =
+        context.read<ApiClient>().watch('reports').listen((_) => _loadReport());
+  }
+
+  @override
+  void dispose() {
+    _tabs.dispose();
+    _reportChanges?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadReport() async {
+    try {
+      final report = await context.read<AppointmentRepository>().getReport(
+            from: _reportRange?.start,
+            to: _reportRange?.end.add(const Duration(days: 1)),
+          );
+      if (mounted) setState(() => _report = report);
+    } catch (error) {
+      if (mounted) _showError(error);
+    }
   }
 
   Future<void> _load() async {
@@ -46,7 +72,10 @@ class _BusinessSettingsState extends State<BusinessSettings> {
         booking.getEmployees(),
         booking.getEmployeeTimeOff(),
         booking.getStoreMembers(),
-        context.read<AppointmentRepository>().getReport(),
+        context.read<AppointmentRepository>().getReport(
+              from: _reportRange?.start,
+              to: _reportRange?.end.add(const Duration(days: 1)),
+            ),
       ]);
       if (!mounted) return;
       setState(() {
@@ -181,14 +210,23 @@ class _BusinessSettingsState extends State<BusinessSettings> {
   Future<void> _addMember() async {
     final result = await showDialog<Map<String, String>>(
       context: context,
-      builder: (context) => const _MemberDialog(),
+      builder: (context) => _MemberDialog(employees: _employees),
     );
     if (result == null || !mounted) return;
     try {
-      await context.read<AddAppointmentRepository>().addStoreMember(
-            email: result['email']!,
-            role: result['role']!,
-          );
+      if (result['create'] == 'true') {
+        await context.read<AddAppointmentRepository>().createEmployeeAccount(
+              employeeId: result['employee_id']!,
+              email: result['email']!,
+              password: result['password']!,
+            );
+      } else {
+        await context.read<AddAppointmentRepository>().addStoreMember(
+              email: result['email']!,
+              role: result['role']!,
+              employeeId: result['employee_id'],
+            );
+      }
       await _load();
     } catch (error) {
       _showError(error);
@@ -229,15 +267,14 @@ class _BusinessSettingsState extends State<BusinessSettings> {
     }
     return DefaultTabController(
       length: 6,
-      initialIndex: _selectedTab,
       child: Column(
         children: [
           Row(
             children: [
               Expanded(
                 child: TabBar(
+                  controller: _tabs,
                   isScrollable: true,
-                  onTap: (index) => _selectedTab = index,
                   tabs: const [
                     Tab(text: 'Υπηρεσίες'),
                     Tab(text: 'Χώροι'),
@@ -266,6 +303,8 @@ class _BusinessSettingsState extends State<BusinessSettings> {
           ),
           Expanded(
             child: TabBarView(
+              controller: _tabs,
+              physics: const NeverScrollableScrollPhysics(),
               children: [
                 _servicesView(),
                 _stationsView(),
@@ -403,9 +442,53 @@ class _BusinessSettingsState extends State<BusinessSettings> {
         .map((item) => ReportMetric.fromJson(Map<String, dynamic>.from(item)))
         .toList()
       ..sort((a, b) => b.value.compareTo(a.value));
+    final weekdays = ((_report['weekdays'] ?? const []) as List)
+        .map((item) => Map<String, dynamic>.from(item as Map))
+        .toList();
+    final hours = ((_report['hours'] ?? const []) as List)
+        .map((item) => Map<String, dynamic>.from(item as Map))
+        .where((item) => (item['count'] as num) > 0)
+        .toList()
+      ..sort((a, b) => (b['count'] as num).compareTo(a['count'] as num));
+    final daily = ((_report['daily'] ?? const []) as List)
+        .map((item) => Map<String, dynamic>.from(item as Map))
+        .toList()
+      ..sort((a, b) => (b['count'] as num).compareTo(a['count'] as num));
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
+        Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          children: [
+            OutlinedButton.icon(
+              icon: const Icon(Icons.date_range),
+              label: Text(_reportRange == null
+                  ? 'Όλες οι ημερομηνίες'
+                  : '${DateFormat('dd/MM/yyyy').format(_reportRange!.start)} – ${DateFormat('dd/MM/yyyy').format(_reportRange!.end)}'),
+              onPressed: () async {
+                final range = await showDateRangePicker(
+                  context: context,
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2100),
+                  initialDateRange: _reportRange,
+                );
+                if (range == null || !mounted) return;
+                setState(() => _reportRange = range);
+                await _loadReport();
+              },
+            ),
+            if (_reportRange != null)
+              TextButton(
+                onPressed: () {
+                  setState(() => _reportRange = null);
+                  _loadReport();
+                },
+                child: const Text('Όλες οι ημερομηνίες'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
         Wrap(
           spacing: 12,
           runSpacing: 12,
@@ -418,8 +501,57 @@ class _BusinessSettingsState extends State<BusinessSettings> {
                 money: true),
             _MetricCard('Εισπράξεις', totals['collected'] ?? 0, money: true),
             _MetricCard('Υπόλοιπο', totals['outstanding'] ?? 0, money: true),
+            _MetricCard('Μέση αξία ραντεβού',
+                totals['average_completed_appointment'] ?? 0,
+                money: true),
           ],
         ),
+        const SizedBox(height: 24),
+        Text('Ποιες ημέρες έχουν περισσότερα ραντεβού',
+            style: Theme.of(context).textTheme.titleLarge),
+        const Text(
+            'Χωρίς ακυρώσεις και no-show. Οι ώρες εμφανίζονται στη ζώνη ώρας του καταστήματος.'),
+        const SizedBox(height: 12),
+        ...weekdays.map((item) {
+          final maximum = weekdays.fold<num>(
+              0,
+              (value, day) =>
+                  (day['count'] as num) > value ? day['count'] as num : value);
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(children: [
+              SizedBox(width: 100, child: Text(item['name'].toString())),
+              Expanded(
+                  child: LinearProgressIndicator(
+                      value:
+                          maximum == 0 ? 0 : (item['count'] as num) / maximum,
+                      minHeight: 8,
+                      borderRadius: BorderRadius.circular(8))),
+              const SizedBox(width: 12),
+              Text('${item['count']}'),
+            ]),
+          );
+        }),
+        const SizedBox(height: 16),
+        Text('Ώρες αιχμής', style: Theme.of(context).textTheme.titleMedium),
+        Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: hours
+                .take(5)
+                .map((item) => Chip(
+                      label: Text(
+                          '${item['hour'].toString().padLeft(2, '0')}:00 • ${item['count']} ραντεβού'),
+                    ))
+                .toList()),
+        const SizedBox(height: 16),
+        Text('Ημερομηνίες με τα περισσότερα ραντεβού',
+            style: Theme.of(context).textTheme.titleMedium),
+        ...daily.take(10).map((item) => ListTile(
+              title: Text(DateFormat('dd/MM/yyyy')
+                  .format(DateTime.parse(item['date'].toString()))),
+              trailing: Text('${item['count']} ραντεβού'),
+            )),
         const SizedBox(height: 24),
         Text('Απόδοση υπηρεσιών',
             style: Theme.of(context).textTheme.titleLarge),
@@ -470,7 +602,7 @@ class _BusinessSettingsState extends State<BusinessSettings> {
                       value: role,
                       items: const [
                         DropdownMenuItem(
-                          value: 'manager',
+                          value: 'admin',
                           child: Text('Διαχειριστής'),
                         ),
                         DropdownMenuItem(
@@ -573,7 +705,7 @@ class _EmployeeSettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final subtitle = employee.serviceIds.isEmpty
-        ? 'Όλες οι υπηρεσίες (δεν έχουν οριστεί περιορισμοί)'
+        ? 'Δεν έχουν οριστεί υπηρεσίες. Επίλεξε ποιες μπορεί να εκτελεί.'
         : '${employee.serviceIds.length} υπηρεσίες • '
             '${employee.availability.length} κανόνες ωραρίου';
     final info = Row(
@@ -1215,7 +1347,8 @@ class _TimeOffDialogState extends State<_TimeOffDialog> {
 }
 
 class _MemberDialog extends StatefulWidget {
-  const _MemberDialog();
+  final List<Employee> employees;
+  const _MemberDialog({required this.employees});
 
   @override
   State<_MemberDialog> createState() => _MemberDialogState();
@@ -1223,43 +1356,85 @@ class _MemberDialog extends StatefulWidget {
 
 class _MemberDialogState extends State<_MemberDialog> {
   final TextEditingController _email = TextEditingController();
+  final TextEditingController _password = TextEditingController();
   String _role = 'staff';
+  bool _create = true;
+  Employee? _employee;
+  String? _error;
 
   @override
   void dispose() {
     _email.dispose();
+    _password.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: const Text('Προσθήκη χρήστη στο κατάστημα'),
-      content: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 420),
+      content: SizedBox(
+        width: 420,
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          spacing: 16,
           children: [
-            const Text(
-              'Ο χρήστης πρέπει πρώτα να έχει δημιουργήσει λογαριασμό με αυτό το email.',
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Νέος λογαριασμός εργαζομένου'),
+              subtitle: const Text(
+                  'Απενεργοποίησε για σύνδεση υπάρχοντος λογαριασμού.'),
+              value: _create,
+              onChanged: (value) => setState(() {
+                _create = value;
+                _role = 'staff';
+              }),
+            ),
+            DropdownButtonFormField<Employee>(
+              isExpanded: true,
+              decoration: const InputDecoration(labelText: 'Εργαζόμενος'),
+              items: widget.employees
+                  .where((employee) => employee.userId.isEmpty)
+                  .map((employee) => DropdownMenuItem(
+                        value: employee,
+                        child: Text('${employee.name} ${employee.surname}',
+                            overflow: TextOverflow.ellipsis),
+                      ))
+                  .toList(),
+              onChanged: (value) => setState(() {
+                _employee = value;
+                if (value != null) _email.text = value.email;
+              }),
             ),
             TextField(
               controller: _email,
               keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(labelText: 'Email'),
             ),
-            DropdownButtonFormField<String>(
-              initialValue: _role,
-              decoration: const InputDecoration(labelText: 'Ρόλος'),
-              items: const [
-                DropdownMenuItem(value: 'staff', child: Text('Προσωπικό')),
-                DropdownMenuItem(
-                  value: 'manager',
-                  child: Text('Διαχειριστής'),
-                ),
-              ],
-              onChanged: (value) => setState(() => _role = value ?? 'staff'),
-            ),
+            if (_create)
+              TextField(
+                controller: _password,
+                obscureText: true,
+                decoration: const InputDecoration(
+                    labelText: 'Κωδικός (8–72 χαρακτήρες)'),
+              ),
+            if (!_create)
+              DropdownButtonFormField<String>(
+                initialValue: _role,
+                decoration: const InputDecoration(labelText: 'Ρόλος'),
+                items: const [
+                  DropdownMenuItem(value: 'staff', child: Text('Προσωπικό')),
+                  DropdownMenuItem(
+                    value: 'admin',
+                    child: Text('Διαχειριστής'),
+                  ),
+                ],
+                onChanged: (value) => setState(() => _role = value ?? 'staff'),
+              ),
+            if (_error != null)
+              Text(_error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ],
         ),
       ),
@@ -1271,8 +1446,22 @@ class _MemberDialogState extends State<_MemberDialog> {
         FilledButton(
           onPressed: () {
             final email = _email.text.trim();
-            if (!email.contains('@')) return;
-            Navigator.pop(context, {'email': email, 'role': _role});
+            if (!email.contains('@') ||
+                ((_create || _role == 'staff') && _employee == null) ||
+                (_create &&
+                    (_password.text.length < 8 ||
+                        _password.text.length > 72))) {
+              setState(() => _error =
+                  'Επίλεξε εργαζόμενο, έγκυρο email και κωδικό 8–72 χαρακτήρων.');
+              return;
+            }
+            Navigator.pop(context, {
+              'email': email,
+              'role': _role,
+              'create': _create.toString(),
+              if (_employee != null) 'employee_id': _employee!.id,
+              if (_create) 'password': _password.text,
+            });
           },
           child: const Text('Προσθήκη'),
         ),

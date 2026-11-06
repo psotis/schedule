@@ -162,13 +162,14 @@ class _EmployeeCardState extends State<EmployeeCard> {
     );
   }
 
-  Row _buttons(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      spacing: 20,
+  Widget _buttons(BuildContext context) {
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      alignment: WrapAlignment.center,
+      spacing: 10,
+      runSpacing: 10,
       children: [
-        SendButton(
+        OutlinedButton.icon(
           onPressed: () {
             _removeEmployee(
               employeeId: widget.employe.id,
@@ -180,11 +181,13 @@ class _EmployeeCardState extends State<EmployeeCard> {
                 message:
                     'Ο εργαζόμενος ${widget.employe.name} ${widget.employe.surname} διαγράφθηκε');
           },
-          text: 'Διαγραφή',
-          backgroundColor: Colors.red,
-          icon: Icons.delete,
+          label: const Text('Διαγραφή εργαζομένου'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Theme.of(context).colorScheme.error,
+          ),
+          icon: const Icon(Icons.person_remove_outlined, size: 18),
         ),
-        SendButton(
+        FilledButton.icon(
           onPressed: () {
             _submit();
 
@@ -194,9 +197,8 @@ class _EmployeeCardState extends State<EmployeeCard> {
                 message:
                     'Ο εργαζόμενος ${widget.employe.name} ${widget.employe.surname} ανανεώθηκε');
           },
-          text: 'Αποστολή',
-          icon: Icons.edit,
-          backgroundColor: Colors.orange,
+          label: const Text('Αποθήκευση'),
+          icon: const Icon(Icons.check_rounded, size: 18),
         ),
       ],
     );

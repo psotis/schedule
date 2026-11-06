@@ -102,12 +102,11 @@ class AppointmentRepository {
     required AppointMent appointment,
     required DateTime start,
   }) async {
-    final durationMinutes = appointment.totalDurationMinutes > 0
-        ? appointment.totalDurationMinutes
-        : 60;
+    final durationMinutes = appointment.effectiveDurationMinutes;
     final services = appointment.serviceItems
         .where((item) => item.serviceId.isNotEmpty)
         .map((item) => {
+              'id': item.id,
               'service_id': item.serviceId,
               if (item.employeeId.isNotEmpty) 'employee_id': item.employeeId,
               'price': item.price,
@@ -153,6 +152,10 @@ class AppointmentRepository {
         query: query.isEmpty ? null : query,
       ) as Map,
     );
+  }
+
+  Future<void> reversePayment(String appointmentId, String paymentId) async {
+    await apiClient.delete('/appointment/$appointmentId/payments/$paymentId');
   }
 
   Future<Map<String, dynamic>> getClientReport(String clientId) async {

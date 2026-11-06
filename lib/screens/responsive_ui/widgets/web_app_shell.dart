@@ -28,8 +28,7 @@ class WebAppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final drawer = context.watch<DrawerProvider>();
     final user = context.watch<AuthProvider>().state.user;
-    final canManage =
-        user?.storeRole == 'owner' || user?.storeRole == 'manager';
+    final canManage = user?.storeRole == 'owner' || user?.storeRole == 'admin';
     final navigation = visibleNavigationItems(canManage);
     final current = navigation.any(
       (item) => item.status == drawer.state.drawerStatus,

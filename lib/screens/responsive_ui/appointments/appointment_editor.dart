@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -7,8 +8,34 @@ import 'package:scheldule/models/employee.dart';
 import 'package:scheldule/repositories/add_appointment_repository.dart';
 import 'package:scheldule/repositories/api_client.dart';
 
+Future<bool?> showAppointmentEditor(
+        BuildContext context, AppointMent appointment) =>
+    showDialog<bool>(
+      context: context,
+      builder: (context) => Dialog(
+        insetPadding: const EdgeInsets.all(16),
+        child: SizedBox(
+          width: 900,
+          height: MediaQuery.sizeOf(context).height * .9,
+          child: Column(children: [
+            Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close))),
+            Expanded(
+                child: AppointmentEditor(
+                    appointment: appointment,
+                    onSaved: () => Navigator.pop(context, true))),
+          ]),
+        ),
+      ),
+    );
+
 class AppointmentEditor extends StatefulWidget {
-  const AppointmentEditor({super.key});
+  final AppointMent? appointment;
+  final VoidCallback? onSaved;
+  const AppointmentEditor({super.key, this.appointment, this.onSaved});
 
   @override
   State<AppointmentEditor> createState() => _AppointmentEditorState();
@@ -26,10 +53,18 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
   final List<_ServiceLineDraft> _lines = [];
   AppointMent? _client;
   StoreStation? _station;
+  Employee? _employee;
+  String? _pendingEmployeeId;
+  List<Employee> _appointmentEmployees = [];
+  bool _employeeRequiresReview = false;
   DateTime _start = DateTime.now().add(const Duration(hours: 1));
   bool _loading = true;
   bool _saving = false;
   String? _error;
+  Timer? _availabilityDebounce;
+  int _availabilityRequest = 0;
+  final List<StreamSubscription<void>> _availabilityChanges = [];
+  bool _validating = false;
 
   double get _totalPrice => _lines.fold<double>(
         0,
@@ -37,19 +72,32 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
       );
 
   int get _totalDuration => _lines.fold<int>(
-        _lines.isEmpty ? 60 : 0,
+        _lines.isEmpty ? widget.appointment?.effectiveDurationMinutes ?? 60 : 0,
         (sum, line) => sum + (int.tryParse(line.durationController.text) ?? 0),
       );
 
   @override
   void initState() {
     super.initState();
+    if (widget.appointment?.date != null) {
+      _start = widget.appointment!.date!.toDate();
+    }
     _load();
+    for (final resource in ['appointments', 'availability', 'employees']) {
+      _availabilityChanges.add(context
+          .read<ApiClient>()
+          .watch(resource)
+          .listen((_) => _scheduleAvailabilityRefresh()));
+    }
   }
 
   @override
   void dispose() {
     _notesController.dispose();
+    _availabilityDebounce?.cancel();
+    for (final subscription in _availabilityChanges) {
+      subscription.cancel();
+    }
     _clientNameController.dispose();
     _clientSurnameController.dispose();
     for (final line in _lines) {
@@ -71,9 +119,42 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
         _clients = values[0] as List<AppointMent>;
         _services = values[1] as List<ServiceOffering>;
         _stations = values[2] as List<StoreStation>;
-        _loading = false;
         _error = null;
       });
+      final appointment = widget.appointment;
+      if (appointment != null) {
+        _client = _clients
+            .where((client) => client.id == appointment.clientId)
+            .firstOrNull;
+        _clientNameController.text = appointment.name;
+        _clientSurnameController.text = appointment.surname;
+        _station = _stations
+            .where((station) => station.id == appointment.stationId)
+            .firstOrNull;
+        _notesController.text = appointment.notes;
+        if (appointment.employeeId.isNotEmpty &&
+            appointment.serviceItems.every(
+              (line) => line.employeeId == appointment.employeeId,
+            )) {
+          _pendingEmployeeId = appointment.employeeId;
+        }
+        for (final item in appointment.serviceItems) {
+          final service = ServiceOffering(
+              id: item.serviceId,
+              name: item.serviceName,
+              description: '',
+              category: item.category,
+              subcategory: item.subcategory,
+              price: item.price,
+              durationMinutes: item.durationMinutes,
+              isActive: true);
+          final line = _ServiceLineDraft(service, [], id: item.id);
+          line.selectedEmployeeId = item.employeeId;
+          _lines.add(line);
+        }
+      }
+      await _refreshAvailableEmployees();
+      if (mounted) setState(() => _loading = false);
     } on ApiException catch (error) {
       if (!mounted) return;
       setState(() {
@@ -87,7 +168,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
     final date = await showDatePicker(
       context: context,
       initialDate: _start,
-      firstDate: DateTime.now().subtract(const Duration(days: 1)),
+      firstDate: DateTime(2000),
       lastDate: DateTime.now().add(const Duration(days: 3650)),
     );
     if (date == null || !mounted) return;
@@ -149,6 +230,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
       final employees =
           await context.read<AddAppointmentRepository>().getEmployees(
                 serviceId: selected.id,
+                excludeAppointmentId: widget.appointment?.id,
                 start: serviceStart,
                 end: serviceStart.add(
                   Duration(minutes: selected.durationMinutes),
@@ -159,6 +241,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
         _lines.add(_ServiceLineDraft(selected, employees));
         _error = null;
       });
+      await _refreshAvailableEmployees();
     } on ApiException catch (error) {
       if (mounted) setState(() => _error = error.message);
     }
@@ -225,15 +308,20 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
   }
 
   Future<void> _save() async {
-    if (_saving) return;
+    if (_saving || _validating) return;
     final clientName = _clientNameController.text.trim();
     final clientSurname = _clientSurnameController.text.trim();
     if (clientName.isEmpty || clientSurname.isEmpty) {
       setState(() => _error = 'Συμπλήρωσε όνομα και επώνυμο πελάτη.');
       return;
     }
+    _validating = true;
     final removedUnavailableSelection = await _refreshAvailableEmployees();
-    if (removedUnavailableSelection || !mounted) {
+    _validating = false;
+    if (removedUnavailableSelection ||
+        _employeeRequiresReview ||
+        _lines.any((line) => line.requiresReview) ||
+        !mounted) {
       if (mounted) {
         setState(() {
           _error =
@@ -252,8 +340,9 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
         return;
       }
       servicePayload.add({
+        if (line.id != null) 'id': line.id,
         'service_id': line.service.id,
-        if (line.employee != null) 'employee_id': line.employee!.id,
+        'employee_id': line.employee?.id ?? _employee?.id,
         'price': price,
         'duration_minutes': duration,
       });
@@ -290,6 +379,10 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
       }
       if (!mounted) return;
       await context.read<AddAppointmentRepository>().createBooking(
+            appointmentId: widget.appointment?.id,
+            employeeId: _employee?.id,
+            fallbackDuration:
+                widget.appointment?.effectiveDurationMinutes ?? 60,
             clientId: selectedClient.id,
             start: _start,
             services: servicePayload,
@@ -297,6 +390,10 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
             notes: _notesController.text.trim(),
           );
       if (!mounted) return;
+      if (widget.onSaved != null) {
+        widget.onSaved!();
+        return;
+      }
       for (final line in _lines) {
         line.dispose();
       }
@@ -307,8 +404,12 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
         _clientNameController.clear();
         _clientSurnameController.clear();
         _station = null;
+        _employee = null;
+        _pendingEmployeeId = null;
+        _employeeRequiresReview = false;
         _notesController.clear();
       });
+      _scheduleAvailabilityRefresh();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Το ραντεβού αποθηκεύτηκε.')),
       );
@@ -337,7 +438,11 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
     return ListView(
       padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600 ? 12 : 20),
       children: [
-        Text('Νέο ραντεβού', style: Theme.of(context).textTheme.headlineSmall),
+        Text(
+            widget.appointment == null
+                ? 'Νέο ραντεβού'
+                : 'Επεξεργασία ραντεβού',
+            style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 16),
         Wrap(
           spacing: 12,
@@ -352,10 +457,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
                   final query = value.text.trim().toLowerCase();
                   if (query.isEmpty) return _clients.take(20);
                   return _clients.where((client) {
-                    final searchable =
-                        '${client.name} ${client.surname} ${client.phone}'
-                            .toLowerCase();
-                    return searchable.contains(query);
+                    return client.matchesSearch(query);
                   }).take(20);
                 },
                 onSelected: (value) {
@@ -461,6 +563,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
             SizedBox(
               width: 300,
               child: DropdownButtonFormField<StoreStation?>(
+                isExpanded: true,
                 initialValue: _station,
                 decoration: const InputDecoration(
                   labelText: 'Σταθμός / Χώρος',
@@ -469,12 +572,14 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
                 items: [
                   const DropdownMenuItem<StoreStation?>(
                     value: null,
-                    child: Text('Χωρίς συγκεκριμένο χώρο'),
+                    child: Text('Χωρίς συγκεκριμένο χώρο',
+                        overflow: TextOverflow.ellipsis),
                   ),
                   ..._stations.map(
                     (station) => DropdownMenuItem<StoreStation?>(
                       value: station,
-                      child: Text(station.name),
+                      child:
+                          Text(station.name, overflow: TextOverflow.ellipsis),
                     ),
                   ),
                 ],
@@ -484,11 +589,53 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
           ],
         ),
         const SizedBox(height: 18),
-        Row(
+        DropdownButtonFormField<Employee?>(
+          key: ValueKey(
+              'appointment-employee-${_employee?.id}-${_appointmentEmployees.map((item) => item.id).join(',')}'),
+          isExpanded: true,
+          initialValue: _employee,
+          decoration: InputDecoration(
+            labelText: 'Εργαζόμενος (προαιρετικό)',
+            prefixIcon: const Icon(Icons.person_outline_rounded),
+            helperText: 'Μπορείς να επιλέξεις εργαζόμενο και χωρίς υπηρεσία.',
+            helperMaxLines: 2,
+            errorText: _employeeRequiresReview
+                ? 'Ο εργαζόμενος δεν είναι διαθέσιμος. Επίλεξε άλλον ή χωρίς εργαζόμενο.'
+                : null,
+            errorMaxLines: 3,
+          ),
+          items: [
+            const DropdownMenuItem<Employee?>(
+                value: null, child: Text('Χωρίς εργαζόμενο')),
+            ..._appointmentEmployees
+                .map((employee) => DropdownMenuItem<Employee?>(
+                      value: employee,
+                      child: Text('${employee.name} ${employee.surname}',
+                          overflow: TextOverflow.ellipsis),
+                    )),
+          ],
+          onChanged: _saving
+              ? null
+              : (value) => setState(() {
+                    _employee = value;
+                    _employeeRequiresReview = false;
+                    if (value != null) {
+                      for (final line in _lines) {
+                        line.employee = null;
+                        line.selectedEmployeeId = null;
+                        line.requiresReview = false;
+                      }
+                    }
+                  }),
+        ),
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 16,
+          runSpacing: 10,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text('Υπηρεσίες (προαιρετικά)',
                 style: Theme.of(context).textTheme.titleLarge),
-            const Spacer(),
             FilledButton.icon(
               onPressed: _addService,
               icon: const Icon(Icons.add),
@@ -498,11 +645,11 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
         ),
         const SizedBox(height: 10),
         if (_lines.isEmpty)
-          const Card(
+          Card(
             child: Padding(
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               child: Text(
-                'Χωρίς υπηρεσία το ραντεβού θα έχει διάρκεια 60 λεπτά.',
+                'Χωρίς υπηρεσία το ραντεβού θα έχει διάρκεια $_totalDuration λεπτά.',
               ),
             ),
           ),
@@ -510,10 +657,15 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
               (entry) => _ServiceLineCard(
                 index: entry.key,
                 line: entry.value,
-                onChanged: () => setState(() {}),
+                defaultEmployee: _employee,
+                onChanged: () {
+                  setState(() {});
+                  _scheduleAvailabilityRefresh();
+                },
                 onRemove: () {
                   entry.value.dispose();
                   setState(() => _lines.removeAt(entry.key));
+                  _scheduleAvailabilityRefresh();
                 },
               ),
             ),
@@ -566,10 +718,35 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
       ].join(' • ');
 
   Future<bool> _refreshAvailableEmployees() async {
-    if (_lines.isEmpty) return false;
+    final request = ++_availabilityRequest;
     var offset = 0;
     var removedSelection = false;
     try {
+      final candidates = await context
+          .read<AddAppointmentRepository>()
+          .getEmployees(
+            start: _start,
+            end: _start.add(
+                Duration(minutes: _totalDuration > 0 ? _totalDuration : 60)),
+            excludeAppointmentId: widget.appointment?.id,
+          );
+      if (!mounted || request != _availabilityRequest) return true;
+      _appointmentEmployees = candidates
+          .where((employee) => _lines.every((line) =>
+              employee.serviceIds.contains(line.service.id) ||
+              (line.id != null &&
+                  (line.employee?.id ?? line.selectedEmployeeId) ==
+                      employee.id)))
+          .toList();
+      final appointmentEmployeeId = _employee?.id ?? _pendingEmployeeId;
+      _pendingEmployeeId = null;
+      _employee = _appointmentEmployees
+          .where((item) => item.id == appointmentEmployeeId)
+          .firstOrNull;
+      if (appointmentEmployeeId != null && _employee == null) {
+        _employeeRequiresReview = true;
+        removedSelection = true;
+      }
       for (final line in _lines) {
         final duration = int.tryParse(line.durationController.text) ??
             line.service.durationMinutes;
@@ -579,12 +756,23 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
                   serviceId: line.service.id,
                   start: lineStart,
                   end: lineStart.add(Duration(minutes: duration)),
+                  excludeAppointmentId: widget.appointment?.id,
                 );
-        final selectedId = line.employee?.id;
+        if (!mounted ||
+            request != _availabilityRequest ||
+            !_lines.contains(line)) {
+          return true;
+        }
+        final selectedId = line.employee?.id ?? line.selectedEmployeeId;
         line.employees = employees;
+        line.employee = employees
+            .where((employee) => employee.id == selectedId)
+            .firstOrNull;
+        line.selectedEmployeeId = null;
         if (selectedId != null &&
             !employees.any((employee) => employee.id == selectedId)) {
           line.employee = null;
+          line.requiresReview = true;
           removedSelection = true;
         }
         offset += duration;
@@ -608,16 +796,25 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
       });
     }
   }
+
+  void _scheduleAvailabilityRefresh() {
+    _availabilityDebounce?.cancel();
+    _availabilityDebounce =
+        Timer(const Duration(milliseconds: 350), _refreshAvailableEmployees);
+  }
 }
 
 class _ServiceLineDraft {
+  final String? id;
+  String? selectedEmployeeId;
+  bool requiresReview = false;
   final ServiceOffering service;
   List<Employee> employees;
   final TextEditingController priceController;
   final TextEditingController durationController;
   Employee? employee;
 
-  _ServiceLineDraft(this.service, this.employees)
+  _ServiceLineDraft(this.service, this.employees, {this.id})
       : priceController = TextEditingController(
           text: service.price.toStringAsFixed(2),
         ),
@@ -636,12 +833,14 @@ class _ServiceLineCard extends StatelessWidget {
   final _ServiceLineDraft line;
   final VoidCallback onChanged;
   final VoidCallback onRemove;
+  final Employee? defaultEmployee;
 
   const _ServiceLineCard({
     required this.index,
     required this.line,
     required this.onChanged,
     required this.onRemove,
+    this.defaultEmployee,
   });
 
   @override
@@ -670,6 +869,14 @@ class _ServiceLineCard extends StatelessWidget {
                     .join(' • '),
               ),
             const SizedBox(height: 10),
+            if (line.requiresReview)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                    'Ο προηγούμενος εργαζόμενος δεν είναι διαθέσιμος. Επίλεξε άλλον ή «Χωρίς εργαζόμενο».',
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error)),
+              ),
             Wrap(
               spacing: 12,
               runSpacing: 12,
@@ -677,29 +884,36 @@ class _ServiceLineCard extends StatelessWidget {
                 SizedBox(
                   width: 280,
                   child: DropdownButtonFormField<Employee?>(
+                    isExpanded: true,
                     key: ValueKey(
                       '${line.service.id}-${line.employee?.id ?? 'none'}-'
                       '${line.employees.map((employee) => employee.id).join(',')}',
                     ),
                     initialValue: line.employee,
                     decoration: const InputDecoration(
-                      labelText: 'Εργαζόμενος (προαιρετικό)',
+                      labelText: 'Εργαζόμενος υπηρεσίας (προαιρετικό)',
                       border: OutlineInputBorder(),
                     ),
                     items: [
-                      const DropdownMenuItem<Employee?>(
+                      DropdownMenuItem<Employee?>(
                         value: null,
-                        child: Text('Χωρίς εργαζόμενο'),
+                        child: Text(
+                            defaultEmployee == null
+                                ? 'Χωρίς εργαζόμενο'
+                                : '${defaultEmployee!.name} ${defaultEmployee!.surname} (ραντεβού)',
+                            overflow: TextOverflow.ellipsis),
                       ),
                       ...line.employees.map(
                         (employee) => DropdownMenuItem<Employee?>(
                           value: employee,
-                          child: Text('${employee.name} ${employee.surname}'),
+                          child: Text('${employee.name} ${employee.surname}',
+                              overflow: TextOverflow.ellipsis),
                         ),
                       ),
                     ],
                     onChanged: (value) {
                       line.employee = value;
+                      line.requiresReview = false;
                       onChanged();
                     },
                   ),
@@ -772,6 +986,7 @@ class _NewClientDialogState extends State<_NewClientDialog> {
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            spacing: 14,
             children: [
               TextField(
                 controller: _name,

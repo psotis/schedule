@@ -21,6 +21,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'repositories/add_appointment_repository.dart';
 import 'repositories/employee_repository.dart';
+import 'repositories/ui_preferences_repository.dart';
+import 'providers/ui_preferences/ui_preferences_provider.dart';
 
 SharedPreferences? prefs;
 
@@ -77,6 +79,11 @@ class MyApp extends StatelessWidget {
         ),
         Provider<UserAdminRepository>(
           create: (context) => UserAdminRepository(apiClient: apiClient),
+        ),
+        ChangeNotifierProvider<UiPreferencesProvider>(
+          create: (_) => UiPreferencesProvider(
+            repository: UiPreferencesRepository(apiClient: apiClient),
+          ),
         ),
         ChangeNotifierProvider<AuthProvider>(
           create: (context) => AuthProvider(authRepository: authRepository),

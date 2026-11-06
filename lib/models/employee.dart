@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 
 class Employee extends Equatable {
   final String id;
+  final String userId;
   final String name;
   final String surname;
   final String email;
@@ -18,6 +19,7 @@ class Employee extends Equatable {
   final List<Map<String, dynamic>> availability;
   Employee({
     required this.id,
+    this.userId = '',
     required this.name,
     required this.surname,
     required this.email,
@@ -36,6 +38,7 @@ class Employee extends Equatable {
   factory Employee.fromJson(Map<String, dynamic> userData) {
     return Employee(
       id: (userData['uuid'] ?? '').toString(),
+      userId: (userData['user_id'] ?? '').toString(),
       name: (userData['first_name'] ?? '').toString(),
       surname: (userData['last_name'] ?? '').toString(),
       phone: (userData['phone'] ?? '').toString(),
@@ -95,6 +98,7 @@ class Employee extends Equatable {
   }) {
     return Employee(
       id: id ?? this.id,
+      userId: userId,
       name: name ?? this.name,
       surname: surname ?? this.surname,
       email: email ?? this.email,
@@ -117,6 +121,7 @@ class Employee extends Equatable {
   @override
   List<Object?> get props => [
         id,
+        userId,
         name,
         surname,
         email,

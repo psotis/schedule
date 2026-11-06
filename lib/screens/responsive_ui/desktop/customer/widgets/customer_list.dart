@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:scheldule/providers/ui_preferences/ui_preferences_provider.dart';
+import 'package:scheldule/screens/responsive_ui/widgets/list_grid_toggle.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/models/appointment_model.dart';
 import 'package:scheldule/providers/providers.dart';
@@ -17,7 +19,11 @@ class _CustomerListState extends State<CustomerList> {
   late final Stream? stream;
 
   String _searchTerm = '';
-  bool isListView = true;
+  bool get isListView =>
+      context
+          .watch<UiPreferencesProvider>()
+          .value('customers_view', fallback: 'list') ==
+      'list';
   final int _itemsPerPage = 10;
   final List<AppointMent> _allCustomers = [];
   final List<AppointMent> _visibleCustomers = [];
@@ -35,8 +41,7 @@ class _CustomerListState extends State<CustomerList> {
     if (_isLoading) return;
 
     final filteredCustomers = _allCustomers.where((customer) {
-      final fullName = '${customer.name} ${customer.surname}'.toLowerCase();
-      return fullName.contains(_searchTerm.toLowerCase());
+      return customer.matchesSearch(_searchTerm);
     }).toList();
 
     if (_visibleCustomers.length >= filteredCustomers.length) return;
@@ -70,8 +75,7 @@ class _CustomerListState extends State<CustomerList> {
 
   void _updateVisibleCustomers() {
     final filteredCustomers = _allCustomers.where((customer) {
-      final fullName = '${customer.name} ${customer.surname}'.toLowerCase();
-      return fullName.contains(_searchTerm.toLowerCase());
+      return customer.matchesSearch(_searchTerm);
     }).toList();
 
     setState(() {
@@ -95,7 +99,7 @@ class _CustomerListState extends State<CustomerList> {
           width: 400,
           child: CustomTextForm(
             labelText: 'Αναζήτηση',
-            hintText: 'Ονοματεπώνυμο πελάτη',
+            hintText: 'Όνομα, επώνυμο ή τηλέφωνο',
             prefixIcon: Icons.search,
             onChanged: (value) {
               setState(() {
@@ -126,9 +130,7 @@ class _CustomerListState extends State<CustomerList> {
                 _allCustomers.addAll(sortedData);
 
                 final filteredCustomers = _allCustomers.where((customer) {
-                  final fullName =
-                      '${customer.name} ${customer.surname}'.toLowerCase();
-                  return fullName.contains(_searchTerm.toLowerCase());
+                  return customer.matchesSearch(_searchTerm);
                 }).toList();
 
                 _visibleCustomers.clear();
@@ -140,30 +142,8 @@ class _CustomerListState extends State<CustomerList> {
     );
   }
 
-  Row _switchListGrid() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        IconButton(
-          onPressed: () {
-            setState(() {
-              isListView = true;
-            });
-          },
-          icon: Icon(Icons.list, color: isListView ? Colors.blue : Colors.grey),
-        ),
-        IconButton(
-          onPressed: () {
-            setState(() {
-              isListView = false;
-            });
-          },
-          icon: Icon(Icons.grid_view,
-              color: isListView ? Colors.grey : Colors.blue),
-        ),
-      ],
-    );
-  }
+  Widget _switchListGrid() =>
+      const ListGridToggle(preferenceKey: 'customers_view');
 
   ListView _buildListView() {
     return ListView.builder(
@@ -210,12 +190,18 @@ class _CustomerListState extends State<CustomerList> {
                             Row(
                               children: [
                                 Icon(Icons.email,
-                                    size: 16, color: Colors.grey[600]),
+                                    size: 16,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant),
                                 SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
                                     customer.email,
-                                    style: TextStyle(color: Colors.grey[800]),
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -225,12 +211,18 @@ class _CustomerListState extends State<CustomerList> {
                             Row(
                               children: [
                                 Icon(Icons.phone,
-                                    size: 16, color: Colors.grey[600]),
+                                    size: 16,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant),
                                 SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
                                     customer.phone,
-                                    style: TextStyle(color: Colors.grey[800]),
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant),
                                   ),
                                 ),
                               ],
@@ -298,12 +290,19 @@ class _CustomerListState extends State<CustomerList> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.email, size: 16, color: Colors.grey[600]),
+                          Icon(Icons.email,
+                              size: 16,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant),
                           SizedBox(width: 6),
                           Flexible(
                             child: Text(
                               customer.email,
-                              style: TextStyle(color: Colors.grey[800]),
+                              style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -313,13 +312,20 @@ class _CustomerListState extends State<CustomerList> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.phone, size: 16, color: Colors.grey[600]),
+                          Icon(Icons.phone,
+                              size: 16,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant),
                           SizedBox(width: 6),
                           Flexible(
                             child: Text(
                               customer.phone,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: Colors.grey[800]),
+                              style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant),
                             ),
                           ),
                         ],

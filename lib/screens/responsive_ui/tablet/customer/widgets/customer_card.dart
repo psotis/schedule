@@ -8,7 +8,6 @@ import 'package:scheldule/models/appointment_model.dart';
 import 'package:scheldule/screens/responsive_ui/customer/customer_insights.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/get%20layout/get_layout.dart';
-import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
 
 import '../../../../../providers/search user/search_user_provider.dart';
@@ -105,6 +104,7 @@ class _CustomerCardState extends State<CustomerCard> {
     var length =
         await context.read<SearchEditUserRepository>().patientAppointmentLength(
               name: widget.customer.name,
+              clientId: widget.customer.id,
               surename: widget.customer.surname,
             );
     setState(() {
@@ -181,12 +181,13 @@ class _CustomerCardState extends State<CustomerCard> {
       child: AnimatedOpacity(
           opacity: _isFabVisible ? 1.0 : 0,
           duration: Duration(milliseconds: 300),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 20,
+          child: Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            alignment: WrapAlignment.center,
+            spacing: 10,
+            runSpacing: 10,
             children: [
-              SendButton(
+              OutlinedButton.icon(
                 onPressed: () async {
                   final deleted = await _removeUser(
                     clientId: widget.customer.id,
@@ -207,11 +208,13 @@ class _CustomerCardState extends State<CustomerCard> {
                       message:
                           'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
                 },
-                text: 'Διαγραφή',
-                backgroundColor: Colors.red,
-                icon: Icons.delete,
+                label: const Text('Διαγραφή πελάτη'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
+                icon: const Icon(Icons.person_remove_outlined, size: 18),
               ),
-              SendButton(
+              FilledButton.icon(
                 onPressed: () {
                   _submit();
 
@@ -221,9 +224,8 @@ class _CustomerCardState extends State<CustomerCard> {
                       message:
                           'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
                 },
-                text: 'Αποστολή',
-                icon: Icons.edit,
-                backgroundColor: Colors.orange,
+                label: const Text('Αποθήκευση'),
+                icon: const Icon(Icons.check_rounded, size: 18),
               ),
             ],
           )),

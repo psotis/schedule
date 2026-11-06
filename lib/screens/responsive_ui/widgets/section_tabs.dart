@@ -55,7 +55,11 @@ class SectionTabs extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Expanded(
-          child: TabBarView(controller: controller, children: children),
+          child: TabBarView(
+            controller: controller,
+            physics: const NeverScrollableScrollPhysics(),
+            children: children,
+          ),
         ),
       ],
     );

@@ -41,9 +41,57 @@ store-scoped WebSocket connection for change notifications. The affected REST
 resource is reloaded when the service reports a successful change; the app does
 not poll these endpoints on a timer.
 
+### Store workflows
+
+- Settings → Access: create an employee account by selecting an existing employee,
+  entering their email and an initial password. The account is linked to that store;
+  the employee signs in on the normal login page. Existing accounts can also be linked.
+- Staff can access their assigned appointments and customers. Store owners and admins
+  can access finances, team management and store-wide reports. A shared appointment's
+  schedule and service assignments are managed by an owner or admin.
+- Settings → Reports: select a date range to see service and employee performance,
+  busiest weekdays, peak hours and busiest dates in the store's timezone.
+- Settings → Team → Services: explicitly select the services each employee can perform.
+  New service assignments only offer qualified employees. Existing recorded assignments
+  remain intact when editing historical appointments.
+- Appointment history → Edit: change individual services, employees, prices and durations.
+  Existing service prices and durations remain snapshots when the catalog changes.
+- The appointment-level employee selector is optional and available even without a
+  service. It supplies the default worker for services; individual service workers
+  can still be overridden when a booking involves multiple employees.
+- Completion and payments are managed from appointment history or the calendar's
+  completion/payment button. Each new payment creates its matching income entry.
+  Owners/admins can reverse a payment from its payment history. Historical balances
+  are preserved without creating duplicate historical income entries.
+
+For local web development, start the service and run:
+
+```sh
+flutter run -d web-server --web-hostname localhost --web-port 8080 --dart-define=API_BASE_URL=http://localhost:4001/api/v1
+```
+
+Pass Google OAuth client IDs separately with `--dart-define` as required by your
+environment. Never pass a server `.env` file into the public web bundle.
+
 ### **Prerequisites**  
 Ensure you have the following installed:  
 - Flutter SDK  
 - Dart  
 - PostgreSQL  
 - A running Schedule service and PostgreSQL database
+
+### Saved display layouts
+
+Use the calendar layout selector to choose Day, Week, Work Week, Agenda,
+Month Agenda, employee timeline, the four timeline views, Heat Map, or Daily
+Summary. Daily Summary adapts the Fare Calendar layout to appointment counts and
+booked minutes. Cancelled appointments are excluded from the daily summaries;
+the selected-day agenda keeps their records accessible. Employee rows show the
+whole booking for each participating employee and include unassigned bookings.
+Employee changes continue through the appointment editor and its availability
+checks; dragging between employee rows does not reassign a booking.
+
+Calendar and customer/employee list-grid choices are saved by the service for
+each user and active store and restored after login. These choices also apply
+when switching device sizes. Defaults remain Day on mobile, Work Week on larger
+screens, and List for customers and employees until a choice is saved.

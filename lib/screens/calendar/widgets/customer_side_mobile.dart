@@ -1,20 +1,19 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:scheldule/models/app_timestamp.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
 
 import 'package:scheldule/models/appointment_model.dart';
 import 'package:scheldule/models/employee.dart';
 import 'package:scheldule/providers/add%20appointment/add_appointment_provider.dart';
 import 'package:scheldule/repositories/add_appointment_repository.dart';
 import 'package:scheldule/repositories/api_client.dart';
+import 'package:scheldule/screens/responsive_ui/appointments/appointment_editor.dart';
+import 'package:scheldule/screens/responsive_ui/appointments/appointment_history_view.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
-import 'package:scheldule/utils/cutom_text.dart';
+import 'customer_side.dart' show AppointmentDetailFrame;
 import 'package:scheldule/utils/search/search.dart';
-import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
 
 import '../../../../../providers/search user/search_user_provider.dart';
@@ -52,10 +51,9 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
   List<Employee> _availableEmployees = [];
   bool _loadingEmployees = true;
 
-  final ScrollController _scrollController = ScrollController();
-  bool _isFabVisible = true;
   Timestamp? timestampday;
-  late final DateTime selectedDateTime = DateTime.now();
+  DateTime get selectedDateTime =>
+      finalDate ?? widget.appointMent.date?.toDate() ?? DateTime.now();
 
   DateTime? finalDate;
   String? formattedTime;
@@ -66,26 +64,7 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
   void initState() {
     super.initState();
     seeApp();
-    _scrollController.addListener(_scrollListener);
     _loadAvailableEmployees();
-  }
-
-  void _scrollListener() {
-    if (_scrollController.position.userScrollDirection ==
-        ScrollDirection.reverse) {
-      if (_isFabVisible) {
-        setState(() {
-          _isFabVisible = false;
-        });
-      }
-    } else if (_scrollController.position.userScrollDirection ==
-        ScrollDirection.forward) {
-      if (!_isFabVisible && _scrollController.offset <= 10) {
-        setState(() {
-          _isFabVisible = true;
-        });
-      }
-    }
   }
 
   Future<bool> _submit() async {
@@ -110,12 +89,12 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
       await addProvider.editAppointment(
         context,
         appointmentId: widget.appointMent.id,
+        clientId: widget.appointMent.clientId,
         name: name ?? widget.appointMent.name,
         surname: surname ?? widget.appointMent.surname,
         date: timestampday ?? widget.appointMent.date!,
-        employee: employee ?? widget.appointMent.employee,
+        employee: employee,
         position: position ?? widget.appointMent.position,
-        paid: paid ?? widget.appointMent.paid,
       );
 
       await searchProvider.editUser(
@@ -157,6 +136,7 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
     var length =
         await context.read<SearchEditUserRepository>().patientAppointmentLength(
               name: widget.customer.name,
+              clientId: widget.customer.id,
               surename: widget.customer.surname,
             );
     if (mounted) {
@@ -228,9 +208,7 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
     if (start == null) return;
     if (mounted) setState(() => _loadingEmployees = true);
     try {
-      final duration = widget.appointMent.totalDurationMinutes > 0
-          ? widget.appointMent.totalDurationMinutes
-          : 60;
+      final duration = widget.appointMent.effectiveDurationMinutes;
       final serviceId = widget.appointMent.serviceItems.isEmpty
           ? null
           : widget.appointMent.serviceItems.first.serviceId;
@@ -260,83 +238,26 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
   }
 
   @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final descriptions = (widget.customer.description ?? [])
         .where((desc) => desc.trim().isNotEmpty)
         .toList();
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-          stops: [0.1, 0.5, 0.7, 0.9],
-          colors: [
-            Color(0xFF005448),
-            Color(0xFF007a6b),
-            Color(0xFF00a190),
-            Color(0xFF00c9b7),
-          ],
-        ),
-      ),
-      child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: CustomText(
-            text: "${widget.appointMent.name} ${widget.appointMent.surname}",
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFFf1b24b),
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        body: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Stack(
-            children: [
-              SingleChildScrollView(
-                controller: _scrollController,
-                padding: const EdgeInsets.only(bottom: 100),
-                child: Center(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text("Συνολικά ραντεβού: "),
-                          Text(appointmentLength.toString()),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      _form(context),
-                      const SizedBox(height: 20),
-                      _descriptionList(descriptions),
-                    ],
-                  ),
-                ),
-              ),
-              // FAB/buttons
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 10,
-                child: AnimatedOpacity(
-                  opacity: _isFabVisible ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 300),
-                  child: Center(child: _buttons(context)),
-                ),
-              ),
-            ],
-          ),
-        ),
+    return Scaffold(
+      body: AppointmentDetailFrame(
+        title: '${widget.appointMent.name} ${widget.appointMent.surname}',
+        subtitle:
+            '${DateFormat('dd/MM/yyyy • HH:mm').format(selectedDateTime)} • ${widget.appointMent.effectiveDurationMinutes}′',
+        appointmentCount: appointmentLength,
+        actions: _buttons(context),
+        child:
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          _form(context),
+          const SizedBox(height: 24),
+          Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: _descriptionList(descriptions)),
+        ]),
       ),
     );
   }
@@ -365,13 +286,14 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
     );
   }
 
-  Row _buttons(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      spacing: 20,
+  Widget _buttons(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.end,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 10,
+      runSpacing: 10,
       children: [
-        SendButton(
+        OutlinedButton.icon(
           onPressed: () async {
             final deleted = await _removeUser(
               clientId: widget.customer.id,
@@ -390,11 +312,12 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
                 message:
                     'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
           },
-          text: 'Διαγραφή',
-          backgroundColor: Colors.red,
-          icon: Icons.delete,
+          label: const Text('Διαγραφή πελάτη'),
+          style: OutlinedButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error),
+          icon: const Icon(Icons.person_remove_outlined, size: 18),
         ),
-        SendButton(
+        FilledButton.icon(
           onPressed: () async {
             final updated = await _submit();
             if (!context.mounted || !updated) return;
@@ -405,9 +328,8 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
                 message:
                     'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
           },
-          text: 'Αποστολή',
-          icon: Icons.edit,
-          backgroundColor: Colors.orange,
+          label: const Text('Αποθήκευση'),
+          icon: const Icon(Icons.check_rounded, size: 18),
         ),
       ],
     );
@@ -463,7 +385,7 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
                   },
                 ),
                 CustomTextForm(
-                  labelText: 'Θέση',
+                  labelText: 'Σταθμός / χώρος',
                   hintText: 'Γραφείο/Καρέκλα/Δωμάτειο',
                   prefixIcon: Icons.numbers,
                   initial: widget.appointMent.position,
@@ -478,21 +400,44 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
                   readOnly: true,
                   initial: widget.appointMent.employee,
                 ),
-                if (_loadingEmployees)
+                Wrap(spacing: 8, runSpacing: 8, children: [
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.edit_calendar_outlined),
+                    label: const Text('Υπηρεσίες / εργαζόμενοι'),
+                    onPressed: () async {
+                      final updated = await showAppointmentEditor(
+                          context, widget.appointMent);
+                      if (updated == true && context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    },
+                  ),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.payments_outlined),
+                    label: const Text('Ολοκλήρωση / πληρωμή'),
+                    onPressed: () =>
+                        showAppointmentPayments(context, widget.appointMent),
+                  ),
+                ]),
+                if (widget.appointMent.serviceItems.length > 1)
+                  const Text(
+                      'Επεξεργάσου τον εργαζόμενο κάθε υπηρεσίας από το κουμπί «Υπηρεσίες / εργαζόμενοι».')
+                else if (_loadingEmployees)
                   const LinearProgressIndicator()
                 else if (_availableEmployees.isEmpty)
                   const Text('Δεν υπάρχει διαθέσιμος εργαζόμενος αυτή την ώρα')
                 else
-                  Search(
-                    key: ValueKey(
-                      '${timestampday?.toDate().toIso8601String()}-'
-                      '${_availableEmployees.map((item) => item.id).join(',')}',
-                    ),
-                    width: ScreenSize.screenWidth * .75,
-                    selectSearch: SelectSearch.employee,
-                    employees: _availableEmployees,
-                    setAppointment: (p0, p1) => setEmployee(p0, p1),
-                  ),
+                  LayoutBuilder(
+                      builder: (context, constraints) => Search(
+                            key: ValueKey(
+                              '${timestampday?.toDate().toIso8601String()}-'
+                              '${_availableEmployees.map((item) => item.id).join(',')}',
+                            ),
+                            width: constraints.maxWidth,
+                            selectSearch: SelectSearch.employee,
+                            employees: _availableEmployees,
+                            setAppointment: (p0, p1) => setEmployee(p0, p1),
+                          )),
                 CustomTextForm(
                   labelText: 'Οφειλή',
                   hintText: 'Υπόλοιπο',
@@ -513,10 +458,11 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
                 ),
                 CustomTextForm(
                   labelText: 'Πληρωμή',
+                  readOnly: true,
                   hintText: 'Σημερινό πληρωτέο ποσό',
                   prefixIcon: Icons.euro,
                   chooseText: ChooseText.owes,
-                  initial: widget.appointMent.paid.toString(),
+                  initial: widget.appointMent.paidAmount.toStringAsFixed(2),
                   onSaved: (val) {
                     paid = int.tryParse(val!);
                   },
@@ -537,19 +483,11 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
     );
   }
 
-  Row _pickDate() {
-    return Row(
-      spacing: 10,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text('Διάλεξε ημερομηνία'),
-        OutlinedButton(
-            onPressed: pickDateTime,
-            child: formattedTime == null
-                ? Icon(Icons.date_range)
-                : Text(formattedTime!)),
-      ],
+  Widget _pickDate() {
+    return OutlinedButton.icon(
+      onPressed: pickDateTime,
+      icon: const Icon(Icons.event_outlined, size: 18),
+      label: Text(formattedTime ?? 'Αλλαγή ημερομηνίας / ώρας'),
     );
   }
 }

@@ -27,7 +27,7 @@ class AppUser extends Equatable {
       photoUrl: (json['profile_image'] ?? '').toString(),
       role: (json['role'] ?? 'admin').toString(),
       activeStoreId: (json['active_store_id'] ?? '').toString(),
-      storeRole: (json['active_store_role'] ?? 'owner').toString(),
+      storeRole: (json['active_store_role'] ?? 'staff').toString(),
     );
   }
 

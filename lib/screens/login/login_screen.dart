@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:scheldule/providers/login%20to%20sign%20up/change_page_state.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/screens/signup/signup_widget.dart';
-import 'package:sign_in_button/sign_in_button.dart';
 import 'package:scheldule/repositories/auth_repository.dart';
 import 'package:scheldule/repositories/api_client.dart';
 import 'package:scheldule/styling/themes/app_theme.dart';
@@ -52,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
           .map((item) => Map<String, dynamic>.from(item as Map))
           .toList();
       if (!mounted) return null;
-      return showDialog<String>(
+      return await showDialog<String>(
         context: context,
         builder: (dialogContext) => SimpleDialog(
           title: const Text('Select your business type'),
@@ -221,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   opacity: animation,
                   child: SizeTransition(
                     sizeFactor: animation,
-                    axisAlignment: -1,
+                    alignment: Alignment.topCenter,
                     child: child,
                   ),
                 ),
@@ -254,12 +253,9 @@ class _LoginScreenState extends State<LoginScreen> {
             SizedBox(
               width: double.infinity,
               height: 50,
-              child: SignInButton(
-                Buttons.googleDark,
-                text: 'Σύνδεση με Google',
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.login_rounded),
+                label: const Text('Σύνδεση με Google'),
                 onPressed: _signInWithGoogle,
               ),
             ),

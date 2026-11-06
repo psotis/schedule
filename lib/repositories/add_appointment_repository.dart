@@ -102,6 +102,9 @@ class AddAppointmentRepository {
     required List<Map<String, dynamic>> services,
     String? stationId,
     String notes = '',
+    String? appointmentId,
+    String? employeeId,
+    int fallbackDuration = 60,
   }) async {
     final serviceMinutes = services.fold<int>(
       0,
@@ -109,18 +112,23 @@ class AddAppointmentRepository {
           sum +
           (num.tryParse(item['duration_minutes'].toString())?.round() ?? 0),
     );
-    final totalMinutes = serviceMinutes > 0 ? serviceMinutes : 60;
+    final totalMinutes = serviceMinutes > 0 ? serviceMinutes : fallbackDuration;
     final end = start.add(Duration(minutes: totalMinutes));
-    final data = await apiClient.post('/appointment', body: {
+    final body = <String, dynamic>{
       'client_id': clientId,
       'date': _dateOnly(start),
       'start_time': start.toUtc().toIso8601String(),
       'end_time': end.toUtc().toIso8601String(),
-      if (stationId != null && stationId.isNotEmpty) 'positions_id': stationId,
+      'positions_id': stationId,
+      if (employeeId != null || services.isEmpty) 'employee_id': employeeId,
       'services': services,
-      'status': 'scheduled',
+      if (appointmentId == null) 'status': 'scheduled',
       'notes': notes,
-    }) as Map;
+    };
+    final data = (appointmentId == null
+            ? await apiClient.post('/appointment', body: body)
+            : await apiClient.put('/appointment/$appointmentId', body: body))
+        as Map;
     return AppointMent.fromJson(Map<String, dynamic>.from(data));
   }
 
@@ -211,10 +219,24 @@ class AddAppointmentRepository {
   Future<void> addStoreMember({
     required String email,
     required String role,
+    String? employeeId,
   }) async {
     await apiClient.post('/store/members', body: {
       'email': email,
       'role': role,
+      if (employeeId != null) 'employee_id': employeeId,
+    });
+  }
+
+  Future<void> createEmployeeAccount({
+    required String employeeId,
+    required String email,
+    required String password,
+  }) async {
+    await apiClient.post('/store/employee-accounts', body: {
+      'employee_id': employeeId,
+      'email': email,
+      'password': password,
     });
   }
 
@@ -309,6 +331,7 @@ class AddAppointmentRepository {
   Future<void> editAppointment(
     BuildContext context, {
     required String appointmentId,
+    String? clientId,
     required String name,
     required String surname,
     required Timestamp date,
@@ -318,19 +341,18 @@ class AddAppointmentRepository {
     int? paid,
   }) async {
     try {
-      final client = await _findClient(name, surname);
+      final client = clientId == null ? await _findClient(name, surname) : null;
       final employeeId = await _findEmployeeId(employee);
       final positionId = await _findPositionId(position);
       final start = date.toDate();
       await apiClient.put('/appointment/$appointmentId', body: {
         if (client != null) 'client_id': client['uuid'],
+        if (clientId != null) 'client_id': clientId,
         'date': _dateOnly(start),
         'start_time': start.toUtc().toIso8601String(),
-        'end_time':
-            start.add(const Duration(hours: 1)).toUtc().toIso8601String(),
-        'employee_id': employeeId,
+        if (employee != null) 'employee_id': employeeId,
         'positions_id': positionId,
-        'paid': paid ?? 0,
+        if (paid != null) 'paid': paid,
       });
     } on ApiException {
       rethrow;

@@ -61,6 +61,7 @@ class AddAppointmentProvider extends ChangeNotifier {
   Future<void> editAppointment(
     BuildContext context, {
     required String appointmentId,
+    String? clientId,
     required String name,
     required String surname,
     required Timestamp date,
@@ -79,6 +80,7 @@ class AddAppointmentProvider extends ChangeNotifier {
       await addAppointmentRepository.editAppointment(
         context,
         appointmentId: appointmentId,
+        clientId: clientId,
         name: name,
         surname: surname,
         date: date,
