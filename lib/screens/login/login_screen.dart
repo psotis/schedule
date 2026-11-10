@@ -173,7 +173,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'My Schedule',
+                          'Rantevia',
                           style: TextStyle(
                             color: Color(0xFF14213D),
                             fontSize: 22,
@@ -301,7 +301,7 @@ class _LoginIntroduction extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'MY SCHEDULE',
+                    'RANTEVIA',
                     style: TextStyle(
                       color: Color(0xFF14213D),
                       fontSize: 16,
@@ -413,7 +413,7 @@ class _BrandMark extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(size * .21),
-        child: Image.asset(Media.logoGif, fit: BoxFit.cover),
+        child: Image.asset(Media.logo, fit: BoxFit.cover),
       ),
     );
   }
@@ -523,7 +523,7 @@ class EntryGif extends StatelessWidget {
         ),
         image: DecorationImage(
             image: AssetImage(
-              Media.logoGif,
+              Media.logo,
             ),
             fit: BoxFit.fill),
       ),

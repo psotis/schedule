@@ -81,7 +81,7 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
                   image: DecorationImage(
                       fit: BoxFit.fill,
                       image: AssetImage(
-                        Media.logoGif,
+                        Media.logo,
                       ))),
             ),
           ),

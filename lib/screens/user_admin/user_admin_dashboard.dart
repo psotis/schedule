@@ -34,7 +34,7 @@ class _UserAdminDashboardState extends State<UserAdminDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Schedule administration'),
+        title: const Text('Rantevia administration'),
         actions: [
           IconButton(
             tooltip: 'Refresh',

@@ -1,5 +1,5 @@
 name: scheldule
-description: A new Flutter project.
+description: Rantevia — appointments and business management.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -58,9 +58,22 @@ dev_dependencies:
     sdk: flutter
 
 flutter_launcher_icons:
+  image_path: "assets/rantevia_icon.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
   web:
     generate: true
-    image_path: "assets/logo_web.png"
+    image_path: "assets/rantevia_icon.png"
+    background_color: "#083f3d"
+    theme_color: "#083f3d"
+  windows:
+    generate: true
+    image_path: "assets/rantevia_icon.png"
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: "assets/rantevia_icon.png"
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 # The following section is specific to Flutter packages.

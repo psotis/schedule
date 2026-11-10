@@ -142,7 +142,7 @@ class MyApp extends StatelessWidget {
       ],
       child: Builder(builder: (context) {
         return MaterialApp(
-          title: 'My Schedule',
+          title: 'Rantevia',
           debugShowCheckedModeBanner: false,
           theme: context.watch<ThemeProvider>().state?.themeData,
           themeAnimationDuration: Duration.zero,

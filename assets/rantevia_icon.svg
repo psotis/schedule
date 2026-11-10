@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Rantevia</title>
+  <desc>An R-shaped route with a destination point, in mint on deep teal.</desc>
+  <rect width="1024" height="1024" fill="#083f3d"/>
+  <path d="M350 720V304H522C724 304 724 520 522 520H350M500 520L690 720"
+    fill="none" stroke="#9be7dc" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="690" cy="720" r="23" fill="#f0fffc"/>
+</svg>

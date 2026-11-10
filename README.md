@@ -1,4 +1,4 @@
-# 📅 ScheldulEase  
+# 📅 Rantevia
 
 A Flutter project helping companies to book and track their appointments.  
 
@@ -13,14 +13,15 @@ A Flutter project helping companies to book and track their appointments.
 - **Flutter** – Frontend framework for cross-platform support.  
 - **Provider** – State management for efficient UI updates.  
 - **PostgreSQL** – Secure and scalable database.  
-- **Schedule service** – Express, Sequelize, and PostgreSQL backend.
+- **Rantevia service** – Express, Sequelize, and PostgreSQL backend.
 - **Cloud SQL Proxy** – Secure database connectivity.  
 
 ### **Setup**  
 1. **Clone the repository**  
    ```sh
-   git clone https://github.com/your-username/ScheldulEase.git
-   cd ScheldulEase
+   git clone <repository-url>
+   cd schedule
+   ```
 
 ## 🔧 Installation  
 - flutter pub get
@@ -95,3 +96,11 @@ Calendar and customer/employee list-grid choices are saved by the service for
 each user and active store and restored after login. These choices also apply
 when switching device sizes. Defaults remain Day on mobile, Work Week on larger
 screens, and List for customers and employees until a choice is saved.
+
+### Rantevia branding
+
+The editable icon master is `assets/rantevia_icon.svg`; its PNG export is
+`assets/rantevia_icon.png`. Regenerate web, Android, iOS, macOS, and Windows
+launcher assets with `dart run flutter_launcher_icons`. Display names are
+Rantevia; existing package IDs, bundle IDs, storage keys, and API paths remain
+unchanged for compatibility with installed apps and Google login.

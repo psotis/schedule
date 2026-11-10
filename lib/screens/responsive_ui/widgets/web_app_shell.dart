@@ -267,7 +267,7 @@ class WebAppShell extends StatelessWidget {
                     children: [
                       Text(
                         (user?.displayName ?? '').isEmpty
-                            ? (user?.email ?? 'My Schedule')
+                            ? (user?.email ?? 'Rantevia')
                             : user!.displayName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -341,7 +341,7 @@ class WebAppShell extends StatelessWidget {
   Widget _logo(double size) => ClipRRect(
         borderRadius: BorderRadius.circular(15),
         child: Image.asset(
-          Media.logoGif,
+          Media.logo,
           width: size,
           height: size,
           fit: BoxFit.cover,
@@ -378,7 +378,7 @@ class _DesktopSidebar extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Image.asset(
-                    Media.logoGif,
+                    Media.logo,
                     width: 52,
                     height: 52,
                     fit: BoxFit.cover,
@@ -390,7 +390,7 @@ class _DesktopSidebar extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'My Schedule',
+                        'Rantevia',
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.w800,
