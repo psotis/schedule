@@ -104,3 +104,58 @@ The editable icon master is `assets/rantevia_icon.svg`; its PNG export is
 launcher assets with `dart run flutter_launcher_icons`. Display names are
 Rantevia; existing package IDs, bundle IDs, storage keys, and API paths remain
 unchanged for compatibility with installed apps and Google login.
+
+### Public landing page and application entry
+
+The site root (`/` or `/index.html`) is a public Greek-language HTML landing
+page. Its content, business types, navigation, and FAQ are readable without
+JavaScript. `web/landing.css` provides responsive styling and reuses the bundled
+IBM Plex Sans fonts. `web/landing.js` handles the mobile menu and loads Flutter
+only on application paths such as `/login`, `/home`, `/app`, and `/user-admin`,
+or on legacy `/#/...` application links. Normal section anchors stay on the
+landing page. Existing API routes, authentication, and browser storage keys are
+unchanged.
+
+The login buttons point to `/login`. The web manifest also starts installed apps
+there. `web/flutter_bootstrap.js` uses Flutter's template placeholders and does
+not register an offline service worker. App startup retires only legacy Flutter
+service workers and their caches, preserving authentication storage.
+
+Nginx serves the landing page and application from the same web build. Application
+routes receive an `X-Robots-Tag: noindex, nofollow` header; the public page has its
+own description, language, canonical link, social metadata, and SoftwareApplication
+structured data. The canonical link resolves to the deployed site's root, so no
+unregistered domain is assumed. Configure the real production service URL and
+Google OAuth origin before deployment. This prepares the page for indexing but
+does not guarantee search rankings.
+
+The native splash generator has web output disabled so regenerating Android/iOS
+splash screens does not overwrite the public web page.
+
+### Keeping the public calendar preview accurate
+
+The landing page uses `web/images/calendar-preview.png`, exported from the real
+`SyncFusionCalendar` widget using fictional appointments and mock repositories.
+It is not a separately drawn product mockup and never reads the local database.
+After calendar UI changes, regenerate it with:
+
+```sh
+flutter test --no-pub --dart-define=UPDATE_CALENDAR_PREVIEW=true test/calendar_preview_test.dart
+```
+
+The export test is skipped during ordinary test runs. The landing caption states
+that this is the Day view with demonstration data, and the image can be opened at
+full resolution.
+
+### Store working days and navigation
+
+Managers can choose store opening days in **Ρυθμίσεις → Λειτουργία**. Both Work
+Week layouts use these days; Week continues to show all seven days. Stores without
+an explicit choice retain Monday–Friday. The setting is stored additively as ISO
+weekday numbers (Monday=1, Sunday=7) in `stores.settings.working_days`; updating it
+preserves other settings. Employee availability and booking validation remain
+separate. Calendar clients refresh this setting on store realtime events.
+
+The sidebar arrow switches desktop/tablet navigation between expanded and compact
+layouts without replacing the current page. The choice is saved per authenticated
+store membership as `ui_preferences.sidebar_layout`. Mobile navigation is unchanged.

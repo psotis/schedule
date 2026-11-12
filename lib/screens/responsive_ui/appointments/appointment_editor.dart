@@ -9,7 +9,8 @@ import 'package:scheldule/repositories/add_appointment_repository.dart';
 import 'package:scheldule/repositories/api_client.dart';
 
 Future<bool?> showAppointmentEditor(
-        BuildContext context, AppointMent appointment) =>
+        BuildContext context, AppointMent? appointment,
+        {DateTime? initialStart}) =>
     showDialog<bool>(
       context: context,
       builder: (context) => Dialog(
@@ -26,6 +27,7 @@ Future<bool?> showAppointmentEditor(
             Expanded(
                 child: AppointmentEditor(
                     appointment: appointment,
+                    initialStart: initialStart,
                     onSaved: () => Navigator.pop(context, true))),
           ]),
         ),
@@ -35,7 +37,9 @@ Future<bool?> showAppointmentEditor(
 class AppointmentEditor extends StatefulWidget {
   final AppointMent? appointment;
   final VoidCallback? onSaved;
-  const AppointmentEditor({super.key, this.appointment, this.onSaved});
+  final DateTime? initialStart;
+  const AppointmentEditor(
+      {super.key, this.appointment, this.onSaved, this.initialStart});
 
   @override
   State<AppointmentEditor> createState() => _AppointmentEditorState();
@@ -79,6 +83,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialStart != null) _start = widget.initialStart!;
     if (widget.appointment?.date != null) {
       _start = widget.appointment!.date!.toDate();
     }

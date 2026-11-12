@@ -221,7 +221,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: SizeTransition(
                     sizeFactor: animation,
                     alignment: Alignment.topCenter,
-                    child: child,
+                    // Outlined fields paint their floating label above the
+                    // field bounds; keep it inside the transition's clip.
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: child,
+                    ),
                   ),
                 ),
                 child: state.state.changePageStatus == ChangePageStatus.login

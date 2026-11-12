@@ -5,6 +5,7 @@ import 'package:scheldule/providers/auth/auth_provider.dart';
 import 'package:scheldule/providers/drawer_nav/drawer_state.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/providers/themes/theme_status.dart';
+import 'package:scheldule/providers/ui_preferences/ui_preferences_provider.dart';
 import 'package:scheldule/screens/responsive_ui/widgets/app_navigation.dart';
 
 enum AppShellLayout { desktop, tablet, mobile }
@@ -52,6 +53,12 @@ class WebAppShell extends StatelessWidget {
     AppNavigationItem current,
     bool canManage,
   ) {
+    final compact = context.watch<UiPreferencesProvider>().value(
+              'sidebar_layout',
+              fallback:
+                  layout == AppShellLayout.tablet ? 'compact' : 'expanded',
+            ) ==
+        'compact';
     return Scaffold(
       body: ColoredBox(
         color: Theme.of(context).scaffoldBackgroundColor,
@@ -59,12 +66,18 @@ class WebAppShell extends StatelessWidget {
           minimum: const EdgeInsets.all(14),
           child: Row(
             children: [
-              _DesktopSidebar(navigation: navigation, current: current),
+              _DesktopSidebar(
+                navigation: navigation,
+                current: current,
+                compact: compact,
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   children: [
-                    AppPageHeader(item: current),
+                    AppPageHeader(
+                        item: current,
+                        compact: layout == AppShellLayout.tablet),
                     Expanded(
                       child: AppContentSurface(
                         child: KeyedSubtree(
@@ -89,76 +102,7 @@ class WebAppShell extends StatelessWidget {
     AppNavigationItem current,
     bool canManage,
   ) {
-    return Scaffold(
-      body: ColoredBox(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: SafeArea(
-          minimum: const EdgeInsets.all(10),
-          child: Row(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface.withAlpha(245),
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: NavigationRail(
-                  backgroundColor: Colors.transparent,
-                  selectedIndex: navigation.indexOf(current),
-                  labelType: NavigationRailLabelType.all,
-                  minWidth: 88,
-                  groupAlignment: -.65,
-                  leading: Padding(
-                    padding: const EdgeInsets.only(bottom: 18),
-                    child: _logo(52),
-                  ),
-                  destinations: navigation
-                      .map(
-                        (item) => NavigationRailDestination(
-                          icon: Icon(item.icon),
-                          selectedIcon: Icon(item.selectedIcon),
-                          label: Text(item.label),
-                        ),
-                      )
-                      .toList(),
-                  onDestinationSelected: (index) =>
-                      _select(context, navigation[index]),
-                  trailing: Expanded(
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: IconButton(
-                          tooltip: 'Αποσύνδεση',
-                          onPressed: context.read<AuthProvider>().signout,
-                          icon: const Icon(Icons.logout_rounded),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  children: [
-                    AppPageHeader(item: current, compact: true),
-                    Expanded(
-                      child: AppContentSurface(
-                        borderRadius: BorderRadius.circular(22),
-                        child: KeyedSubtree(
-                          key: ValueKey(current.status),
-                          child: pageBuilder(current.status, canManage),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return _desktop(context, navigation, current, canManage);
   }
 
   Widget _mobile(
@@ -353,7 +297,13 @@ class _DesktopSidebar extends StatelessWidget {
   final List<AppNavigationItem> navigation;
   final AppNavigationItem current;
 
-  const _DesktopSidebar({required this.navigation, required this.current});
+  final bool compact;
+
+  const _DesktopSidebar({
+    required this.navigation,
+    required this.current,
+    required this.compact,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -361,7 +311,7 @@ class _DesktopSidebar extends StatelessWidget {
     final user = context.watch<AuthProvider>().state.user;
     final themeStatus = context.watch<ThemeProvider>().state?.themeStatus;
     return Container(
-      width: 236,
+      width: compact ? 80 : 236,
       decoration: BoxDecoration(
         color: dark ? const Color(0xF21B1E24) : const Color(0xF2FFFFFF),
         borderRadius: BorderRadius.circular(24),
@@ -369,123 +319,186 @@ class _DesktopSidebar extends StatelessWidget {
           BoxShadow(color: Color(0x26001816), blurRadius: 28),
         ],
       ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Image.asset(
-                    Media.logo,
-                    width: 52,
-                    height: 52,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Rantevia',
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
-                      ),
-                      Text(
-                        'Business workspace',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(12),
-              itemCount: navigation.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 5),
-              itemBuilder: (context, index) {
-                final item = navigation[index];
-                final selected = item.status == current.status;
-                return ListTile(
-                  minTileHeight: 50,
-                  selected: selected,
-                  selectedTileColor:
-                      Theme.of(context).colorScheme.primaryContainer,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  leading: Icon(selected ? item.selectedIcon : item.icon),
-                  title: Text(
-                    item.label,
-                    style: TextStyle(
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+      child: Material(
+        color: Colors.transparent,
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                  compact ? 14 : 18, 20, compact ? 14 : 18, 18),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.asset(
+                      Media.logo,
+                      width: 52,
+                      height: 52,
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  onTap: () => context.read<DrawerProvider>().changePage(
-                        item.status,
-                        item.label,
+                  if (!compact) const SizedBox(width: 12),
+                  if (!compact)
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Rantevia',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                          Text(
+                            'Business workspace',
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                    ),
+                          ),
+                        ],
                       ),
-                );
+                    ),
+                ],
+              ),
+            ),
+            IconButton(
+              tooltip: compact ? 'Ανάπτυξη μενού' : 'Σύμπτυξη μενού',
+              onPressed: () async {
+                final saved =
+                    await context.read<UiPreferencesProvider>().setValue(
+                          'sidebar_layout',
+                          compact ? 'expanded' : 'compact',
+                        );
+                if (!saved && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content:
+                            Text('Δεν αποθηκεύτηκε η εμφάνιση του μενού.')),
+                  );
+                }
               },
+              icon: Icon(compact
+                  ? Icons.chevron_right_rounded
+                  : Icons.chevron_left_rounded),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: [
-                ListTile(
-                  minTileHeight: 44,
-                  leading: Icon(
-                    themeStatus == ThemeStatus.dark
-                        ? Icons.light_mode_outlined
-                        : Icons.dark_mode_outlined,
-                  ),
-                  title: Text(
-                    themeStatus == ThemeStatus.dark
-                        ? 'Φωτεινό θέμα'
-                        : 'Σκούρο θέμα',
-                  ),
-                  onTap: context.read<ThemeProvider>().changeTheme,
-                ),
-                const Divider(),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                  leading: CircleAvatar(
-                    child: Text(_initial(user?.displayName, user?.email)),
-                  ),
-                  title: Text(
-                    (user?.displayName ?? '').isEmpty
-                        ? (user?.email ?? 'Χρήστης')
-                        : user!.displayName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    user?.storeRole == 'staff' ? 'Προσωπικό' : 'Διαχείριση',
-                  ),
-                  trailing: IconButton(
-                    tooltip: 'Αποσύνδεση',
-                    onPressed: context.read<AuthProvider>().signout,
-                    icon: const Icon(Icons.logout_rounded),
-                  ),
-                ),
-              ],
+            const Divider(height: 1),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.all(12),
+                itemCount: navigation.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 5),
+                itemBuilder: (context, index) {
+                  final item = navigation[index];
+                  final selected = item.status == current.status;
+                  if (compact) {
+                    return IconButton(
+                      tooltip: item.label,
+                      isSelected: selected,
+                      style: IconButton.styleFrom(
+                        backgroundColor: selected
+                            ? Theme.of(context).colorScheme.primaryContainer
+                            : Colors.transparent,
+                        minimumSize: const Size(48, 50),
+                      ),
+                      icon: Icon(item.icon),
+                      selectedIcon: Icon(item.selectedIcon),
+                      onPressed: () =>
+                          context.read<DrawerProvider>().changePage(
+                                item.status,
+                                item.label,
+                              ),
+                    );
+                  }
+                  return ListTile(
+                    minTileHeight: 50,
+                    selected: selected,
+                    selectedTileColor:
+                        Theme.of(context).colorScheme.primaryContainer,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    leading: Icon(selected ? item.selectedIcon : item.icon),
+                    title: Text(
+                      item.label,
+                      style: TextStyle(
+                        fontWeight:
+                            selected ? FontWeight.w700 : FontWeight.w500,
+                      ),
+                    ),
+                    onTap: () => context.read<DrawerProvider>().changePage(
+                          item.status,
+                          item.label,
+                        ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  if (compact) ...[
+                    IconButton(
+                      tooltip: 'Αλλαγή θέματος',
+                      onPressed: context.read<ThemeProvider>().changeTheme,
+                      icon: Icon(themeStatus == ThemeStatus.dark
+                          ? Icons.light_mode_outlined
+                          : Icons.dark_mode_outlined),
+                    ),
+                    IconButton(
+                      tooltip: 'Αποσύνδεση',
+                      onPressed: context.read<AuthProvider>().signout,
+                      icon: const Icon(Icons.logout_rounded),
+                    ),
+                  ] else ...[
+                    ListTile(
+                      minTileHeight: 44,
+                      leading: Icon(
+                        themeStatus == ThemeStatus.dark
+                            ? Icons.light_mode_outlined
+                            : Icons.dark_mode_outlined,
+                      ),
+                      title: Text(
+                        themeStatus == ThemeStatus.dark
+                            ? 'Φωτεινό θέμα'
+                            : 'Σκούρο θέμα',
+                      ),
+                      onTap: context.read<ThemeProvider>().changeTheme,
+                    ),
+                    const Divider(),
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                      leading: CircleAvatar(
+                        child: Text(_initial(user?.displayName, user?.email)),
+                      ),
+                      title: Text(
+                        (user?.displayName ?? '').isEmpty
+                            ? (user?.email ?? 'Χρήστης')
+                            : user!.displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        user?.storeRole == 'staff' ? 'Προσωπικό' : 'Διαχείριση',
+                      ),
+                      trailing: IconButton(
+                        tooltip: 'Αποσύνδεση',
+                        onPressed: context.read<AuthProvider>().signout,
+                        icon: const Icon(Icons.logout_rounded),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

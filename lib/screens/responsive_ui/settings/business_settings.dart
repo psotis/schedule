@@ -8,6 +8,7 @@ import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/providers/themes/theme_status.dart';
 import 'package:scheldule/repositories/add_appointment_repository.dart';
 import 'package:scheldule/repositories/api_client.dart';
+import 'package:scheldule/repositories/store_repository.dart';
 import 'package:scheldule/repositories/appointment_repository.dart';
 
 class BusinessSettings extends StatefulWidget {
@@ -34,7 +35,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 6, vsync: this);
+    _tabs = TabController(length: 7, vsync: this);
     _load();
     _reportChanges =
         context.read<ApiClient>().watch('reports').listen((_) => _loadReport());
@@ -266,7 +267,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
       );
     }
     return DefaultTabController(
-      length: 6,
+      length: 7,
       child: Column(
         children: [
           Row(
@@ -282,6 +283,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
                     Tab(text: 'Άδειες'),
                     Tab(text: 'Πρόσβαση'),
                     Tab(text: 'Αναφορές'),
+                    Tab(text: 'Λειτουργία'),
                   ],
                 ),
               ),
@@ -312,6 +314,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
                 _timeOffView(),
                 _membersView(),
                 _reportsView(),
+                const _StoreWorkingDays(),
               ],
             ),
           ),
@@ -1465,6 +1468,124 @@ class _MemberDialogState extends State<_MemberDialog> {
           },
           child: const Text('Προσθήκη'),
         ),
+      ],
+    );
+  }
+}
+
+class _StoreWorkingDays extends StatefulWidget {
+  const _StoreWorkingDays();
+
+  @override
+  State<_StoreWorkingDays> createState() => _StoreWorkingDaysState();
+}
+
+class _StoreWorkingDaysState extends State<_StoreWorkingDays> {
+  static const _labels = [
+    'Δευτέρα',
+    'Τρίτη',
+    'Τετάρτη',
+    'Πέμπτη',
+    'Παρασκευή',
+    'Σάββατο',
+    'Κυριακή'
+  ];
+  Set<int> _days = {};
+  bool _loading = true;
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final days = await StoreRepository(apiClient: context.read<ApiClient>())
+          .getWorkingDays();
+      if (mounted) {
+        setState(() {
+          _days = days.toSet();
+          _loading = false;
+          _error = null;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = 'Δεν φορτώθηκαν οι ημέρες λειτουργίας.';
+        });
+      }
+    }
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    try {
+      await StoreRepository(apiClient: context.read<ApiClient>())
+          .saveWorkingDays(_days.toList()..sort());
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Οι ημέρες λειτουργίας αποθηκεύτηκαν.')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.toString())),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_error != null) {
+      return Center(
+          child: TextButton(
+        onPressed: _load,
+        child: Text('$_error Ξανά'),
+      ));
+    }
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        Text('Ημέρες λειτουργίας καταστήματος',
+            style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 8),
+        const Text('Εμφανίζονται στις προβολές «Εργάσιμες ημέρες» και '
+            '«Χρονοδιάγραμμα εργασίμων». Το ωράριο κάθε εργαζομένου ορίζεται στην Ομάδα.'),
+        const SizedBox(height: 20),
+        Wrap(spacing: 10, runSpacing: 10, children: [
+          for (var day = 1; day <= 7; day++)
+            FilterChip(
+              label: Text(_labels[day - 1]),
+              selected: _days.contains(day),
+              onSelected: _saving
+                  ? null
+                  : (selected) => setState(() {
+                        if (selected) {
+                          _days.add(day);
+                        } else {
+                          _days.remove(day);
+                        }
+                      }),
+            ),
+        ]),
+        const SizedBox(height: 16),
+        if (_days.isEmpty)
+          const Text('Επίλεξε τουλάχιστον μία ημέρα λειτουργίας.'),
+        Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton.icon(
+              onPressed: _saving || _days.isEmpty ? null : _save,
+              icon: const Icon(Icons.check),
+              label: Text(_saving ? 'Αποθήκευση…' : 'Αποθήκευση'),
+            )),
       ],
     );
   }

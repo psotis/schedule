@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:async';
+import 'package:scheldule/repositories/store_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -30,7 +32,27 @@ import 'package:scheldule/screens/responsive_ui/desktop/customer/widgets/custome
 import 'package:scheldule/screens/responsive_ui/desktop/employee/widgets/employee_list.dart'
     as desktop_employee;
 
+class _StoreEventsApi extends ApiClient {
+  final storeEvents = StreamController<void>.broadcast();
+  _StoreEventsApi({required super.baseUrl, required super.client});
+  @override
+  Stream<void> watch(String resource) =>
+      resource == 'store' ? storeEvents.stream : super.watch(resource);
+}
+
 void main() {
+  test(
+      'store working-day settings retain the legacy fallback and accept Sunday',
+      () {
+    expect(StoreRepository.workingDaysFromSettings({}), [1, 2, 3, 4, 5]);
+    expect(StoreRepository.workingDaysFromSettings({'working_days': []}),
+        [1, 2, 3, 4, 5]);
+    expect(
+        StoreRepository.workingDaysFromSettings({
+          'working_days': [7, 2, 6]
+        }),
+        [2, 6, 7]);
+  });
   for (final width in [360.0, 1280.0]) {
     for (final brightness in Brightness.values) {
       testWidgets('calendar layouts switch and fit at $width in $brightness',
@@ -42,7 +64,8 @@ void main() {
         final start = DateTime(
             DateTime.now().year, DateTime.now().month, DateTime.now().day, 9);
         final writes = <Map<String, dynamic>>[];
-        final api = ApiClient(
+        var workingDays = [2, 3, 4, 5, 6];
+        final api = _StoreEventsApi(
             baseUrl: 'http://localhost/api/v1',
             client: MockClient((request) async {
               Object data = [];
@@ -64,6 +87,12 @@ void main() {
                     'status': 'scheduled',
                   }
                 ];
+              } else if (request.url.path.endsWith('/store')) {
+                data = {
+                  'store': {
+                    'settings': {'working_days': workingDays}
+                  }
+                };
               } else if (request.url.path.endsWith('/store/preferences')) {
                 if (request.method == 'PUT') {
                   writes.add(jsonDecode(request.body) as Map<String, dynamic>);
@@ -95,6 +124,12 @@ void main() {
           expect(tester.widget<SfCalendar>(find.byType(SfCalendar)).view,
               layout.view);
           expect(find.byType(CalendarLayoutPicker), findsOneWidget);
+          expect(
+              tester
+                  .widget<SfCalendar>(find.byType(SfCalendar))
+                  .timeSlotViewSettings
+                  .nonWorkingDays,
+              [1, 7]);
           if (layout == CalendarLayout.resources) {
             final source =
                 tester.widget<SfCalendar>(find.byType(SfCalendar)).dataSource!;
@@ -106,9 +141,21 @@ void main() {
           }
         }
         expect(writes.last['calendar_layout'], 'dailySummary');
+        await preferences.setValue('calendar_layout', 'workWeek');
+        await tester.pumpAndSettle();
+        workingDays = [1, 4, 7];
+        api.storeEvents.add(null);
+        await tester.pumpAndSettle();
+        expect(
+            tester
+                .widget<SfCalendar>(find.byType(SfCalendar))
+                .timeSlotViewSettings
+                .nonWorkingDays,
+            [2, 3, 5, 6]);
         await tester.pumpWidget(const SizedBox());
         employees.dispose();
         preferences.dispose();
+        await api.storeEvents.close();
       });
     }
   }
