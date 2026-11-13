@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:scheldule/models/app_timestamp.dart';
 import 'package:scheldule/models/expenses.dart';
 import 'package:scheldule/repositories/expense_repository.dart';

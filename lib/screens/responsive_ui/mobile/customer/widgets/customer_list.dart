@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:scheldule/providers/ui_preferences/ui_preferences_provider.dart';
 import 'package:scheldule/screens/responsive_ui/widgets/list_grid_toggle.dart';
 import 'package:provider/provider.dart';

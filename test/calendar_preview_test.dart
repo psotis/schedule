@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -107,11 +106,7 @@ void main() {
         child: MaterialApp(
             theme: buildAppTheme(Brightness.light),
             locale: const Locale('el'),
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate
-            ],
+            localizationsDelegates: GlobalMaterialLocalizations.delegates,
             supportedLocales: const [Locale('el'), Locale('en')],
             home: RepaintBoundary(
                 key: boundary,

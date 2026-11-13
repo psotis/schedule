@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:scheldule/constants/screen%20sizes/screen_sizes.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/desktop_homepage.dart';
 import 'package:scheldule/screens/responsive_ui/mobile/mobile_homepage.dart';

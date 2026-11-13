@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:scheldule/screens/responsive_ui/customer/customer_profile_form.dart';
 
 class CustomerAdd extends StatelessWidget {

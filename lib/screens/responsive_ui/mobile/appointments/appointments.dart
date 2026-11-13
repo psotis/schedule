@@ -1,5 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:scheldule/screens/responsive_ui/appointments/appointment_editor.dart';
 import 'package:scheldule/screens/responsive_ui/appointments/appointment_history_view.dart';
 import 'package:scheldule/screens/responsive_ui/widgets/section_tabs.dart';

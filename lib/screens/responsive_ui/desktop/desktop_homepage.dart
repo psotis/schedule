@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:scheldule/providers/drawer_nav/drawer_state.dart';
 import 'package:scheldule/screens/calendar/syncfusion_calendar.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/appointments/appointments.dart';

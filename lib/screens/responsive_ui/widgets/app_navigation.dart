@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:scheldule/providers/drawer_nav/drawer_state.dart';
 
 class AppNavigationItem {

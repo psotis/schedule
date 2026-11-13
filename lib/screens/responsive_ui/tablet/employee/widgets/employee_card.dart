@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:scheldule/styling/themes/legacy_widget_bridge.dart';
 import 'package:provider/provider.dart';
 
 import 'package:scheldule/models/employee.dart';
@@ -90,7 +91,8 @@ class _EmployeeCardState extends State<EmployeeCard> {
         return AlertDialog(
           title: const Text('Επέλεξε χρώμα'),
           content: SingleChildScrollView(
-            child: ColorPicker(
+            child: LegacyWidgetBridge(
+                child: ColorPicker(
               pickerColor: _selectedColor,
               onColorChanged: (color) {
                 setState(() {
@@ -100,7 +102,7 @@ class _EmployeeCardState extends State<EmployeeCard> {
               enableAlpha: false,
               displayThumbColor: true,
               portraitOnly: true,
-            ),
+            )),
           ),
           actions: [
             TextButton(

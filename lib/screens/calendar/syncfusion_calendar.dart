@@ -1,7 +1,8 @@
 import 'dart:async';
+import '../../styling/themes/legacy_widget_bridge.dart';
 import '../responsive_ui/appointments/appointment_editor.dart';
 import '../responsive_ui/widgets/web_app_shell.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../../repositories/store_repository.dart';
 import 'package:scheldule/models/employee.dart';
 import 'package:scheldule/providers/ui_preferences/ui_preferences_provider.dart';
@@ -347,7 +348,8 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                   onDoubleTapDown: (details) =>
                       _doubleTapPosition = details.localPosition,
                   onDoubleTap: _createAppointmentAtTap,
-                  child: SfCalendar(
+                  child: LegacyWidgetBridge(
+                      child: SfCalendar(
                     key: ValueKey(layout),
                     allowDragAndDrop: true,
                     controller: _controller,
@@ -489,7 +491,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                             context, details, layout, summaries)
                         : null,
                     dataSource: source,
-                  ))),
+                  )))),
         ],
       ),
     );

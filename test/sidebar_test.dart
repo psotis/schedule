@@ -6,7 +6,7 @@ import 'package:scheldule/screens/calendar/syncfusion_calendar.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:scheldule/main.dart' as app;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';

@@ -1,10 +1,9 @@
 // ignore: depend_on_referenced_packages
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/keys/material_key.dart';
@@ -19,6 +18,7 @@ import 'package:scheldule/repositories/user_admin_repository.dart';
 import 'package:scheldule/routes/route_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'styling/themes/legacy_widget_bridge.dart';
 import 'repositories/add_appointment_repository.dart';
 import 'repositories/employee_repository.dart';
 import 'repositories/ui_preferences_repository.dart';
@@ -143,6 +143,9 @@ class MyApp extends StatelessWidget {
       child: Builder(builder: (context) {
         return MaterialApp(
           title: 'Rantevia',
+          builder: (context, child) => LegacyWidgetBridge(
+            child: child ?? const SizedBox.shrink(),
+          ),
           debugShowCheckedModeBanner: false,
           theme: context.watch<ThemeProvider>().state?.themeData,
           themeAnimationDuration: Duration.zero,
@@ -150,11 +153,7 @@ class MyApp extends StatelessWidget {
           navigatorKey: AppMaterialKey.materialKey,
           initialRoute: '/',
           locale: const Locale('el'),
-          localizationsDelegates: [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
           supportedLocales: [
             const Locale('el'),
             const Locale('en'),
