@@ -144,6 +144,7 @@ class AppointMent extends Equatable {
   final double totalPrice;
   final int totalDurationMinutes;
   final String notes;
+  final bool smsReminderEnabled;
   final List<AppointmentServiceLine> serviceItems;
   final List<AppointmentPaymentEntry> payments;
   final bool? heart;
@@ -196,6 +197,7 @@ class AppointMent extends Equatable {
     this.totalPrice = 0,
     this.totalDurationMinutes = 0,
     this.notes = '',
+    this.smsReminderEnabled = false,
     this.serviceItems = const [],
     this.payments = const [],
     this.heart,
@@ -265,6 +267,7 @@ class AppointMent extends Equatable {
                   ?.round() ??
               0,
       notes: (json['notes'] ?? '').toString(),
+      smsReminderEnabled: json['sms_reminder_enabled'] == true,
       serviceItems: ((json['service_items'] ?? const []) as List)
           .map((item) => AppointmentServiceLine.fromJson(
                 Map<String, dynamic>.from(item as Map),
@@ -379,6 +382,7 @@ class AppointMent extends Equatable {
       totalPrice,
       totalDurationMinutes,
       notes,
+      smsReminderEnabled,
       serviceItems,
       payments,
       heart ?? false,
@@ -431,6 +435,7 @@ class AppointMent extends Equatable {
     double? totalPrice,
     int? totalDurationMinutes,
     String? notes,
+    bool? smsReminderEnabled,
     List<AppointmentServiceLine>? serviceItems,
     List<AppointmentPaymentEntry>? payments,
     bool? heart,
@@ -483,6 +488,7 @@ class AppointMent extends Equatable {
       totalPrice: totalPrice ?? this.totalPrice,
       totalDurationMinutes: totalDurationMinutes ?? this.totalDurationMinutes,
       notes: notes ?? this.notes,
+      smsReminderEnabled: smsReminderEnabled ?? this.smsReminderEnabled,
       serviceItems: serviceItems ?? this.serviceItems,
       payments: payments ?? this.payments,
       heart: heart ?? this.heart,

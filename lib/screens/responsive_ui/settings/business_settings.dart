@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'monthly_report_settings.dart';
+import 'messaging_settings.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -39,7 +41,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
   void initState() {
     super.initState();
     _isOwner = context.read<AuthProvider?>()?.state.user?.storeRole == 'owner';
-    _tabs = TabController(length: _isOwner ? 8 : 7, vsync: this);
+    _tabs = TabController(length: _isOwner ? 9 : 7, vsync: this);
     _load();
     _reportChanges =
         context.read<ApiClient>().watch('reports').listen((_) => _loadReport());
@@ -269,7 +271,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
       );
     }
     return DefaultTabController(
-      length: _isOwner ? 8 : 7,
+      length: _isOwner ? 9 : 7,
       child: Column(
         children: [
           Row(
@@ -286,6 +288,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
                     Tab(text: 'Πρόσβαση'),
                     Tab(text: 'Αναφορές'),
                     Tab(text: 'Λειτουργία'),
+                    if (_isOwner) const Tab(text: 'SMS'),
                     if (_isOwner) const Tab(text: 'Συνδρομή'),
                   ],
                 ),
@@ -318,6 +321,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
                 _membersView(),
                 _reportsView(),
                 const _StoreWorkingDays(),
+                if (_isOwner) const MessagingSettings(),
                 if (_isOwner) const BillingPage(),
               ],
             ),
@@ -466,6 +470,10 @@ class _BusinessSettingsState extends State<BusinessSettings>
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
+        if (_isOwner) ...[
+          const MonthlyReportSettings(),
+          const SizedBox(height: 20),
+        ],
         Wrap(
           spacing: 12,
           runSpacing: 8,

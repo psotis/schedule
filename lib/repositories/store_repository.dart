@@ -18,6 +18,25 @@ class StoreRepository {
 
   Stream<void> get changes => apiClient.watch('store');
 
+  Future<Map<String, dynamic>> getMessagingSettings() async =>
+      Map<String, dynamic>.from(await apiClient.get('/store/messaging') as Map);
+
+  Future<void> saveMessagingSettings(Map<String, dynamic> values) async {
+    await apiClient.put('/store/messaging', body: values);
+  }
+
+  Future<void> removeMessagingSettings() async {
+    await apiClient.delete('/store/messaging');
+  }
+
+  Future<Map<String, dynamic>> getMonthlyReportSettings() async {
+    return Map<String, dynamic>.from(await apiClient.get('/reports/monthly-email') as Map);
+  }
+
+  Future<void> saveMonthlyReportSettings(bool enabled) async {
+    await apiClient.put('/reports/monthly-email', body: {'enabled': enabled});
+  }
+
   Future<List<int>> getWorkingDays() async {
     final data = await apiClient.get('/store');
     final store = data is Map ? data['store'] : null;

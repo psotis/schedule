@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
 
@@ -102,6 +103,31 @@ class ApiClient {
 
   Future<dynamic> get(String path, {Map<String, String>? query}) =>
       _send('GET', path, query: query);
+
+  Future<Uint8List> getPdf(String path, {Map<String, String>? query}) async {
+    if (baseUrl.isEmpty) throw const ApiException(0, 'API_BASE_URL is not configured');
+    final uri = Uri.parse('$baseUrl$path').replace(queryParameters: query);
+    final headers = <String, String>{'Accept': 'application/pdf'};
+    if (_token != null) headers['Authorization'] = 'Bearer $_token';
+    if (_storeId != null && _storeId!.isNotEmpty) headers['X-Store-ID'] = _storeId!;
+    late http.Response response;
+    try {
+      response = await _client.get(uri, headers: headers).timeout(const Duration(seconds: 60));
+    } on Exception catch (error) {
+      throw ApiException(0, 'Could not download the report', error);
+    }
+    if (response.statusCode == 402) _accessRequired.add(null);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      String message = 'Could not download the report';
+      try { message = (jsonDecode(response.body)['message'] ?? message).toString(); } catch (_) {}
+      throw ApiException(response.statusCode, message);
+    }
+    if (!(response.headers['content-type'] ?? '').startsWith('application/pdf') ||
+        response.bodyBytes.length < 5 || ascii.decode(response.bodyBytes.take(5).toList(), allowInvalid: true) != '%PDF-') {
+      throw const ApiException(502, 'Invalid PDF response');
+    }
+    return response.bodyBytes;
+  }
 
   Future<dynamic> post(String path, {Object? body}) =>
       _send('POST', path, body: body);

@@ -96,6 +96,9 @@ class AddAppointmentRepository {
         .toList();
   }
 
+  Future<Map<String, dynamic>> getMessagingAvailability() async =>
+      Map<String, dynamic>.from(await apiClient.get('/store/messaging/availability') as Map);
+
   Future<AppointMent> createBooking({
     required String clientId,
     required DateTime start,
@@ -105,6 +108,7 @@ class AddAppointmentRepository {
     String? appointmentId,
     String? employeeId,
     int fallbackDuration = 60,
+    bool? smsReminderEnabled,
   }) async {
     final serviceMinutes = services.fold<int>(
       0,
@@ -124,6 +128,7 @@ class AddAppointmentRepository {
       'services': services,
       if (appointmentId == null) 'status': 'scheduled',
       'notes': notes,
+      if (smsReminderEnabled != null) 'sms_reminder_enabled': smsReminderEnabled,
     };
     final data = (appointmentId == null
             ? await apiClient.post('/appointment', body: body)

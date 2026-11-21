@@ -38,8 +38,9 @@ class AppointmentEditor extends StatefulWidget {
   final AppointMent? appointment;
   final VoidCallback? onSaved;
   final DateTime? initialStart;
+  final bool embedded;
   const AppointmentEditor(
-      {super.key, this.appointment, this.onSaved, this.initialStart});
+      {super.key, this.appointment, this.onSaved, this.initialStart, this.embedded = false});
 
   @override
   State<AppointmentEditor> createState() => _AppointmentEditorState();
@@ -62,6 +63,9 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
   List<Employee> _appointmentEmployees = [];
   bool _employeeRequiresReview = false;
   DateTime _start = DateTime.now().add(const Duration(hours: 1));
+  bool _smsAvailable = false;
+  bool _smsReminderEnabled = false;
+  int _smsHours = 24;
   bool _loading = true;
   bool _saving = false;
   String? _error;
@@ -87,7 +91,20 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
     if (widget.appointment?.date != null) {
       _start = widget.appointment!.date!.toDate();
     }
+    _smsReminderEnabled = widget.appointment?.smsReminderEnabled ?? false;
     _load();
+    final bookingRepository = context.read<AddAppointmentRepository>();
+    _availabilityChanges.add(context.read<ApiClient>().watch('store').listen((_) async {
+      try {
+        final sms = await bookingRepository.getMessagingAvailability();
+        if (mounted) {
+          setState(() {
+            _smsAvailable = sms['enabled'] == true;
+            _smsHours = (sms['reminder_hours'] as num?)?.toInt() ?? 24;
+          });
+        }
+      } catch (_) {}
+    }));
     for (final resource in ['appointments', 'availability', 'employees']) {
       _availabilityChanges.add(context
           .read<ApiClient>()
@@ -118,12 +135,16 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
         repository.getClients(),
         repository.getServices(),
         repository.getStations(),
+        repository.getMessagingAvailability().catchError((_) => <String, dynamic>{}),
       ]);
       if (!mounted) return;
       setState(() {
         _clients = values[0] as List<AppointMent>;
         _services = values[1] as List<ServiceOffering>;
         _stations = values[2] as List<StoreStation>;
+        final sms = values[3] as Map<String, dynamic>;
+        _smsAvailable = sms['enabled'] == true;
+        _smsHours = (sms['reminder_hours'] as num?)?.toInt() ?? 24;
         _error = null;
       });
       final appointment = widget.appointment;
@@ -283,6 +304,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
         if (useExisting == true) {
           setState(() {
             _client = duplicate;
+            _smsReminderEnabled = false;
             _clientSearchController?.text = _clientLabel(duplicate);
             _clientNameController.text = duplicate.name;
             _clientSurnameController.text = duplicate.surname;
@@ -303,6 +325,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
       setState(() {
         _clients = [..._clients, client];
         _client = client;
+        _smsReminderEnabled = false;
         _clientSearchController?.text = _clientLabel(client);
         _clientNameController.text = client.name;
         _clientSurnameController.text = client.surname;
@@ -393,6 +416,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
             services: servicePayload,
             stationId: _station?.id,
             notes: _notesController.text.trim(),
+            smsReminderEnabled: _smsReminderEnabled,
           );
       if (!mounted) return;
       if (widget.onSaved != null) {
@@ -413,6 +437,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
         _pendingEmployeeId = null;
         _employeeRequiresReview = false;
         _notesController.clear();
+        _smsReminderEnabled = false;
       });
       _scheduleAvailabilityRefresh();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -441,6 +466,9 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
     }
 
     return ListView(
+      shrinkWrap: widget.embedded,
+      primary: widget.embedded ? false : null,
+      physics: widget.embedded ? const NeverScrollableScrollPhysics() : null,
       padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600 ? 12 : 20),
       children: [
         Text(
@@ -467,6 +495,7 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
                 },
                 onSelected: (value) {
                   setState(() {
+                    if (_client?.id != value.id) _smsReminderEnabled = false;
                     _client = value;
                     _clientNameController.text = value.name;
                     _clientSurnameController.text = value.surname;
@@ -700,6 +729,18 @@ class _AppointmentEditorState extends State<AppointmentEditor> {
             border: OutlineInputBorder(),
           ),
         ),
+        if (_smsAvailable || _smsReminderEnabled) ...[
+          const SizedBox(height: 12),
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Υπενθύμιση με SMS (προαιρετικό)'),
+            subtitle: Text(_smsAvailable
+                ? '$_smsHours ώρες πριν. Επιλέγοντάς το επιβεβαιώνεις ότι ο πελάτης συμφωνεί να λάβει την υπενθύμιση. Απαιτείται έγκυρο κινητό.'
+                : 'Τα SMS είναι απενεργοποιημένα για το κατάστημα. Μπορείς να αφαιρέσεις την επιλογή.'),
+            value: _smsReminderEnabled,
+            onChanged: _saving ? null : (value) => setState(() => _smsReminderEnabled = value == true),
+          ),
+        ],
         if (_error != null) ...[
           const SizedBox(height: 10),
           Text(_error!, style: const TextStyle(color: Colors.redAccent)),

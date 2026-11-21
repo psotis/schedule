@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:scheldule/providers/auth/auth_provider.dart';
+import 'package:scheldule/screens/responsive_ui/widgets/finance_report_button.dart';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
@@ -532,6 +534,11 @@ class _IncExpMainState extends State<IncExpMain> {
                       icon: const Icon(Icons.chevron_right_rounded)),
                 ])),
           ]),
+      if (context.read<AuthProvider?>()?.state.user?.storeRole == 'owner') ...[
+        const SizedBox(height: 12),
+        Align(alignment: Alignment.centerLeft,
+          child: FinanceReportButton(year: _year, month: _month)),
+      ],
       const SizedBox(height: 18),
       if (_monthError != null)
         _FinancePanel(

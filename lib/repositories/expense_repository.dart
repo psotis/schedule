@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:scheldule/models/expenses.dart';
 import 'api_client.dart';
 
@@ -7,6 +8,12 @@ class TransactionRepository {
   TransactionRepository({required this.apiClient});
 
   Stream<void> get changes => apiClient.watch('transactions');
+
+  Future<Uint8List> downloadMonthlyReport({required int year, required int month}) {
+    return apiClient.getPdf('/finance/reports/monthly', query: {
+      'month': '$year-${month.toString().padLeft(2, '0')}',
+    });
+  }
 
   Future<bool> hasFinancePin() async {
     final data = Map<String, dynamic>.from(

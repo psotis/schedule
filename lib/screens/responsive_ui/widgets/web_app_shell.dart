@@ -123,7 +123,23 @@ class WebAppShell extends StatelessWidget {
         child: SafeArea(
           bottom: false,
           minimum: const EdgeInsets.fromLTRB(8, 4, 8, 0),
-          child: Column(
+          child: current.status == DrawerStatus.appointments
+              ? NestedScrollView(
+                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                    SliverToBoxAdapter(child: AppPageHeader(
+                      item: current,
+                      compact: true,
+                      trailing: IconButton(tooltip: 'Περισσότερα',
+                        onPressed: () => _showMore(context, navigation, current),
+                        icon: const Icon(Icons.more_horiz_rounded)),
+                    )),
+                  ],
+                  body: AppContentSurface(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                    child: KeyedSubtree(key: ValueKey(current.status), child: pageBuilder(current.status, canManage)),
+                  ),
+                )
+              : Column(
             children: [
               AppPageHeader(
                 item: current,

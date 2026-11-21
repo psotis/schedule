@@ -32,7 +32,8 @@ Future<void> showAppointmentPayments(
 
 class AppointmentHistoryView extends StatefulWidget {
   final AppointMent? appointment;
-  const AppointmentHistoryView({super.key, this.appointment});
+  final bool embedded;
+  const AppointmentHistoryView({super.key, this.appointment, this.embedded = false});
 
   @override
   State<AppointmentHistoryView> createState() => _AppointmentHistoryViewState();
@@ -189,6 +190,7 @@ class _AppointmentHistoryViewState extends State<AppointmentHistoryView> {
     return Padding(
       padding: EdgeInsets.all(MediaQuery.sizeOf(context).width < 600 ? 12 : 20),
       child: Column(
+        mainAxisSize: widget.embedded ? MainAxisSize.min : MainAxisSize.max,
         children: [
           Wrap(
             spacing: 12,
@@ -208,7 +210,8 @@ class _AppointmentHistoryViewState extends State<AppointmentHistoryView> {
             ],
           ),
           const SizedBox(height: 12),
-          Expanded(
+          Flexible(
+            fit: widget.embedded ? FlexFit.loose : FlexFit.tight,
             child: Consumer<AppointmentProvider>(
               builder: (context, provider, child) {
                 final status = provider.appointmentState.appointmentStatus;
@@ -244,6 +247,9 @@ class _AppointmentHistoryViewState extends State<AppointmentHistoryView> {
                             )),
                 );
                 return ListView(
+                  shrinkWrap: widget.embedded,
+                  primary: widget.embedded ? false : null,
+                  physics: widget.embedded ? const NeverScrollableScrollPhysics() : null,
                   children: [
                     Card(
                       child: Padding(
@@ -324,7 +330,8 @@ class _AppointmentCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
-                _StatusChip(status: appointment.status),
+                if (MediaQuery.sizeOf(context).width >= 600)
+                  _StatusChip(status: appointment.status),
                 IconButton(
                     tooltip: 'Επεξεργασία υπηρεσιών / εργαζομένων',
                     onPressed: onEdit,
@@ -347,6 +354,9 @@ class _AppointmentCard extends StatelessWidget {
                 ),
               ],
             ),
+            if (MediaQuery.sizeOf(context).width < 600)
+              Padding(padding: const EdgeInsets.only(top: 6),
+                child: _StatusChip(status: appointment.status)),
             const SizedBox(height: 6),
             Wrap(
               spacing: 16,

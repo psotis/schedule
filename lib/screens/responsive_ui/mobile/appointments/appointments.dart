@@ -37,11 +37,12 @@ class _AppointmentsState extends State<Appointments>
   Widget build(BuildContext context) {
     return SectionTabs(
       controller: _tabController!,
+      scrollableContent: true,
       tabs: const [
         SectionTabItem('Νέο', Icons.add_circle_outline_rounded),
         SectionTabItem('Ιστορικό', Icons.history_rounded),
       ],
-      children: const [AppointmentEditor(), AppointmentHistoryView()],
+      children: const [AppointmentEditor(embedded: true), AppointmentHistoryView(embedded: true)],
     );
   }
 }
