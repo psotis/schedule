@@ -129,7 +129,7 @@ class EmployeeProvider with ChangeNotifier {
       _employeeState =
           _employeeState?.copyWith(employeeStatus: EmployeeStatus.initial);
       notifyListeners();
-      throw Exception();
+      rethrow;
     }
   }
 
@@ -182,15 +182,15 @@ class EmployeeProvider with ChangeNotifier {
       _employeeState =
           _employeeState?.copyWith(employeeStatus: EmployeeStatus.error);
       notifyListeners();
-      throw Exception();
+      rethrow;
     }
   }
 
   Future<void> deleteEmployee({required String employeeId}) async {
     await employeeRepository.removeEmployee(employeeId: employeeId);
-
-    _employeeState =
-        _employeeState?.copyWith(employeeStatus: EmployeeStatus.delete);
+    employees = employees.where((employee) => employee.id != employeeId).toList();
+    _employeeState = _employeeState?.copyWith(
+        employee: employees, employeeStatus: EmployeeStatus.delete);
     notifyListeners();
   }
 
