@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:file_saver/file_saver.dart';
+import 'package:scheldule/utils/pdf_download.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/repositories/api_client.dart';
@@ -39,11 +39,11 @@ class _FinanceReportButtonState extends State<FinanceReportButton> {
       if (widget.save != null) {
         await widget.save!(bytes, '$name.pdf');
       } else {
-        await FileSaver.instance.saveFile(
-          name: name,
-          bytes: bytes,
-          fileExtension: 'pdf',
-          mimeType: MimeType.pdf,
+        await downloadPdfFile(bytes, '$name.pdf');
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Η λήψη του PDF ξεκίνησε.')),
         );
       }
     } catch (error) {
