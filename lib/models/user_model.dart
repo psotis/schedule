@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 // ignore_for_file: public_member_api_docs, sort_constructors_first
@@ -18,16 +17,14 @@ class User extends Equatable {
     required this.rank,
   });
 
-  factory User.fromDoc(DocumentSnapshot userDoc) {
-    final userData = userDoc.data() as Map<String, dynamic>?;
-
+  factory User.fromJson(Map<String, dynamic> userData) {
     return User(
-      id: userDoc.id,
-      name: userData!['name'],
-      email: userData['email'],
-      profileImage: userData['profileImage'],
-      point: userData['point'],
-      rank: userData['rank'],
+      id: (userData['uuid'] ?? '').toString(),
+      name: (userData['display_name'] ?? '').toString(),
+      email: (userData['email'] ?? '').toString(),
+      profileImage: (userData['profile_image'] ?? '').toString(),
+      point: 0,
+      rank: (userData['role'] ?? '').toString(),
     );
   }
   //! Gia otan prospathisei na diavasei ta stoixeia prin to login, na exei arxikes times gia na mhn vgainoun null

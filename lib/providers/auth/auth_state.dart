@@ -1,7 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:equatable/equatable.dart';
-// ignore: library_prefixes
-import 'package:firebase_auth/firebase_auth.dart' as fbAuth;
+import '../../models/app_user.dart';
 
 enum AuthStatus {
   unknown,
@@ -11,7 +10,7 @@ enum AuthStatus {
 
 class AuthState extends Equatable {
   final AuthStatus authStatus;
-  final fbAuth.User? user;
+  final AppUser? user;
   AuthState({
     required this.authStatus,
     this.user,
@@ -29,7 +28,7 @@ class AuthState extends Equatable {
 
   AuthState copyWith({
     AuthStatus? authStatus,
-    fbAuth.User? user,
+    AppUser? user,
   }) {
     return AuthState(
       authStatus: authStatus ?? this.authStatus,

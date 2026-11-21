@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:material_ui/material_ui.dart';
 import 'package:scheldule/models/custom_errors.dart';
 
 import 'package:scheldule/repositories/search_edit_user_repository.dart';
@@ -13,21 +14,41 @@ class SearchUserProvider extends ChangeNotifier {
   SearchUserState get searchUserState => _searchUserState;
   List<AppointMent> appointment = [];
   AppointMent? searchPatient;
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  QuerySnapshot<Map<String, dynamic>>? appointMentsFromFirebase;
   late int length;
+  late final StreamSubscription<void> _changes;
 
   final SearchEditUserRepository searchEditUserRepository;
   SearchUserProvider({
     required this.searchEditUserRepository,
-  });
+  }) {
+    _changes = searchEditUserRepository.changes.listen((_) => _refreshUsers());
+  }
 
-  Future<List<AppointMent>> searchUsers({required String user}) async {
+  Future<void> _refreshUsers() async {
+    try {
+      appointment = await searchEditUserRepository.findUsers();
+      _searchUserState = _searchUserState.copyWith(
+        appointMent: appointment,
+        searchUserStatus: appointment.isEmpty
+            ? SearchUserStatus.empty
+            : SearchUserStatus.loadedList,
+      );
+      notifyListeners();
+    } on CustomError catch (error) {
+      _searchUserState = _searchUserState.copyWith(
+        searchUserStatus: SearchUserStatus.error,
+        error: error,
+      );
+      notifyListeners();
+    }
+  }
+
+  Future<List<AppointMent>> searchUsers() async {
     _searchUserState =
         _searchUserState.copyWith(searchUserStatus: SearchUserStatus.loading);
     notifyListeners();
     try {
-      appointment = await searchEditUserRepository.findUsers(user: user);
+      appointment = await searchEditUserRepository.findUsers();
       if (appointment.isEmpty) {
         _searchUserState = _searchUserState.copyWith(
             appointMent: [], searchUserStatus: SearchUserStatus.empty);
@@ -40,25 +61,21 @@ class SearchUserProvider extends ChangeNotifier {
       }
 
       return appointment;
-    } on CustomError catch (e) {
-      print(e);
+    } on CustomError {
       rethrow;
     }
   }
 
   // Future<int> getLength() async {
   //   length = await searchEditUserRepository.patientAppointmentLength(
-  //       userId: userId, name: name, surename: surename);
   // }
 
   //! ******** This is for search user to add for appointment **********
   // Future<AppointMent> searchPatients(
-  //     {required String userUid,
   //     required String name,
   //     required String surname}) async {
   //   try {
   //     final AppointMent searchPatient = await searchEditUserRepository.seeUser(
-  //         userUid: userUid, name: name, surname: surname);
   //     print(searchPatient);
   //     return searchPatient;
   //   } catch (e) {
@@ -74,7 +91,6 @@ class SearchUserProvider extends ChangeNotifier {
     required String address,
     required String description,
     required String amka,
-    required String userUid,
     required String docId,
     required String owes,
     bool? heart,
@@ -146,7 +162,6 @@ class SearchUserProvider extends ChangeNotifier {
           allergies: allergies,
           spot: spot,
           missFunctions: missFunctions,
-          userUid: userUid,
           docId: docId);
       _searchUserState =
           _searchUserState.copyWith(searchUserStatus: SearchUserStatus.sent);
@@ -167,19 +182,24 @@ class SearchUserProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteUsers(
-      {required String userId, required String userDoc}) async {
+  Future<bool> deleteUser({required String clientId}) async {
     try {
-      await searchEditUserRepository.deleteUsers(
-          userId: userId, userDoc: userDoc);
+      await searchEditUserRepository.deleteUser(clientId: clientId);
       _searchUserState =
           _searchUserState.copyWith(searchUserStatus: SearchUserStatus.delete);
       notifyListeners();
+      return true;
     } on CustomError catch (e) {
       _searchUserState = _searchUserState.copyWith(
           searchUserStatus: SearchUserStatus.error, error: e);
       notifyListeners();
-      rethrow;
+      return false;
     }
+  }
+
+  @override
+  void dispose() {
+    _changes.cancel();
+    super.dispose();
   }
 }

@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:scheldule/providers/employee/employee_state.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
@@ -10,8 +9,7 @@ import '../../../../../constants/logos/photos_gifs.dart';
 import '../../../../../utils/snackbar.dart';
 
 class EmployeeAdd extends StatefulWidget {
-  final User? user;
-  const EmployeeAdd({super.key, this.user});
+  const EmployeeAdd({super.key});
 
   @override
   State<EmployeeAdd> createState() => _EmployeeAddState();
@@ -41,12 +39,7 @@ class _EmployeeAddState extends State<EmployeeAdd> {
     super.initState();
   }
 
-  Color pickerColor = Colors.transparent;
-  Color currentColor = Color(0xff443a49);
-
-  void changeColor(Color color) {
-    setState(() => pickerColor = color);
-  }
+  String color = '';
 
   void _submit() async {
     if (mounted) {
@@ -60,7 +53,6 @@ class _EmployeeAddState extends State<EmployeeAdd> {
     userForm.save();
 
     await context.read<EmployeeProvider>().addEmployee(
-          userUid: widget.user!.uid,
           name: name!,
           surname: surname!,
           phone: phone!,
@@ -70,7 +62,7 @@ class _EmployeeAddState extends State<EmployeeAdd> {
           amka: amka!,
           contractType: contractType!,
           specialiazation: specialiazation!,
-          color: pickerColor,
+          color: color,
         );
   }
 

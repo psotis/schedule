@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
-import '../../constants/screen%20sizes/screen_sizes.dart';
 import '../../providers/providers.dart';
 import '../../providers/sign_up/signup_state.dart';
+import '../../repositories/api_client.dart';
 
 class SignupWidget extends StatefulWidget {
   final bool isMobile;
@@ -24,6 +24,7 @@ class _SignupWidgetState extends State<SignupWidget> {
     _nameController = TextEditingController();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadStoreTypes());
   }
 
   @override
@@ -36,6 +37,40 @@ class _SignupWidgetState extends State<SignupWidget> {
 
   bool check = false;
   bool obscureText = true;
+  bool _loadingStoreTypes = true;
+  String? _storeTypesError;
+  String? _selectedStoreType;
+  List<Map<String, dynamic>> _storeTypes = [];
+
+  Future<void> _loadStoreTypes() async {
+    setState(() {
+      _loadingStoreTypes = true;
+      _storeTypesError = null;
+    });
+    try {
+      final response = await context.read<ApiClient>().get('/store-types');
+      final storeTypes = (response as List)
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        _storeTypes = storeTypes;
+        _selectedStoreType = storeTypes.length == 1
+            ? storeTypes.first['code']?.toString()
+            : null;
+        _loadingStoreTypes = false;
+        if (storeTypes.isEmpty) {
+          _storeTypesError = 'No store types are available';
+        }
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loadingStoreTypes = false;
+        _storeTypesError = 'Could not load store types';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,57 +81,75 @@ class _SignupWidgetState extends State<SignupWidget> {
         //* ****************** Name textfield ***************************
         SizedBox(
           // height: ScreenSize.screenHeight * .1,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
+          width: double.infinity,
           child: TextFormField(
-            style: TextStyle(color: Colors.black),
+            style: const TextStyle(color: Color(0xFF14213D)),
             controller: _nameController,
             decoration: InputDecoration(
-              label: Text('Name',
-                  style: TextStyle(
-                    fontSize: widget.isMobile == true ? 16 : 18,
-                  )),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              labelText: 'Name',
+              floatingLabelStyle: const TextStyle(height: 1.2),
               prefixIcon: Icon(
-                Icons.person,
+                Icons.person_outline_rounded,
                 size: widget.isMobile == true ? 18 : 22,
               ),
             ),
             onChanged: (value) {
               value = _emailController.text;
-              print(_emailController.text);
             },
           ),
+        ),
+
+        SizedBox(
+          width: double.infinity,
+          child: _loadingStoreTypes
+              ? const Center(child: CircularProgressIndicator())
+              : _storeTypesError != null
+                  ? OutlinedButton.icon(
+                      onPressed: _loadStoreTypes,
+                      icon: const Icon(Icons.refresh),
+                      label: Text(_storeTypesError!),
+                    )
+                  : DropdownButtonFormField<String>(
+                      initialValue: _selectedStoreType,
+                      decoration: InputDecoration(
+                        labelText: 'Business type',
+                        floatingLabelStyle: const TextStyle(height: 1.2),
+                        prefixIcon: Icon(
+                          Icons.storefront_outlined,
+                          size: widget.isMobile == true ? 18 : 22,
+                        ),
+                      ),
+                      items: _storeTypes
+                          .map(
+                            (storeType) => DropdownMenuItem<String>(
+                              value: storeType['code']?.toString(),
+                              child: Text(storeType['name']?.toString() ?? ''),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() => _selectedStoreType = value);
+                      },
+                    ),
         ),
 
         //* ****************** Email textfield ***************************
         SizedBox(
           // height: ScreenSize.screenHeight * .1,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
+          width: double.infinity,
           child: TextFormField(
-            style: TextStyle(color: Colors.black),
+            style: const TextStyle(color: Color(0xFF14213D)),
             controller: _emailController,
             decoration: InputDecoration(
-              label: Text('E-mail',
-                  style: TextStyle(
-                    fontSize: widget.isMobile == true ? 16 : 18,
-                  )),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              labelText: 'E-mail',
+              floatingLabelStyle: const TextStyle(height: 1.2),
               prefixIcon: Icon(
-                Icons.email,
+                Icons.email_outlined,
                 size: widget.isMobile == true ? 18 : 22,
               ),
             ),
             onChanged: (value) {
               value = _emailController.text;
-              print(_emailController.text);
             },
           ),
         ),
@@ -104,23 +157,16 @@ class _SignupWidgetState extends State<SignupWidget> {
         //* ****************** Password textfield ***************************
         SizedBox(
           // height: ScreenSize.screenHeight * .1,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
+          width: double.infinity,
           child: TextFormField(
-            style: TextStyle(color: Colors.black),
+            style: const TextStyle(color: Color(0xFF14213D)),
             controller: _passwordController,
             obscureText: obscureText,
             decoration: InputDecoration(
-              label: Text('Password',
-                  style: TextStyle(
-                    fontSize: widget.isMobile == true ? 16 : 18,
-                  )),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              labelText: 'Password',
+              floatingLabelStyle: const TextStyle(height: 1.2),
               prefixIcon: Icon(
-                Icons.password,
+                Icons.lock_outline_rounded,
                 size: widget.isMobile == true ? 18 : 22,
               ),
               suffixIcon: IconButton(
@@ -136,50 +182,46 @@ class _SignupWidgetState extends State<SignupWidget> {
             ),
             onChanged: (value) {
               value = _passwordController.text;
-              print(_passwordController.text);
             },
           ),
         ),
         // SizedBox(height: ScreenSize.screenHeight * .02),
         SizedBox(
-          height: ScreenSize.screenHeight * .06,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
-          child: ElevatedButton(
-            style: ButtonStyle(
-                foregroundColor: WidgetStatePropertyAll(Colors.white),
-                backgroundColor: signupStatus == SignupStatus.submitting
-                    ? WidgetStatePropertyAll(Colors.grey)
-                    : WidgetStatePropertyAll(Color.fromARGB(255, 226, 48, 24))),
+          height: 50,
+          width: double.infinity,
+          child: FilledButton.icon(
             onPressed: signupStatus == SignupStatus.submitting ? null : signUp,
-            child: signupStatus == SignupStatus.submitting
+            icon: signupStatus == SignupStatus.submitting
                 ? SizedBox(
-                    height: ScreenSize.screenHeight * .04,
-                    width: ScreenSize.screenWidth * .03,
+                    height: 22,
+                    width: 22,
                     child: Center(
                       child: CircularProgressIndicator(
-                        color: Colors.red,
+                        color: Colors.white,
+                        strokeWidth: 2,
                       ),
                     ),
                   )
-                : Text(
-                    'Sign Up',
-                    style: TextStyle(
-                      fontSize: widget.isMobile == true ? 16 : 18,
-                    ),
-                  ),
+                : const Icon(Icons.arrow_forward_rounded),
+            label: Text(
+              signupStatus == SignupStatus.submitting
+                  ? 'Δημιουργία...'
+                  : 'Δημιουργία λογαριασμού',
+              style: TextStyle(
+                fontSize: widget.isMobile == true ? 16 : 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ),
         // SizedBox(height: ScreenSize.screenHeight * .02),
         SizedBox(
-          height: ScreenSize.screenHeight * .06,
-          width: widget.isMobile == true
-              ? ScreenSize.screenWidth * .8
-              : ScreenSize.screenWidth * .3,
-          child: ElevatedButton(
+          height: 48,
+          width: double.infinity,
+          child: OutlinedButton.icon(
             onPressed: () => context.read<ChangePageProvider>().changePage(),
-            child: Text('Back to login',
+            icon: const Icon(Icons.arrow_back_rounded),
+            label: Text('Πίσω στη σύνδεση',
                 style: TextStyle(
                   fontSize: widget.isMobile == true ? 16 : 18,
                 )),
@@ -190,10 +232,25 @@ class _SignupWidgetState extends State<SignupWidget> {
   }
 
   Future signUp() async {
-    context.read<SignupProvider>().signup(
-          name: _nameController.text,
-          email: _emailController.text,
-          password: _passwordController.text,
-        );
+    if (_selectedStoreType == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Select your business type')),
+      );
+      return;
+    }
+    try {
+      await context.read<SignupProvider>().signup(
+            name: _nameController.text,
+            email: _emailController.text,
+            password: _passwordController.text,
+            storeType: _selectedStoreType!,
+          );
+    } catch (_) {
+      if (!mounted) return;
+      final error = context.read<SignupProvider>().state.error;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    }
   }
 }

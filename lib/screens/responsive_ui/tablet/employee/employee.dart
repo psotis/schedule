@@ -1,16 +1,12 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/employee/widgets/employee_add.dart';
 import 'package:scheldule/screens/responsive_ui/tablet/employee/widgets/employee_list.dart';
-
-import '../../../../constants/screen sizes/screen_sizes.dart';
+import 'package:scheldule/screens/responsive_ui/widgets/section_tabs.dart';
 
 class Employee extends StatefulWidget {
-  final User? user;
   const Employee({
     super.key,
-    this.user,
   });
 
   @override
@@ -35,46 +31,13 @@ class _EmployeeState extends State<Employee>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      child: Column(
-        children: [
-          TabBar(controller: _tabController, tabs: [
-            SizedBox(
-              height: ScreenSize.screenHeight * .08,
-              width: ScreenSize.screenWidth * .2,
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Λίστα εργαζομένων',
-                ),
-              ),
-            ),
-            SizedBox(
-              height: ScreenSize.screenHeight * .08,
-              width: ScreenSize.screenWidth * .2,
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Προσθήκη εργαζόμενου',
-                ),
-              ),
-            ),
-          ]),
-          Flexible(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                Tab(
-                  child: EmployeeList(user: widget.user),
-                ),
-                Tab(
-                  child: EmployeeAdd(user: widget.user),
-                )
-              ],
-            ),
-          ),
-        ],
-      ),
+    return SectionTabs(
+      controller: _tabController!,
+      tabs: const [
+        SectionTabItem('Ομάδα', Icons.badge_outlined),
+        SectionTabItem('Νέος εργαζόμενος', Icons.person_add_alt_1_rounded),
+      ],
+      children: const [EmployeeList(), EmployeeAdd()],
     );
   }
 }

@@ -1,9 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 class Employee extends Equatable {
   final String id;
+  final String userId;
   final String name;
   final String surname;
   final String email;
@@ -13,8 +13,13 @@ class Employee extends Equatable {
   final String amka;
   final String specialiazation;
   final String contractType;
+  final String? paid;
+  final String? color;
+  final List<String> serviceIds;
+  final List<Map<String, dynamic>> availability;
   Employee({
     required this.id,
+    this.userId = '',
     required this.name,
     required this.surname,
     required this.email,
@@ -24,21 +29,35 @@ class Employee extends Equatable {
     required this.amka,
     required this.specialiazation,
     required this.contractType,
+    this.paid,
+    this.color,
+    this.serviceIds = const [],
+    this.availability = const [],
   });
 
-  factory Employee.fromDoc(DocumentSnapshot doc) {
-    final userData = doc.data() as Map<String, dynamic>;
+  factory Employee.fromJson(Map<String, dynamic> userData) {
     return Employee(
-      id: doc.id,
-      name: userData['name'],
-      surname: userData['surname'],
-      phone: userData['phone'],
-      email: userData['email'],
-      address: userData['address'],
-      afm: userData['afm'],
-      amka: userData['amka'],
-      specialiazation: userData['specialiazation'],
-      contractType: userData['contract_type'],
+      id: (userData['uuid'] ?? '').toString(),
+      userId: (userData['user_id'] ?? '').toString(),
+      name: (userData['first_name'] ?? '').toString(),
+      surname: (userData['last_name'] ?? '').toString(),
+      phone: (userData['phone'] ?? '').toString(),
+      email: (userData['email'] ?? '').toString(),
+      address: (userData['address'] ?? '').toString(),
+      afm: (userData['afm'] ?? '').toString(),
+      amka: (userData['amka'] ?? '').toString(),
+      specialiazation: (userData['specialization'] ?? '').toString(),
+      contractType: (userData['contract_type'] ?? '').toString(),
+      paid: (userData['paid'] ?? '').toString(),
+      color: (userData['color'] ?? '').toString(),
+      serviceIds: ((userData['serviceCapabilities'] ?? const []) as List)
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .map((item) => (item['service_id'] ?? '').toString())
+          .where((id) => id.isNotEmpty)
+          .toList(),
+      availability: ((userData['availability'] ?? const []) as List)
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .toList(),
     );
   }
 
@@ -54,6 +73,10 @@ class Employee extends Equatable {
       amka: '',
       specialiazation: '',
       contractType: '',
+      paid: '',
+      color: '',
+      serviceIds: const [],
+      availability: const [],
     );
   }
 
@@ -68,9 +91,14 @@ class Employee extends Equatable {
     String? amka,
     String? specialiazation,
     String? contractType,
+    String? paid,
+    String? color,
+    List<String>? serviceIds,
+    List<Map<String, dynamic>>? availability,
   }) {
     return Employee(
       id: id ?? this.id,
+      userId: userId,
       name: name ?? this.name,
       surname: surname ?? this.surname,
       email: email ?? this.email,
@@ -80,6 +108,10 @@ class Employee extends Equatable {
       amka: amka ?? this.amka,
       specialiazation: specialiazation ?? this.specialiazation,
       contractType: contractType ?? this.contractType,
+      paid: paid ?? this.paid,
+      color: color ?? this.color,
+      serviceIds: serviceIds ?? this.serviceIds,
+      availability: availability ?? this.availability,
     );
   }
 
@@ -89,6 +121,7 @@ class Employee extends Equatable {
   @override
   List<Object?> get props => [
         id,
+        userId,
         name,
         surname,
         email,
@@ -97,6 +130,10 @@ class Employee extends Equatable {
         afm,
         amka,
         specialiazation,
-        contractType
+        contractType,
+        paid,
+        color,
+        serviceIds,
+        availability,
       ];
 }

@@ -1,9 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/constants/logos/photos_gifs.dart';
 import 'package:scheldule/providers/drawer_nav/drawer_provider.dart';
+import 'package:scheldule/providers/auth/auth_provider.dart';
 
 import '../providers/drawer_nav/drawer_state.dart';
 
@@ -37,6 +37,11 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
       icon: Icons.work,
     ),
     Nav(
+      drawerStatus: DrawerStatus.incexp,
+      title: 'Income/Expenses',
+      icon: Icons.password,
+    ),
+    Nav(
       drawerStatus: DrawerStatus.settings,
       title: 'Settings',
       icon: Icons.settings,
@@ -44,11 +49,24 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
   ];
 
   Future logout() async {
-    await FirebaseAuth.instance.signOut();
+    await context.read<AuthProvider>().signout();
   }
 
   @override
   Widget build(BuildContext context) {
+    final storeRole = context.watch<AuthProvider>().state.user?.storeRole;
+    final canManage = storeRole == 'owner' || storeRole == 'admin';
+    final visibleNav = nav
+        .where(
+          (item) =>
+              canManage ||
+              ![
+                DrawerStatus.employee,
+                DrawerStatus.incexp,
+                DrawerStatus.settings,
+              ].contains(item.drawerStatus),
+        )
+        .toList();
     return Drawer(
       child: Column(
         children: [
@@ -63,35 +81,35 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
                   image: DecorationImage(
                       fit: BoxFit.fill,
                       image: AssetImage(
-                        Media.logoGif,
+                        Media.logo,
                       ))),
             ),
           ),
           Consumer<DrawerProvider>(builder: (context, state, child) {
             return ListView.builder(
               shrinkWrap: true,
-              itemCount: nav.length,
+              itemCount: visibleNav.length,
               itemBuilder: (BuildContext context, int index) {
+                final item = visibleNav[index];
                 return ListTile(
                     title: Text(
-                      nav[index].title,
+                      item.title,
                       style: TextStyle(
-                        color:
-                            state.state.drawerStatus == nav[index].drawerStatus
-                                ? Colors.blue
-                                : null,
+                        color: state.state.drawerStatus == item.drawerStatus
+                            ? Colors.blue
+                            : null,
                       ),
                     ),
                     leading: Icon(
-                      nav[index].icon,
-                      color: state.state.drawerStatus == nav[index].drawerStatus
+                      item.icon,
+                      color: state.state.drawerStatus == item.drawerStatus
                           ? Colors.blue
                           : null,
                     ),
                     onTap: () {
                       context.read<DrawerProvider>().changePage(
-                            nav[index].drawerStatus,
-                            nav[index].title,
+                            item.drawerStatus,
+                            item.title,
                           );
                       Navigator.pop(context);
                     });

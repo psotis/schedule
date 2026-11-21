@@ -1,20 +1,17 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/providers.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/customer/widgets/customer_add.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/customer/widgets/customer_card.dart';
 import 'package:scheldule/screens/responsive_ui/desktop/customer/widgets/customer_list.dart';
+import 'package:scheldule/screens/responsive_ui/widgets/section_tabs.dart';
 
-import '../../../../constants/screen sizes/screen_sizes.dart';
 import '../../../../providers/toggle_screen/toggle_screen_state.dart';
 
 class Customer extends StatefulWidget {
-  final User? user;
   const Customer({
     super.key,
-    this.user,
   });
 
   @override
@@ -48,52 +45,23 @@ class _CustomerState extends State<Customer>
       child: Row(
         children: [
           Flexible(
-            child: Column(
-              children: [
-                TabBar(controller: _tabController, tabs: [
-                  SizedBox(
-                    height: ScreenSize.screenHeight * .08,
-                    width: ScreenSize.screenWidth * .2,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Λίστα πελατών',
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: ScreenSize.screenHeight * .08,
-                    width: ScreenSize.screenWidth * .2,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Προσθήκη πελάτη',
-                      ),
-                    ),
-                  ),
-                ]),
-                Flexible(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      Tab(
-                        child: CustomerList(user: widget.user),
-                      ),
-                      Tab(
-                        child: CustomerAdd(user: widget.user),
-                      )
-                    ],
-                  ),
+            child: SectionTabs(
+              controller: _tabController!,
+              tabs: const [
+                SectionTabItem('Λίστα πελατών', Icons.people_alt_outlined),
+                SectionTabItem(
+                  'Νέος πελάτης',
+                  Icons.person_add_alt_1_rounded,
                 ),
               ],
+              children: const [CustomerList(), CustomerAdd()],
             ),
           ),
-          VerticalDivider(),
+          const VerticalDivider(width: 1),
           Flexible(child: Consumer<ToggleScreenProvider>(
             builder: (context, state, child) {
               if (state.toggleState?.toggleStatus == ToggleStatus.yes) {
-                return CustomerCard(
-                    customer: state.toggleState!.customer, user: widget.user);
+                return CustomerCard(customer: state.toggleState!.customer);
               }
               return Container();
             },

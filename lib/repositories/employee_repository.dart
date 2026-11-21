@@ -1,34 +1,28 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:scheldule/models/employee.dart';
 
 import '../models/custom_errors.dart';
+import 'api_client.dart';
 
 class EmployeeRepository {
-  QuerySnapshot<Map<String, dynamic>>? appointMentsFromFirebase;
+  final ApiClient apiClient;
 
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  List<Employee>? employee;
+  EmployeeRepository({required this.apiClient});
 
-  Stream<List<Employee>> streamEmployee({required String userId}) {
-    return FirebaseFirestore.instance
-        .collection(userId)
-        .where('specialiazation', isNull: false)
-        .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Employee.fromDoc(doc)).toList());
+  Stream<void> get changes => apiClient.watch('employees');
+
+  Stream<List<Employee>> streamEmployee() async* {
+    yield await findEmployee();
+    await for (final _ in changes) {
+      yield await findEmployee();
+    }
   }
 
-  Future<List<Employee>> findEmployee({required String user}) async {
+  Future<List<Employee>> findEmployee() async {
     try {
-      appointMentsFromFirebase = await firestore
-          .collection(user)
-          .where('specialiazation', isNull: false)
-          .get();
-
-      employee = appointMentsFromFirebase!.docs
-          .map((e) => Employee.fromDoc(e))
+      final data = await apiClient.get('/employee') as List;
+      return data
+          .map((item) => Employee.fromJson(Map<String, dynamic>.from(item)))
           .toList();
-      return employee!;
     } catch (e) {
       throw CustomError(
         code: 'Exception',
@@ -39,7 +33,6 @@ class EmployeeRepository {
   }
 
   Future<void> addEmployee({
-    required String userUid,
     required String name,
     required String surname,
     required String phone,
@@ -49,22 +42,20 @@ class EmployeeRepository {
     required String afm,
     required String specialiazation,
     required String contractType,
+    String? color,
   }) async {
     try {
-      FirebaseFirestore.instance.collection(userUid).add({
-        'name': name,
-        'surname': surname,
+      await apiClient.post('/employee', body: {
+        'first_name': name,
+        'last_name': surname,
         'phone': phone,
         'email': email,
         'address': address,
         'amka': amka,
         'afm': afm,
-        'specialiazation': specialiazation,
+        'specialization': specialiazation,
         'contract_type': contractType,
-      }).then((_) {
-        print("collection created");
-      }).catchError((error) {
-        print("An error occurred: $error");
+        'color': color ?? '',
       });
     } catch (e) {
       throw CustomError(
@@ -75,10 +66,9 @@ class EmployeeRepository {
     }
   }
 
-  Future<void> removeEmployee(
-      {required String employeeId, required String userDoc}) async {
+  Future<void> removeEmployee({required String employeeId}) async {
     try {
-      firestore.collection(employeeId).doc(userDoc).delete();
+      await apiClient.delete('/employee/$employeeId');
     } catch (e) {
       throw CustomError(
         code: 'Exception',
@@ -95,27 +85,24 @@ class EmployeeRepository {
     required String email,
     required String address,
     required String amka,
-    required String userUid,
     required String docId,
     required String afm,
     required String specialiazation,
     required String contractType,
+    String? color,
   }) async {
     try {
-      firestore.collection(userUid).doc(docId).update({
-        'name': name,
-        'surname': surname,
+      await apiClient.put('/employee/$docId', body: {
+        'first_name': name,
+        'last_name': surname,
         'phone': phone,
         'email': email,
         'address': address,
         'amka': amka,
         'afm': afm,
-        'specialiazation': specialiazation,
+        'specialization': specialiazation,
         'contract_type': contractType,
-      }).then((_) {
-        print("collection created");
-      }).catchError((error) {
-        print("An error occurred: $error");
+        'color': color ?? '',
       });
     } catch (e) {
       throw CustomError(

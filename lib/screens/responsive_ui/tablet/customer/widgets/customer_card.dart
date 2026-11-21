@@ -1,14 +1,13 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:scheldule/models/appointment_model.dart';
+import 'package:scheldule/screens/responsive_ui/customer/customer_insights.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/get%20layout/get_layout.dart';
-import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
 
 import '../../../../../providers/search user/search_user_provider.dart';
@@ -17,13 +16,11 @@ import '../../../../../utils/cutom_text.dart';
 
 class CustomerCard extends StatefulWidget {
   final AppointMent customer;
-  final User? user;
   final String title;
   const CustomerCard({
     super.key,
     required this.customer,
     required this.title,
-    this.user,
   });
 
   @override
@@ -95,23 +92,21 @@ class _CustomerCardState extends State<CustomerCard> {
               : "$descriptionDate:  $description",
           amka: amka!,
           owes: owes!,
-          userUid: widget.user!.uid,
           docId: widget.customer.id,
         );
   }
 
-  void _removeUser({required String userId, required String userDoc}) async {
-    await context
-        .read<SearchUserProvider>()
-        .deleteUsers(userId: userId, userDoc: userDoc);
+  Future<bool> _removeUser({required String clientId}) {
+    return context.read<SearchUserProvider>().deleteUser(clientId: clientId);
   }
 
   void seeApp() async {
-    var length = await SearchEditUserRepository().patientAppointmentLength(
-      userId: widget.user!.uid,
-      name: widget.customer.name,
-      surename: widget.customer.surname,
-    );
+    var length =
+        await context.read<SearchEditUserRepository>().patientAppointmentLength(
+              name: widget.customer.name,
+              clientId: widget.customer.id,
+              surename: widget.customer.surname,
+            );
     setState(() {
       appointmentLength = length;
     });
@@ -168,6 +163,7 @@ class _CustomerCardState extends State<CustomerCard> {
                   Text(appointmentLength.toString()),
                 ],
               ),
+              CustomerInsights(customerId: widget.customer.id),
               _form(context, layoutWidth),
               SizedBox(height: 15),
               _descriptionList(descriptions),
@@ -185,17 +181,26 @@ class _CustomerCardState extends State<CustomerCard> {
       child: AnimatedOpacity(
           opacity: _isFabVisible ? 1.0 : 0,
           duration: Duration(milliseconds: 300),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 20,
+          child: Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            alignment: WrapAlignment.center,
+            spacing: 10,
+            runSpacing: 10,
             children: [
-              SendButton(
-                onPressed: () {
-                  _removeUser(
-                    userId: widget.user!.uid,
-                    userDoc: widget.customer.id,
+              OutlinedButton.icon(
+                onPressed: () async {
+                  final deleted = await _removeUser(
+                    clientId: widget.customer.id,
                   );
+
+                  if (!context.mounted) return;
+                  if (!deleted) {
+                    snackBarDialog(context,
+                        color: Colors.red,
+                        message:
+                            'Ο πελάτης έχει ραντεβού και δεν μπορεί να διαγραφεί');
+                    return;
+                  }
 
                   Navigator.pop(context);
                   snackBarDialog(context,
@@ -203,11 +208,13 @@ class _CustomerCardState extends State<CustomerCard> {
                       message:
                           'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} διαγράφθηκε');
                 },
-                text: 'Διαγραφή',
-                backgroundColor: Colors.red,
-                icon: Icons.delete,
+                label: const Text('Διαγραφή πελάτη'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
+                icon: const Icon(Icons.person_remove_outlined, size: 18),
               ),
-              SendButton(
+              FilledButton.icon(
                 onPressed: () {
                   _submit();
 
@@ -217,9 +224,8 @@ class _CustomerCardState extends State<CustomerCard> {
                       message:
                           'Ο πελάτης ${widget.customer.name} ${widget.customer.surname} ανανεώθηκε');
                 },
-                text: 'Αποστολή',
-                icon: Icons.edit,
-                backgroundColor: Colors.orange,
+                label: const Text('Αποθήκευση'),
+                icon: const Icon(Icons.check_rounded, size: 18),
               ),
             ],
           )),

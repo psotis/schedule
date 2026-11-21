@@ -1,8 +1,101 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+
+import 'app_timestamp.dart';
+
+class AppointmentServiceLine extends Equatable {
+  final String id;
+  final String serviceId;
+  final String serviceName;
+  final String category;
+  final String subcategory;
+  final String employeeId;
+  final String employeeName;
+  final double price;
+  final int durationMinutes;
+
+  const AppointmentServiceLine({
+    required this.id,
+    required this.serviceId,
+    required this.serviceName,
+    required this.category,
+    required this.subcategory,
+    required this.employeeId,
+    required this.employeeName,
+    required this.price,
+    required this.durationMinutes,
+  });
+
+  factory AppointmentServiceLine.fromJson(Map<String, dynamic> json) {
+    final employee = Map<String, dynamic>.from(
+      (json['employee'] ?? const <String, dynamic>{}) as Map,
+    );
+    return AppointmentServiceLine(
+      id: (json['id'] ?? '').toString(),
+      serviceId: (json['service_id'] ?? '').toString(),
+      serviceName: (json['service_name'] ?? '').toString(),
+      category: (json['category'] ?? '').toString(),
+      subcategory: (json['subcategory'] ?? '').toString(),
+      employeeId: (json['employee_uuid'] ?? '').toString(),
+      employeeName:
+          '${employee['first_name'] ?? ''} ${employee['last_name'] ?? ''}'
+              .trim(),
+      price: num.tryParse((json['price'] ?? 0).toString())?.toDouble() ?? 0,
+      durationMinutes:
+          num.tryParse((json['duration_minutes'] ?? 0).toString())?.round() ??
+              0,
+    );
+  }
+
+  @override
+  List<Object> get props => [
+        id,
+        serviceId,
+        serviceName,
+        category,
+        subcategory,
+        employeeId,
+        employeeName,
+        price,
+        durationMinutes,
+      ];
+}
+
+class AppointmentPaymentEntry extends Equatable {
+  final String id;
+  final double amount;
+  final String method;
+  final Timestamp paidAt;
+
+  const AppointmentPaymentEntry({
+    required this.id,
+    required this.amount,
+    required this.method,
+    required this.paidAt,
+  });
+
+  factory AppointmentPaymentEntry.fromJson(Map<String, dynamic> json) {
+    return AppointmentPaymentEntry(
+      id: (json['id'] ?? '').toString(),
+      amount: num.tryParse((json['amount'] ?? 0).toString())?.toDouble() ?? 0,
+      method: (json['method'] ?? '').toString(),
+      paidAt: Timestamp.fromJson(json['paid_at']),
+    );
+  }
+
+  @override
+  List<Object> get props => [id, amount, method, paidAt];
+}
 
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 class AppointMent extends Equatable {
+  bool matchesSearch(String query) {
+    final text = query.trim().toLowerCase();
+    final digits = text.replaceAll(RegExp(r'\D'), '');
+    return '$name $surname'.toLowerCase().contains(text) ||
+        (digits.isNotEmpty &&
+            phone.replaceAll(RegExp(r'\D'), '').contains(digits));
+  }
+
   final String id;
   final String name;
   final String surname;
@@ -14,6 +107,25 @@ class AppointMent extends Equatable {
   final Timestamp? date;
   final String? employee;
   final String? position;
+  final String clientId;
+  final String employeeId;
+  final String stationId;
+  final double? recordedPaid;
+  final Timestamp? endDate;
+
+  double get paidAmount => payments.isEmpty
+      ? recordedPaid ?? (paid ?? 0).toDouble()
+      : payments.fold<double>(0, (sum, payment) => sum + payment.amount);
+
+  int get effectiveDurationMinutes {
+    if (totalDurationMinutes > 0) return totalDurationMinutes;
+    if (date != null && endDate != null) {
+      final minutes = endDate!.toDate().difference(date!.toDate()).inMinutes;
+      if (minutes > 0) return minutes;
+    }
+    return 60;
+  }
+
   final String? owes;
   final String? birthday;
   final String? allo;
@@ -26,6 +138,14 @@ class AppointMent extends Equatable {
   final String? allergies;
   final String? spot;
   final String? missFunctions;
+  final int? paid;
+  final String status;
+  final String paymentStatus;
+  final double totalPrice;
+  final int totalDurationMinutes;
+  final String notes;
+  final List<AppointmentServiceLine> serviceItems;
+  final List<AppointmentPaymentEntry> payments;
   final bool? heart;
   final bool? breathe;
   final bool? sugar;
@@ -53,6 +173,11 @@ class AppointMent extends Equatable {
     this.date,
     this.employee,
     this.position,
+    this.clientId = '',
+    this.employeeId = '',
+    this.stationId = '',
+    this.recordedPaid,
+    this.endDate,
     this.owes,
     this.birthday,
     this.allo,
@@ -65,6 +190,14 @@ class AppointMent extends Equatable {
     this.allergies,
     this.spot,
     this.missFunctions,
+    this.paid,
+    this.status = 'scheduled',
+    this.paymentStatus = 'unpaid',
+    this.totalPrice = 0,
+    this.totalDurationMinutes = 0,
+    this.notes = '',
+    this.serviceItems = const [],
+    this.payments = const [],
     this.heart,
     this.breathe,
     this.sugar,
@@ -81,46 +214,81 @@ class AppointMent extends Equatable {
     this.no,
   });
 
-  factory AppointMent.fromDoc(DocumentSnapshot doc) {
-    final userData = doc.data() as Map<String, dynamic>;
+  factory AppointMent.fromJson(Map<String, dynamic> json) {
+    final client = Map<String, dynamic>.from(
+      (json['client_record'] ?? json) as Map,
+    );
+    final customFields = Map<String, dynamic>.from(
+      (client['custom_fields'] ?? <String, dynamic>{}) as Map,
+    );
+    final rawDate = json['start_time'] ?? json['date'];
     return AppointMent(
-      id: doc.id,
-      name: userData['name'] ?? '',
-      surname: userData['surname'] ?? '',
-      phone: userData['phone'] ?? '',
-      email: userData['email'] ?? '',
-      address: userData['address'] ?? '',
-      description: List<String>.from(userData['description'] ?? []),
-      amka: userData['amka'] ?? '',
-      date: userData['date'],
-      employee: userData['employee'],
-      position: userData['position'],
-      owes: userData['owes'],
-      birthday: userData['birthday'],
-      allo: userData['allo'],
-      startingDate: userData['startingDate'],
-      mainIssue: userData['mainIssue'],
-      doctor: userData['doctor'],
-      surgeryPast: userData['surgeryPast'],
-      surgeryNow: userData['surgeryNow'],
-      pharmacy: userData['pharmacy'],
-      allergies: userData['allergies'],
-      spot: userData['spot'],
-      missFunctions: userData['missFunctions'],
-      heart: userData['heart'] ?? false,
-      breathe: userData['breathe'] ?? false,
-      sugar: userData['sugar'] ?? false,
-      ypertash: userData['ypertash'] ?? false,
-      neuro: userData['neuro'] ?? false,
-      orthopedic: userData['orthopedic'] ?? false,
-      selfCare: userData['selfCare'] ?? false,
-      helpCare: userData['helpCare'] ?? false,
-      disabled: userData['disabled'] ?? false,
-      good: userData['good'] ?? false,
-      medium: userData['medium'] ?? false,
-      bad: userData['bad'] ?? false,
-      yes: userData['yes'] ?? false,
-      no: userData['no'] ?? false,
+      id: (json['uuid'] ?? client['uuid'] ?? '').toString(),
+      name: (client['first_name'] ?? '').toString(),
+      surname: (client['last_name'] ?? '').toString(),
+      phone: (client['phone'] ?? '').toString(),
+      email: (client['email'] ?? '').toString(),
+      address: (client['address'] ?? '').toString(),
+      description: List<String>.from(client['client_description'] ?? const []),
+      amka: (client['amka'] ?? '').toString(),
+      date: rawDate == null ? null : Timestamp.fromJson(rawDate),
+      employee: json['employee']?.toString(),
+      clientId: (json['client_id'] ?? client['uuid'] ?? '').toString(),
+      employeeId: (json['employee_id'] ?? '').toString(),
+      stationId: (json['positions_id'] ?? '').toString(),
+      recordedPaid: num.tryParse((json['paid'] ?? 0).toString())?.toDouble(),
+      endDate: json['end_time'] == null
+          ? null
+          : Timestamp.fromJson(json['end_time']),
+      position: json['position_description']?.toString(),
+      owes: (client['owes'] ?? '').toString(),
+      birthday: (client['date_of_birth'] ?? '').toString().isNotEmpty
+          ? client['date_of_birth'].toString()
+          : customFields['birthday']?.toString(),
+      allo: customFields['allo']?.toString(),
+      startingDate: customFields['startingDate']?.toString(),
+      mainIssue: customFields['mainIssue']?.toString(),
+      doctor: customFields['doctor']?.toString(),
+      surgeryPast: customFields['surgeryPast']?.toString(),
+      surgeryNow: customFields['surgeryNow']?.toString(),
+      pharmacy: customFields['pharmacy']?.toString(),
+      allergies: customFields['allergies']?.toString(),
+      spot: customFields['spot']?.toString(),
+      missFunctions: customFields['missFunctions']?.toString(),
+      paid: (num.tryParse((json['paid'] ?? 0).toString()) ?? 0).round(),
+      status: (json['status'] ?? 'scheduled').toString(),
+      paymentStatus: (json['payment_status'] ?? 'unpaid').toString(),
+      totalPrice:
+          num.tryParse((json['total_price'] ?? 0).toString())?.toDouble() ?? 0,
+      totalDurationMinutes:
+          num.tryParse((json['total_duration_minutes'] ?? 0).toString())
+                  ?.round() ??
+              0,
+      notes: (json['notes'] ?? '').toString(),
+      serviceItems: ((json['service_items'] ?? const []) as List)
+          .map((item) => AppointmentServiceLine.fromJson(
+                Map<String, dynamic>.from(item as Map),
+              ))
+          .toList(),
+      payments: ((json['payments'] ?? const []) as List)
+          .map((item) => AppointmentPaymentEntry.fromJson(
+                Map<String, dynamic>.from(item as Map),
+              ))
+          .toList(),
+      heart: customFields['heart'] == true,
+      breathe: customFields['breathe'] == true,
+      sugar: customFields['sugar'] == true,
+      ypertash: customFields['ypertash'] == true,
+      neuro: customFields['neuro'] == true,
+      orthopedic: customFields['orthopedic'] == true,
+      selfCare: customFields['selfCare'] == true,
+      helpCare: customFields['helpCare'] == true,
+      disabled: customFields['disabled'] == true,
+      good: customFields['good'] == true,
+      medium: customFields['medium'] == true,
+      bad: customFields['bad'] == true,
+      yes: customFields['yes'] == true,
+      no: customFields['no'] == true,
     );
   }
 
@@ -149,6 +317,14 @@ class AppointMent extends Equatable {
       allergies: '',
       spot: '',
       missFunctions: '',
+      paid: 0,
+      status: 'scheduled',
+      paymentStatus: 'unpaid',
+      totalPrice: 0,
+      totalDurationMinutes: 0,
+      notes: '',
+      serviceItems: const [],
+      payments: const [],
       heart: false,
       breathe: false,
       sugar: false,
@@ -180,6 +356,11 @@ class AppointMent extends Equatable {
       date ?? Timestamp.now(),
       employee ?? '',
       position ?? '',
+      clientId,
+      employeeId,
+      stationId,
+      recordedPaid ?? -1,
+      endDate?.toDate().toIso8601String() ?? '',
       owes ?? '',
       birthday ?? '',
       allo ?? '',
@@ -192,6 +373,14 @@ class AppointMent extends Equatable {
       allergies ?? '',
       spot ?? '',
       missFunctions ?? '',
+      paid ?? 0,
+      status,
+      paymentStatus,
+      totalPrice,
+      totalDurationMinutes,
+      notes,
+      serviceItems,
+      payments,
       heart ?? false,
       breathe ?? false,
       sugar ?? false,
@@ -236,6 +425,14 @@ class AppointMent extends Equatable {
     String? allergies,
     String? spot,
     String? missFunctions,
+    int? paid,
+    String? status,
+    String? paymentStatus,
+    double? totalPrice,
+    int? totalDurationMinutes,
+    String? notes,
+    List<AppointmentServiceLine>? serviceItems,
+    List<AppointmentPaymentEntry>? payments,
     bool? heart,
     bool? breathe,
     bool? sugar,
@@ -262,6 +459,11 @@ class AppointMent extends Equatable {
       amka: amka ?? this.amka,
       date: date ?? this.date,
       employee: employee ?? this.employee,
+      clientId: clientId,
+      employeeId: employeeId,
+      stationId: stationId,
+      recordedPaid: recordedPaid,
+      endDate: endDate,
       position: position ?? this.position,
       owes: owes ?? this.owes,
       birthday: birthday ?? this.birthday,
@@ -275,6 +477,14 @@ class AppointMent extends Equatable {
       allergies: allergies ?? this.allergies,
       spot: spot ?? this.spot,
       missFunctions: missFunctions ?? this.missFunctions,
+      paid: paid ?? this.paid,
+      status: status ?? this.status,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      totalPrice: totalPrice ?? this.totalPrice,
+      totalDurationMinutes: totalDurationMinutes ?? this.totalDurationMinutes,
+      notes: notes ?? this.notes,
+      serviceItems: serviceItems ?? this.serviceItems,
+      payments: payments ?? this.payments,
       heart: heart ?? this.heart,
       breathe: breathe ?? this.breathe,
       sugar: sugar ?? this.sugar,

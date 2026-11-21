@@ -1,22 +1,22 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:scheldule/styling/themes/legacy_widget_bridge.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:scheldule/models/employee.dart';
 import 'package:scheldule/providers/providers.dart';
+import 'package:scheldule/utils/colors.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/send_button.dart';
 import 'package:scheldule/utils/snackbar.dart';
 
 class EmployeeCard extends StatefulWidget {
   final Employee employe;
-  final User? user;
 
   const EmployeeCard({
     super.key,
     required this.employe,
-    this.user,
   });
 
   @override
@@ -36,6 +36,8 @@ class _EmployeeCardState extends State<EmployeeCard> {
 
   final _formKey = GlobalKey<FormState>();
 
+  Color _selectedColor = Colors.lime;
+
   AutovalidateMode autovalidateUser = AutovalidateMode.disabled;
 
   void _submit() async {
@@ -48,6 +50,7 @@ class _EmployeeCardState extends State<EmployeeCard> {
     final userForm = _formKey.currentState;
     if (userForm == null || !userForm.validate()) return;
     userForm.save();
+    final colorHex = colorToHexs(_selectedColor);
 
     context.read<EmployeeProvider>().editEmployee(
           name: name!,
@@ -59,16 +62,15 @@ class _EmployeeCardState extends State<EmployeeCard> {
           amka: amka!,
           specialiazation: specialiazation!,
           contractType: contractType!,
-          userUid: widget.user!.uid,
           docId: widget.employe.id,
+          color: colorHex,
         );
   }
 
-  void _removeEmployee(
-      {required String employeeId, required String userDoc}) async {
+  void _removeEmployee({required String employeeId}) async {
     await context
         .read<EmployeeProvider>()
-        .deleteEmployee(employeeId: employeeId, userDoc: userDoc);
+        .deleteEmployee(employeeId: employeeId);
   }
 
   void hideScreen() async {
@@ -78,37 +80,71 @@ class _EmployeeCardState extends State<EmployeeCard> {
   @override
   void initState() {
     super.initState();
+    _selectedColor = hexToColors(widget.employe.color) ?? Colors.lime;
+  }
+
+  void _openColorPicker() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Επέλεξε χρώμα'),
+          content: SingleChildScrollView(
+            child: LegacyWidgetBridge(
+                child: ColorPicker(
+              pickerColor: _selectedColor,
+              onColorChanged: (color) {
+                setState(() {
+                  _selectedColor = color;
+                });
+              },
+              enableAlpha: false,
+              displayThumbColor: true,
+              portraitOnly: true,
+            )),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Ακύρωση'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
-      child: SizedBox(
-        height: 900,
-        child: Center(
-          child: Column(
-            children: [
-              _form(context),
-              _buttons(context),
-            ],
-          ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        child: Column(
+          children: [
+            Expanded(child: _form(context)),
+            const SizedBox(height: 12),
+            _buttons(context),
+          ],
         ),
       ),
     );
   }
 
-  Row _buttons(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      spacing: 20,
+  Widget _buttons(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 12,
+      runSpacing: 8,
       children: [
-        SendButton(
+        OutlinedButton.icon(
           onPressed: () {
             _removeEmployee(
-              employeeId: widget.user!.uid,
-              userDoc: widget.employe.id,
+              employeeId: widget.employe.id,
             );
 
             hideScreen();
@@ -117,11 +153,13 @@ class _EmployeeCardState extends State<EmployeeCard> {
                 message:
                     'Ο εργαζόμενος ${widget.employe.name} ${widget.employe.surname} διαγράφθηκε');
           },
-          text: 'Διαγραφή',
-          backgroundColor: Colors.red,
-          icon: Icons.delete,
+          label: const Text('Διαγραφή εργαζομένου'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Theme.of(context).colorScheme.error,
+          ),
+          icon: const Icon(Icons.person_remove_outlined, size: 18),
         ),
-        SendButton(
+        FilledButton.icon(
           onPressed: () {
             _submit();
 
@@ -131,25 +169,23 @@ class _EmployeeCardState extends State<EmployeeCard> {
                 message:
                     'Ο εργαζόμενος ${widget.employe.name} ${widget.employe.surname} ανανεώθηκε');
           },
-          text: 'Αποστολή',
-          icon: Icons.edit,
-          backgroundColor: Colors.orange,
+          label: const Text('Αποθήκευση'),
+          icon: const Icon(Icons.check_rounded, size: 18),
         ),
       ],
     );
   }
 
-  Padding _form(
+  Widget _form(
     BuildContext context,
   ) {
-    return Padding(
-      padding: EdgeInsets.only(top: 30),
-      child: SizedBox(
-        width: 400,
-        height: MediaQuery.of(context).size.height * .8,
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
+            padding: const EdgeInsets.only(top: 22, bottom: 8),
             child: Column(
               spacing: 20,
               children: [
@@ -234,6 +270,13 @@ class _EmployeeCardState extends State<EmployeeCard> {
                     specialiazation = value;
                   },
                 ),
+                SendButton(
+                  backgroundColor: _selectedColor,
+                  foregroundColor: Colors.black,
+                  text: 'Χρώμα',
+                  onPressed: _openColorPicker,
+                ),
+                const SizedBox(height: 8),
               ],
             ),
           ),

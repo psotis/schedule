@@ -1,9 +1,14 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+
+import '../../repositories/search_edit_user_repository.dart';
 
 import 'add_user_status.dart';
 
 class AddUserProvider extends ChangeNotifier {
+  final SearchEditUserRepository repository;
+
+  AddUserProvider({required this.repository});
+
   AddUserState _addUserState = AddUserState.initial();
   AddUserState get addUserState => _addUserState;
 
@@ -16,7 +21,7 @@ class AddUserProvider extends ChangeNotifier {
     required String description,
     required String amka,
     required String owes,
-    required String userUid,
+    int? paid,
   }) async {
     _addUserState =
         _addUserState.copyWith(addUserStatus: AddUserStatus.loading);
@@ -24,22 +29,16 @@ class AddUserProvider extends ChangeNotifier {
     await Future.delayed(Duration(milliseconds: 500));
 
     try {
-      FirebaseFirestore.instance.collection(userUid).add({
-        'name': name,
-        'surname': surname,
-        'phone': phone,
-        'email': email,
-        'address': address,
-        'description': [description],
-        'amka': amka,
-        'owes': owes,
-        'date': Timestamp.fromMicrosecondsSinceEpoch(0),
-      }).then((DocumentReference doc) {
-        print(doc.id);
-        print("collection created");
-      }).catchError((error) {
-        print("An error occurred: $error");
-      });
+      await repository.addPatient(
+        name: name,
+        surname: surname,
+        phone: phone,
+        email: email,
+        address: address,
+        description: description,
+        amka: amka,
+        owes: owes,
+      );
 
       _addUserState = _addUserState.copyWith(addUserStatus: AddUserStatus.sent);
       notifyListeners();

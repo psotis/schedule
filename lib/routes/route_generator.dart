@@ -1,18 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:scheldule/screens/responsive_ui/homepage.dart';
+import 'package:material_ui/material_ui.dart';
 
-import '../screens/login/login_screen.dart';
 import '../splash_page.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/':
-        return MaterialPageRoute(builder: (context) => SplashPage());
       case '/login':
-        return MaterialPageRoute(builder: (context) => LoginScreen());
       case '/home':
-        return MaterialPageRoute(builder: (context) => HomeLayoutScreen());
+      case '/user-admin':
+        return MaterialPageRoute(builder: (context) => const SplashPage());
 
       default:
         return _errorRoute();

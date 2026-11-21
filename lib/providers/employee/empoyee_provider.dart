@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:material_ui/material_ui.dart';
 
 import 'package:scheldule/models/employee.dart';
 import 'package:scheldule/providers/employee/employee_state.dart';
@@ -15,21 +15,38 @@ class EmployeeProvider with ChangeNotifier {
 
   List<Employee> employees = [];
 
-  late DocumentReference documentReference;
   late String deleteDoc;
-  User? user;
+  late final StreamSubscription<void> _changes;
 
   final EmployeeRepository employeeRepository;
   EmployeeProvider({
     required this.employeeRepository,
-  });
+  }) {
+    _changes = employeeRepository.changes.listen((_) => _refreshEmployees());
+  }
 
-  Future<List<Employee>> searchEmployee({required String user}) async {
+  Future<void> _refreshEmployees() async {
+    try {
+      employees = await employeeRepository.findEmployee();
+      _employeeState = _employeeState?.copyWith(
+        employee: employees,
+        employeeStatus:
+            employees.isEmpty ? EmployeeStatus.empty : EmployeeStatus.loaded,
+      );
+      notifyListeners();
+    } catch (_) {
+      _employeeState =
+          _employeeState?.copyWith(employeeStatus: EmployeeStatus.error);
+      notifyListeners();
+    }
+  }
+
+  Future<List<Employee>> searchEmployee() async {
     _employeeState =
         _employeeState?.copyWith(employeeStatus: EmployeeStatus.loading);
     notifyListeners();
     try {
-      employees = await employeeRepository.findEmployee(user: user);
+      employees = await employeeRepository.findEmployee();
       if (employees.isEmpty) {
         _employeeState = _employeeState
             ?.copyWith(employee: [], employeeStatus: EmployeeStatus.empty);
@@ -41,16 +58,31 @@ class EmployeeProvider with ChangeNotifier {
       }
 
       return employees;
-    } on CustomError catch (e) {
-      print(e);
+    } on CustomError {
       rethrow;
+    }
+  }
+
+  Future<void> initEmployees() async {
+    _employeeState =
+        _employeeState?.copyWith(employeeStatus: EmployeeStatus.loading);
+    notifyListeners();
+
+    try {
+      employees = await employeeRepository.findEmployee();
+      _employeeState =
+          _employeeState?.copyWith(employeeStatus: EmployeeStatus.loaded);
+      notifyListeners();
+    } catch (e) {
+      _employeeState =
+          _employeeState?.copyWith(employeeStatus: EmployeeStatus.error);
+      notifyListeners();
     }
   }
 
   Future<void> addEmployee({
     required String name,
     required String surname,
-    required String userUid,
     required String phone,
     required String email,
     required String address,
@@ -58,7 +90,7 @@ class EmployeeProvider with ChangeNotifier {
     required String amka,
     required String specialiazation,
     required String contractType,
-    Color? color,
+    String? color,
   }) async {
     _employeeState =
         _employeeState?.copyWith(employeeStatus: EmployeeStatus.loading);
@@ -67,7 +99,6 @@ class EmployeeProvider with ChangeNotifier {
 
     try {
       await employeeRepository.addEmployee(
-        userUid: userUid,
         surname: surname,
         phone: phone,
         name: name,
@@ -77,6 +108,7 @@ class EmployeeProvider with ChangeNotifier {
         amka: amka,
         specialiazation: specialiazation,
         contractType: contractType,
+        color: color,
       );
 
       _employeeState =
@@ -111,8 +143,8 @@ class EmployeeProvider with ChangeNotifier {
     required String afm,
     required String specialiazation,
     required String contractType,
-    required String userUid,
     required String docId,
+    String? color,
   }) async {
     await Future.delayed(Duration(milliseconds: 500));
 
@@ -129,11 +161,11 @@ class EmployeeProvider with ChangeNotifier {
         email: email,
         address: address,
         amka: amka,
-        userUid: userUid,
         afm: afm,
         specialiazation: specialiazation,
         contractType: contractType,
         docId: docId,
+        color: color ?? '',
       );
       _employeeState =
           _employeeState?.copyWith(employeeStatus: EmployeeStatus.send);
@@ -154,13 +186,17 @@ class EmployeeProvider with ChangeNotifier {
     }
   }
 
-  Future<void> deleteEmployee(
-      {required String employeeId, required String userDoc}) async {
-    await employeeRepository.removeEmployee(
-        employeeId: employeeId, userDoc: userDoc);
+  Future<void> deleteEmployee({required String employeeId}) async {
+    await employeeRepository.removeEmployee(employeeId: employeeId);
 
     _employeeState =
         _employeeState?.copyWith(employeeStatus: EmployeeStatus.delete);
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _changes.cancel();
+    super.dispose();
   }
 }

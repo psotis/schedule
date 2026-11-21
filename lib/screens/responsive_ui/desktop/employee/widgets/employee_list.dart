@@ -1,5 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:scheldule/providers/ui_preferences/ui_preferences_provider.dart';
+import 'package:scheldule/screens/responsive_ui/widgets/list_grid_toggle.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/toggle_screen/toggle_screen_provider.dart';
 import 'package:scheldule/repositories/employee_repository.dart';
@@ -8,23 +9,25 @@ import 'package:scheldule/utils/custom_text_form.dart';
 import '../../../../../models/employee.dart';
 
 class EmployeeList extends StatefulWidget {
-  final User? user;
-  const EmployeeList({super.key, this.user});
+  const EmployeeList({super.key});
 
   @override
   State<EmployeeList> createState() => _EmployeeListState();
 }
 
 class _EmployeeListState extends State<EmployeeList> {
-  String? userId;
-  late final stream = EmployeeRepository().streamEmployee(userId: userId!);
+  late final Stream<List<Employee>> stream;
   String _searchTerm = '';
-  bool isListView = true;
+  bool get isListView =>
+      context
+          .watch<UiPreferencesProvider>()
+          .value('employees_view', fallback: 'list') ==
+      'list';
 
   @override
   void initState() {
-    userId = widget.user!.uid;
     super.initState();
+    stream = context.read<EmployeeRepository>().streamEmployee();
   }
 
   @override
@@ -52,8 +55,12 @@ class _EmployeeListState extends State<EmployeeList> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Αδύνατη η φόρτωση εργαζομένων'));
+                }
 
-                final filteredEmployee = snapshot.data!.where((employee) {
+                final data = snapshot.data ?? <Employee>[];
+                final filteredEmployee = data.where((employee) {
                   final fullName =
                       '${employee.name} ${employee.surname}'.toLowerCase();
                   return fullName.contains(_searchTerm.toLowerCase());
@@ -68,30 +75,8 @@ class _EmployeeListState extends State<EmployeeList> {
     );
   }
 
-  Row _switchListGrid() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        IconButton(
-          onPressed: () {
-            setState(() {
-              isListView = true;
-            });
-          },
-          icon: Icon(Icons.list, color: isListView ? Colors.blue : Colors.grey),
-        ),
-        IconButton(
-          onPressed: () {
-            setState(() {
-              isListView = false;
-            });
-          },
-          icon: Icon(Icons.grid_view,
-              color: isListView ? Colors.grey : Colors.blue),
-        ),
-      ],
-    );
-  }
+  Widget _switchListGrid() =>
+      const ListGridToggle(preferenceKey: 'employees_view');
 
   ListView _buildListView(List<Employee> employee) {
     return ListView.builder(
@@ -138,12 +123,18 @@ class _EmployeeListState extends State<EmployeeList> {
                           Row(
                             children: [
                               Icon(Icons.email,
-                                  size: 16, color: Colors.grey[600]),
+                                  size: 16,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant),
                               SizedBox(width: 6),
                               Flexible(
                                 child: Text(
                                   employe.email,
-                                  style: TextStyle(color: Colors.grey[800]),
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
@@ -153,11 +144,17 @@ class _EmployeeListState extends State<EmployeeList> {
                           Row(
                             children: [
                               Icon(Icons.phone,
-                                  size: 16, color: Colors.grey[600]),
+                                  size: 16,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant),
                               SizedBox(width: 6),
                               Text(
                                 employe.phone,
-                                style: TextStyle(color: Colors.grey[800]),
+                                style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant),
                               ),
                             ],
                           ),
@@ -208,12 +205,16 @@ class _EmployeeListState extends State<EmployeeList> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.email, size: 16, color: Colors.grey[600]),
+                    Icon(Icons.email,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
                     SizedBox(width: 6),
                     Flexible(
                       child: Text(
                         employe.email,
-                        style: TextStyle(color: Colors.grey[800]),
+                        style: TextStyle(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -223,13 +224,17 @@ class _EmployeeListState extends State<EmployeeList> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.phone, size: 16, color: Colors.grey[600]),
+                    Icon(Icons.phone,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
                     SizedBox(width: 6),
                     Flexible(
                       child: Text(
                         employe.phone,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Colors.grey[800]),
+                        style: TextStyle(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant),
                       ),
                     ),
                   ],

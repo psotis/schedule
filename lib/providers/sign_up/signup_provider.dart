@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../models/custom_errors.dart';
 import '../../repositories/auth_repository.dart';
@@ -17,11 +17,17 @@ class SignupProvider with ChangeNotifier {
     required String name,
     required String email,
     required String password,
+    required String storeType,
   }) async {
     _state = _state.copyWith(signinStatus: SignupStatus.submitting);
     notifyListeners();
     try {
-      await authRepository.signup(name: name, email: email, password: password);
+      await authRepository.signup(
+        name: name,
+        email: email,
+        password: password,
+        storeType: storeType,
+      );
       _state = _state.copyWith(signinStatus: SignupStatus.success);
       notifyListeners();
     } on CustomError catch (e) {

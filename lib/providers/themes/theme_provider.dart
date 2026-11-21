@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:scheldule/providers/themes/theme_status.dart';
 import 'package:scheldule/styling/themes/dark_theme.dart';
 import 'package:scheldule/styling/themes/light_theme.dart';

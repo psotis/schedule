@@ -1,23 +1,23 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
+import '../../../models/employee.dart';
 import '../../../providers/providers.dart';
 
 enum SelectSearch { customer, employee }
 
 // ignore: must_be_immutable
 class Search extends StatefulWidget {
-  User? user;
   final double width;
   final void Function(String, String)? setAppointment;
+  final List<Employee>? employees;
   SelectSearch? selectSearch;
   Search({
     super.key,
-    this.user,
     required this.width,
     this.setAppointment,
+    this.employees,
     this.selectSearch,
   });
 
@@ -33,17 +33,17 @@ class _SearchState extends State<Search> {
     _search = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       fetchUsers();
-      fetchEmployees();
+      if (widget.employees == null) fetchEmployees();
     });
     super.initState();
   }
 
   void fetchUsers() {
-    context.read<SearchUserProvider>().searchUsers(user: widget.user!.uid);
+    context.read<SearchUserProvider>().searchUsers();
   }
 
   void fetchEmployees() {
-    context.read<EmployeeProvider>().searchEmployee(user: widget.user!.uid);
+    context.read<EmployeeProvider>().searchEmployee();
   }
 
   @override
@@ -55,7 +55,8 @@ class _SearchState extends State<Search> {
   @override
   Widget build(BuildContext context) {
     var searchUser = context.watch<SearchUserProvider>().appointment;
-    var employee = context.watch<EmployeeProvider>().employees;
+    final employee =
+        widget.employees ?? context.watch<EmployeeProvider>().employees;
     return widget.selectSearch == SelectSearch.customer
         ? DropdownMenu(
             controller: _search,
@@ -82,7 +83,11 @@ class _SearchState extends State<Search> {
                 ),
               );
             }).toList(),
-            onSelected: (val) => widget.setAppointment!(val!.name, val.surname),
+            onSelected: (val) {
+              final setAppointment = widget.setAppointment;
+              if (val == null || setAppointment == null) return;
+              setAppointment(val.name, val.surname);
+            },
           )
         : DropdownMenu(
             controller: _search,
@@ -109,7 +114,11 @@ class _SearchState extends State<Search> {
                 ),
               );
             }).toList(),
-            onSelected: (val) => widget.setAppointment!(val!.name, val.surname),
+            onSelected: (val) {
+              final setAppointment = widget.setAppointment;
+              if (val == null || setAppointment == null) return;
+              setAppointment(val.name, val.surname);
+            },
           );
   }
 }

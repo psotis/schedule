@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:scheldule/providers/login%20to%20sign%20up/change_page_state.dart';
 
 class ChangePageProvider extends ChangeNotifier {
