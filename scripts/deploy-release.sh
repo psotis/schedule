@@ -50,6 +50,22 @@ if [[ "$component" == backend ]]; then
 else
   compose up -d --no-build --no-deps --wait web
 fi
+# Persist image selections for Docker Manager and direct Compose operations too.
+python3 - "$app_dir/.env.production" <<'PYENV'
+import os, re, sys, tempfile
+from pathlib import Path
+path = Path(sys.argv[1])
+lines = [line for line in path.read_text().splitlines()
+         if not re.match(r'^\s*(API_VERSION|WEB_VERSION)\s*=', line)]
+lines += [f"API_VERSION={os.environ['API_VERSION']}", f"WEB_VERSION={os.environ['WEB_VERSION']}"]
+fd, temporary = tempfile.mkstemp(prefix='.env.production.', dir=path.parent)
+try:
+    with os.fdopen(fd, 'w') as stream:
+        stream.write('\n'.join(lines) + '\n')
+    os.replace(temporary, path)
+finally:
+    if os.path.exists(temporary): os.unlink(temporary)
+PYENV
 # Persist versions only after health checks pass. Never undo database migrations.
 printf '%s\n' "$version" > "$app_root/state/$component-version.next"
 mv "$app_root/state/$component-version.next" "$app_root/state/$component-version"
