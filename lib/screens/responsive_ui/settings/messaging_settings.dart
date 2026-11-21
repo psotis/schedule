@@ -23,6 +23,8 @@ class _MessagingSettingsState extends State<MessagingSettings> {
       _configured = false,
       _enabled = false,
       _ready = false;
+  String _provider = 'twilio';
+  String get _providerName => _provider == 'isms' ? 'iSMS.gr' : 'Twilio';
   int _hours = 24;
   String? _error;
   StoreRepository get _repository =>
@@ -47,6 +49,7 @@ class _MessagingSettingsState extends State<MessagingSettings> {
       final data = await _repository.getMessagingSettings();
       if (!mounted) return;
       setState(() {
+        _provider = data['provider'] == 'isms' ? 'isms' : 'twilio';
         _account.text = (data['account_sid'] ?? '').toString();
         _apiKey.text = (data['api_key_sid'] ?? '').toString();
         _service.text = (data['messaging_service_sid'] ?? '').toString();
@@ -76,11 +79,15 @@ class _MessagingSettingsState extends State<MessagingSettings> {
     });
     try {
       await _repository.saveMessagingSettings({
-        'provider': 'twilio',
-        'account_sid': _account.text.trim(),
-        'api_key_sid': _apiKey.text.trim(),
-        if (_secret.text.isNotEmpty) 'api_secret': _secret.text,
-        'messaging_service_sid': _service.text.trim(),
+        'provider': _provider,
+        if (_provider == 'twilio') ...{
+          'account_sid': _account.text.trim(),
+          'api_key_sid': _apiKey.text.trim(),
+          if (_secret.text.isNotEmpty) 'api_secret': _secret.text,
+          'messaging_service_sid': _service.text.trim(),
+        },
+        if (_provider == 'isms' && _secret.text.isNotEmpty)
+          'api_token': _secret.text,
         'sender': _sender.text.trim(),
         'enabled': _enabled,
         'reminder_hours': _hours,
@@ -89,7 +96,7 @@ class _MessagingSettingsState extends State<MessagingSettings> {
       _secret.clear();
       setState(() => _configured = true);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Οι ρυθμίσεις Twilio αποθηκεύτηκαν.')),
+        SnackBar(content: Text('Οι ρυθμίσεις $_providerName αποθηκεύτηκαν.')),
       );
     } catch (error) {
       if (mounted) {
@@ -110,7 +117,7 @@ class _MessagingSettingsState extends State<MessagingSettings> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Αφαίρεση σύνδεσης Twilio;'),
+        title: Text('Αφαίρεση σύνδεσης $_providerName;'),
         content: const Text(
           'Θα διαγραφούν τα αποθηκευμένα κλειδιά και θα σταματήσουν οι νέες αποστολές SMS.',
         ),
@@ -156,6 +163,51 @@ class _MessagingSettingsState extends State<MessagingSettings> {
     ),
   );
 
+  Widget _ismsGuide() => Card(
+    margin: EdgeInsets.zero,
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Ρύθμιση βήμα προς βήμα',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            '1. Δημιούργησε λογαριασμό στο my.isms.gr και επιβεβαίωσε το email σου.',
+          ),
+          _link(
+            'Δημιουργία λογαριασμού iSMS.gr',
+            'https://my.isms.gr/register',
+          ),
+          const Text(
+            '2. Άνοιξε τη σελίδα API του λογαριασμού και δημιούργησε κλειδί με δικαίωμα send. Αντέγραψέ το αμέσως: εμφανίζεται μόνο μία φορά. Χρειάζεται το API key, όχι ο κωδικός σύνδεσής σου.',
+          ),
+          _link('Σύνδεση στο iSMS.gr', 'https://my.isms.gr/'),
+          _link('Επίσημος οδηγός API', 'https://isms.gr/api/'),
+          const Text(
+            '3. Δήλωσε και περίμενε να εγκριθεί ο αποστολέας στον λογαριασμό σου. Χρησιμοποίησε έως 11 λατινικούς χαρακτήρες ή έως 15 ψηφία. Κενό, τελεία ή παύλα επιτρέπονται μόνο ανάμεσα σε γράμματα/ψηφία, ποτέ στην αρχή ή στο τέλος.',
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            '4. Πρόσθεσε υπόλοιπο στο iSMS.gr για τις αποστολές σου. Οι χρεώσεις γίνονται στον δικό σου λογαριασμό. Τα ελληνικά στέλνονται ως Unicode και τα μεγάλα μηνύματα μπορεί να χρεωθούν ως περισσότερα τμήματα SMS.',
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            '5. Βάλε το κλειδί και τον εγκεκριμένο αποστολέα παρακάτω, επίλεξε ώρες υπενθύμισης και ενεργοποίησε τα SMS. Σε κάθε ραντεβού επίλεγε SMS μόνο αν ο πελάτης έχει συμφωνήσει. Καταχώρισε το κινητό με κωδικό χώρας, π.χ. +3069….',
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Η σύνδεση αφορά το νέο panel my.isms.gr. Αν χρησιμοποιείς το παλιό cp.isms.gr, ακολούθησε τις οδηγίες μετάβασης του iSMS.gr για να αποκτήσεις API key.',
+          ),
+          _link('Ιστοσελίδα και υποστήριξη iSMS.gr', 'https://isms.gr/'),
+        ],
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Center(child: CircularProgressIndicator());
@@ -164,74 +216,112 @@ class _MessagingSettingsState extends State<MessagingSettings> {
       padding: const EdgeInsets.all(20),
       children: [
         Text(
-          'SMS υπενθυμίσεις με Twilio',
+          'SMS υπενθυμίσεις με $_providerName',
           style: theme.textTheme.headlineSmall,
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Χρησιμοποίησε τον δικό σου λογαριασμό Twilio. Οι χρεώσεις SMS γίνονται απευθείας εκεί. '
+        Text(
+          'Χρησιμοποίησε τον δικό σου λογαριασμό $_providerName. Οι χρεώσεις SMS γίνονται απευθείας εκεί. '
           'Τα κλειδιά ανήκουν αποκλειστικά σε αυτό το κατάστημα και αποθηκεύονται κρυπτογραφημένα.',
         ),
         const SizedBox(height: 16),
-        Card(
-          margin: EdgeInsets.zero,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Ρύθμιση βήμα προς βήμα',
-                  style: theme.textTheme.titleMedium,
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  '1. Δημιούργησε λογαριασμό Twilio και επιβεβαίωσε τα στοιχεία σου. Για κανονική χρήση πρόσθεσε στοιχεία χρέωσης και υπόλοιπο. Στη δοκιμή μπορεί να απαιτούνται επιβεβαιωμένοι παραλήπτες.',
-                ),
-                _link(
-                  'Δημιουργία λογαριασμού',
-                  'https://www.twilio.com/try-twilio',
-                ),
-                const Text(
-                  '2. Στο Console βρες το Account SID (AC…). Δημιούργησε Standard API Key στην περιοχή US1 και κράτησε το API Key SID (SK…) και το Secret, που εμφανίζεται μόνο μία φορά.',
-                ),
-                _link('Twilio Console', 'https://console.twilio.com/'),
-                _link(
-                  'Οδηγός API keys',
-                  'https://www.twilio.com/docs/iam/api-keys',
-                ),
-                const Text(
-                  '3. Επίλεξε αποστολέα: αριθμό Twilio με δυνατότητα SMS ή όνομα επιχείρησης έως 11 λατινικούς χαρακτήρες, π.χ. Physiocure. Το όνομα πρέπει να περιέχει γράμμα. Η διαθεσιμότητα και η έγκριση εξαρτώνται από τη χώρα παραλήπτη.',
-                ),
-                _link(
-                  'Οδηγός ονόματος αποστολέα',
-                  'https://www.twilio.com/docs/trust-hub/registrations/alphanumeric-sender-id',
-                ),
-                const Text(
-                  '4. Προαιρετικά δημιούργησε Messaging Service και πρόσθεσε τον αριθμό ή το όνομά σου στο Sender Pool. Βάλε εδώ το Messaging Service SID (MG…). Αν το συμπληρώσεις, το Twilio επιλέγει τον αποστολέα από αυτό το service.',
-                ),
-                _link(
-                  'Ρύθμιση Messaging Service',
-                  'https://www.twilio.com/docs/messaging/tutorials/send-messages-with-messaging-services',
-                ),
-                const Text(
-                  '5. Ενεργοποίησε στο Twilio τις χώρες στις οποίες θα στέλνεις. Καταχώρισε κινητά με κωδικό χώρας, π.χ. +3069…, και επίλεγε SMS μόνο όταν ο πελάτης έχει συμφωνήσει.',
-                ),
-                _link(
-                  'Διεθνείς αποστολές',
-                  'https://www.twilio.com/docs/messaging/guides/sending-international-sms-guide',
-                ),
-                _link(
-                  'Χρεώσεις SMS στην Ελλάδα',
-                  'https://www.twilio.com/en-us/sms/pricing/gr',
-                ),
-                const Text(
-                  'Τα ελληνικά και τα μεγάλα μηνύματα μπορεί να χρεωθούν ως περισσότερα τμήματα SMS. Δεν χρησιμοποιούμε κοινό λογαριασμό Twilio της Rantevia.',
-                ),
-              ],
+        DropdownButtonFormField<String>(
+          key: ValueKey('sms-provider-$_provider'),
+          initialValue: _provider,
+          decoration: const InputDecoration(labelText: 'Πάροχος SMS'),
+          items: const [
+            DropdownMenuItem(value: 'twilio', child: Text('Twilio')),
+            DropdownMenuItem(value: 'isms', child: Text('iSMS.gr')),
+          ],
+          onChanged: _busy
+              ? null
+              : (value) {
+                  if (value == null || value == _provider) return;
+                  _form.currentState?.reset();
+                  setState(() {
+                    _provider = value;
+                    _configured = false;
+                    _enabled = false;
+                    _error = null;
+                    for (final controller in [
+                      _account,
+                      _apiKey,
+                      _secret,
+                      _service,
+                      _sender,
+                    ]) {
+                      controller.clear();
+                    }
+                  });
+                },
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Η αλλαγή παρόχου εφαρμόζεται μόνο με την αποθήκευση. Χρειάζεται νέο κλειδί για τον πάροχο που επιλέγεις.',
+        ),
+        const SizedBox(height: 16),
+        if (_provider == 'isms')
+          _ismsGuide()
+        else
+          Card(
+            margin: EdgeInsets.zero,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Ρύθμιση βήμα προς βήμα',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    '1. Δημιούργησε λογαριασμό Twilio και επιβεβαίωσε τα στοιχεία σου. Για κανονική χρήση πρόσθεσε στοιχεία χρέωσης και υπόλοιπο. Στη δοκιμή μπορεί να απαιτούνται επιβεβαιωμένοι παραλήπτες.',
+                  ),
+                  _link(
+                    'Δημιουργία λογαριασμού',
+                    'https://www.twilio.com/try-twilio',
+                  ),
+                  const Text(
+                    '2. Στο Console βρες το Account SID (AC…). Δημιούργησε Standard API Key στην περιοχή US1 και κράτησε το API Key SID (SK…) και το Secret, που εμφανίζεται μόνο μία φορά.',
+                  ),
+                  _link('Twilio Console', 'https://console.twilio.com/'),
+                  _link(
+                    'Οδηγός API keys',
+                    'https://www.twilio.com/docs/iam/api-keys',
+                  ),
+                  const Text(
+                    '3. Επίλεξε αποστολέα: αριθμό Twilio με δυνατότητα SMS ή όνομα επιχείρησης έως 11 λατινικούς χαρακτήρες, π.χ. Physiocure. Το όνομα πρέπει να περιέχει γράμμα. Η διαθεσιμότητα και η έγκριση εξαρτώνται από τη χώρα παραλήπτη.',
+                  ),
+                  _link(
+                    'Οδηγός ονόματος αποστολέα',
+                    'https://www.twilio.com/docs/trust-hub/registrations/alphanumeric-sender-id',
+                  ),
+                  const Text(
+                    '4. Προαιρετικά δημιούργησε Messaging Service και πρόσθεσε τον αριθμό ή το όνομά σου στο Sender Pool. Βάλε εδώ το Messaging Service SID (MG…). Αν το συμπληρώσεις, το Twilio επιλέγει τον αποστολέα από αυτό το service.',
+                  ),
+                  _link(
+                    'Ρύθμιση Messaging Service',
+                    'https://www.twilio.com/docs/messaging/tutorials/send-messages-with-messaging-services',
+                  ),
+                  const Text(
+                    '5. Ενεργοποίησε στο Twilio τις χώρες στις οποίες θα στέλνεις. Καταχώρισε κινητά με κωδικό χώρας, π.χ. +3069…, και επίλεγε SMS μόνο όταν ο πελάτης έχει συμφωνήσει.',
+                  ),
+                  _link(
+                    'Διεθνείς αποστολές',
+                    'https://www.twilio.com/docs/messaging/guides/sending-international-sms-guide',
+                  ),
+                  _link(
+                    'Χρεώσεις SMS στην Ελλάδα',
+                    'https://www.twilio.com/en-us/sms/pricing/gr',
+                  ),
+                  const Text(
+                    'Τα ελληνικά και τα μεγάλα μηνύματα μπορεί να χρεωθούν ως περισσότερα τμήματα SMS. Δεν χρησιμοποιούμε κοινό λογαριασμό Twilio της Rantevia.',
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
         const SizedBox(height: 20),
         if (!_ready)
           const Padding(
@@ -244,50 +334,66 @@ class _MessagingSettingsState extends State<MessagingSettings> {
           key: _form,
           child: Column(
             children: [
+              if (_provider == 'twilio') ...[
+                CustomTextForm(
+                  labelText: 'Account SID',
+                  hintText: 'AC…',
+                  controller: _account,
+                  readOnly: _busy,
+                  validator: (v) =>
+                      RegExp(r'^AC[0-9a-fA-F]{32}$').hasMatch(v?.trim() ?? '')
+                      ? null
+                      : 'Συμπλήρωσε έγκυρο Account SID.',
+                ),
+                const SizedBox(height: 16),
+                CustomTextForm(
+                  labelText: 'API Key SID',
+                  hintText: 'SK…',
+                  controller: _apiKey,
+                  readOnly: _busy,
+                  validator: (v) =>
+                      RegExp(r'^SK[0-9a-fA-F]{32}$').hasMatch(v?.trim() ?? '')
+                      ? null
+                      : 'Συμπλήρωσε έγκυρο API Key SID.',
+                ),
+                const SizedBox(height: 16),
+              ],
               CustomTextForm(
-                labelText: 'Account SID',
-                hintText: 'AC…',
-                controller: _account,
-                readOnly: _busy,
-                validator: (v) =>
-                    RegExp(r'^AC[0-9a-fA-F]{32}$').hasMatch(v?.trim() ?? '')
-                    ? null
-                    : 'Συμπλήρωσε έγκυρο Account SID.',
-              ),
-              const SizedBox(height: 16),
-              CustomTextForm(
-                labelText: 'API Key SID',
-                hintText: 'SK…',
-                controller: _apiKey,
-                readOnly: _busy,
-                validator: (v) =>
-                    RegExp(r'^SK[0-9a-fA-F]{32}$').hasMatch(v?.trim() ?? '')
-                    ? null
-                    : 'Συμπλήρωσε έγκυρο API Key SID.',
-              ),
-              const SizedBox(height: 16),
-              CustomTextForm(
-                labelText: 'API Key Secret',
+                labelText: _provider == 'isms'
+                    ? 'iSMS.gr API Key'
+                    : 'API Key Secret',
                 hintText: _configured
                     ? 'Αποθηκευμένο - άφησέ το κενό για διατήρηση'
+                    : _provider == 'isms'
+                    ? 'Το κλειδί από το my.isms.gr'
                     : 'Το Secret του API Key',
                 controller: _secret,
                 obscureText: true,
                 readOnly: _busy,
                 validator: (v) => (v?.isEmpty ?? true) && _configured
                     ? null
-                    : (v?.length ?? 0) >= 20
+                    : (v?.length ?? 0) >= (_provider == 'isms' ? 1 : 20)
                     ? null
-                    : 'Συμπλήρωσε το API Key Secret.',
+                    : 'Συμπλήρωσε το κλειδί του παρόχου.',
               ),
               const SizedBox(height: 16),
               CustomTextForm(
                 labelText: 'Όνομα ή αριθμός αποστολέα',
-                hintText: 'Physiocure ή +…',
+                hintText: _provider == 'isms'
+                    ? 'MyShop ή 3069…'
+                    : 'Physiocure ή +…',
                 controller: _sender,
                 readOnly: _busy,
                 validator: (v) {
                   final value = v?.trim() ?? '';
+                  if (_provider == 'isms') {
+                    return RegExp(r'^[0-9]{1,15}$').hasMatch(value) ||
+                            (value.length <= 11 &&
+                                RegExp(r'^[A-Za-z0-9]+(?:[ .-][A-Za-z0-9]+)*$')
+                                    .hasMatch(value))
+                        ? null
+                        : 'Έως 11 λατινικοί χαρακτήρες ή έως 15 ψηφία, όπως εγκρίθηκαν στο iSMS.gr.';
+                  }
                   if (value.isEmpty && _service.text.trim().isNotEmpty) {
                     return null;
                   }
@@ -299,18 +405,20 @@ class _MessagingSettingsState extends State<MessagingSettings> {
                 },
               ),
               const SizedBox(height: 16),
-              CustomTextForm(
-                labelText: 'Messaging Service SID (προαιρετικό)',
-                hintText: 'MG…',
-                controller: _service,
-                readOnly: _busy,
-                validator: (v) =>
-                    (v?.trim().isEmpty ?? true) ||
-                        RegExp(r'^MG[0-9a-fA-F]{32}$').hasMatch(v!.trim())
-                    ? null
-                    : 'Συμπλήρωσε έγκυρο Messaging Service SID.',
-              ),
-              const SizedBox(height: 16),
+              if (_provider == 'twilio') ...[
+                CustomTextForm(
+                  labelText: 'Messaging Service SID (προαιρετικό)',
+                  hintText: 'MG…',
+                  controller: _service,
+                  readOnly: _busy,
+                  validator: (v) =>
+                      (v?.trim().isEmpty ?? true) ||
+                          RegExp(r'^MG[0-9a-fA-F]{32}$').hasMatch(v!.trim())
+                      ? null
+                      : 'Συμπλήρωσε έγκυρο Messaging Service SID.',
+                ),
+                const SizedBox(height: 16),
+              ],
               DropdownButtonFormField<int>(
                 initialValue: _hours,
                 isExpanded: true,
