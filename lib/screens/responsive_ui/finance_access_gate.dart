@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/repositories/api_client.dart';
@@ -61,12 +60,8 @@ class _FinanceAccessGateState extends State<FinanceAccessGate> {
   Future<void> _submit() async {
     if (_busy) return;
     final pin = _pinController.text.trim();
-    if (pin.runes.length < 4 || pin.runes.length > 64) {
-      setState(() => _error = 'Ο κωδικός πρέπει να έχει 4 έως 64 χαρακτήρες.');
-      return;
-    }
-    if (utf8.encode(pin).length > 72) {
-      setState(() => _error = 'Ο κωδικός είναι πολύ μεγάλος. Δοκίμασε λιγότερους χαρακτήρες.');
+    if (pin.runes.length < 4 || pin.runes.length > 8) {
+      setState(() => _error = 'Ο κωδικός πρέπει να έχει 4 έως 8 χαρακτήρες.');
       return;
     }
     if (_isSettingPin && pin != _confirmPinController.text.trim()) {
@@ -162,7 +157,7 @@ class _FinanceAccessGateState extends State<FinanceAccessGate> {
                 const SizedBox(height: 10),
                 Text(
                     _isSettingPin
-                        ? 'Επιβεβαιώστε τον κωδικό σύνδεσής σας και ορίστε έναν προσωπικό κωδικό 4 έως 64 χαρακτήρων.'
+                        ? 'Επιβεβαιώστε τον κωδικό σύνδεσής σας και ορίστε έναν προσωπικό κωδικό 4 έως 8 χαρακτήρων.'
                         : 'Εισαγάγετε τον προσωπικό κωδικό σας για να δείτε έσοδα, έξοδα και κινήσεις.',
                     style: Theme.of(context)
                         .textTheme
@@ -184,7 +179,7 @@ class _FinanceAccessGateState extends State<FinanceAccessGate> {
                       labelText: _isSettingPin
                           ? 'Νέος κωδικός οικονομικών'
                           : 'Κωδικός οικονομικών',
-                      hintText: '4 έως 64 χαρακτήρες',
+                      hintText: '4 έως 8 χαρακτήρες',
                       prefixIcon: Icons.lock_outline_rounded,
                       obscureText: true,
                       onSubmitted: (_) => _submit()),
