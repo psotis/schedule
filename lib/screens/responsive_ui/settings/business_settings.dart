@@ -9,6 +9,8 @@ import 'package:scheldule/providers/themes/theme_status.dart';
 import 'package:scheldule/repositories/add_appointment_repository.dart';
 import 'package:scheldule/repositories/api_client.dart';
 import 'package:scheldule/repositories/store_repository.dart';
+import 'package:scheldule/providers/auth/auth_provider.dart';
+import 'package:scheldule/screens/billing/billing_page.dart';
 import 'package:scheldule/repositories/appointment_repository.dart';
 
 class BusinessSettings extends StatefulWidget {
@@ -29,13 +31,15 @@ class _BusinessSettingsState extends State<BusinessSettings>
   bool _loading = true;
   String? _error;
   late final TabController _tabs;
+  late final bool _isOwner;
   StreamSubscription<void>? _reportChanges;
   DateTimeRange? _reportRange;
 
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 7, vsync: this);
+    _isOwner = context.read<AuthProvider?>()?.state.user?.storeRole == 'owner';
+    _tabs = TabController(length: _isOwner ? 8 : 7, vsync: this);
     _load();
     _reportChanges =
         context.read<ApiClient>().watch('reports').listen((_) => _loadReport());
@@ -100,8 +104,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
   void _showError(Object error) {
     final message = error is ApiException ? error.message : error.toString();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+      SnackBar(content: Text(message)));
   }
 
   Future<void> _editService([ServiceOffering? service]) async {
@@ -148,8 +151,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
       context: context,
       builder: (context) => _EmployeeServicesDialog(
         employee: employee,
-        services: _services,
-      ),
+        services: _services),
     );
     if (selected == null || !mounted) return;
     try {
@@ -267,7 +269,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
       );
     }
     return DefaultTabController(
-      length: 7,
+      length: _isOwner ? 8 : 7,
       child: Column(
         children: [
           Row(
@@ -276,7 +278,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
                 child: TabBar(
                   controller: _tabs,
                   isScrollable: true,
-                  tabs: const [
+                  tabs: [
                     Tab(text: 'Υπηρεσίες'),
                     Tab(text: 'Χώροι'),
                     Tab(text: 'Ομάδα'),
@@ -284,6 +286,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
                     Tab(text: 'Πρόσβαση'),
                     Tab(text: 'Αναφορές'),
                     Tab(text: 'Λειτουργία'),
+                    if (_isOwner) const Tab(text: 'Συνδρομή'),
                   ],
                 ),
               ),
@@ -315,6 +318,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
                 _membersView(),
                 _reportsView(),
                 const _StoreWorkingDays(),
+                if (_isOwner) const BillingPage(),
               ],
             ),
           ),
@@ -438,11 +442,13 @@ class _BusinessSettingsState extends State<BusinessSettings>
       (_report['totals'] ?? const <String, dynamic>{}) as Map,
     );
     final services = ((_report['services'] ?? const []) as List)
-        .map((item) => ReportMetric.fromJson(Map<String, dynamic>.from(item)))
+        .map((item) => ReportMetric.fromJson(Map<String, dynamic>.from(item)),
+        )
         .toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     final employees = ((_report['employees'] ?? const []) as List)
-        .map((item) => ReportMetric.fromJson(Map<String, dynamic>.from(item)))
+        .map((item) => ReportMetric.fromJson(Map<String, dynamic>.from(item)),
+        )
         .toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     final weekdays = ((_report['weekdays'] ?? const []) as List)
@@ -468,7 +474,8 @@ class _BusinessSettingsState extends State<BusinessSettings>
               icon: const Icon(Icons.date_range),
               label: Text(_reportRange == null
                   ? 'Όλες οι ημερομηνίες'
-                  : '${DateFormat('dd/MM/yyyy').format(_reportRange!.start)} – ${DateFormat('dd/MM/yyyy').format(_reportRange!.end)}'),
+                  : '${DateFormat('dd/MM/yyyy').format(_reportRange!.start)} – ${DateFormat('dd/MM/yyyy').format(_reportRange!.end)}',
+              ),
               onPressed: () async {
                 final range = await showDateRangePicker(
                   context: context,
@@ -501,25 +508,30 @@ class _BusinessSettingsState extends State<BusinessSettings>
             _MetricCard('Ακυρώσεις', totals['cancelled'] ?? 0),
             _MetricCard('Δεν προσήλθαν', totals['no_show'] ?? 0),
             _MetricCard('Αξία υπηρεσιών', totals['service_value'] ?? 0,
-                money: true),
+                money: true,
+            ),
             _MetricCard('Εισπράξεις', totals['collected'] ?? 0, money: true),
             _MetricCard('Υπόλοιπο', totals['outstanding'] ?? 0, money: true),
             _MetricCard('Μέση αξία ραντεβού',
                 totals['average_completed_appointment'] ?? 0,
-                money: true),
+                money: true,
+            ),
           ],
         ),
         const SizedBox(height: 24),
         Text('Ποιες ημέρες έχουν περισσότερα ραντεβού',
-            style: Theme.of(context).textTheme.titleLarge),
+            style: Theme.of(context).textTheme.titleLarge,
+        ),
         const Text(
-            'Χωρίς ακυρώσεις και no-show. Οι ώρες εμφανίζονται στη ζώνη ώρας του καταστήματος.'),
+            'Χωρίς ακυρώσεις και no-show. Οι ώρες εμφανίζονται στη ζώνη ώρας του καταστήματος.',
+        ),
         const SizedBox(height: 12),
         ...weekdays.map((item) {
           final maximum = weekdays.fold<num>(
               0,
               (value, day) =>
-                  (day['count'] as num) > value ? day['count'] as num : value);
+                  (day['count'] as num) > value ? day['count'] as num : value,
+          );
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Row(children: [
@@ -529,10 +541,13 @@ class _BusinessSettingsState extends State<BusinessSettings>
                       value:
                           maximum == 0 ? 0 : (item['count'] as num) / maximum,
                       minHeight: 8,
-                      borderRadius: BorderRadius.circular(8))),
+                      borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               const SizedBox(width: 12),
               Text('${item['count']}'),
-            ]),
+            ],
+            ),
           );
         }),
         const SizedBox(height: 16),
@@ -544,20 +559,27 @@ class _BusinessSettingsState extends State<BusinessSettings>
                 .take(5)
                 .map((item) => Chip(
                       label: Text(
-                          '${item['hour'].toString().padLeft(2, '0')}:00 • ${item['count']} ραντεβού'),
-                    ))
-                .toList()),
+                          '${item['hour'].toString().padLeft(2, '0')}:00 • ${item['count']} ραντεβού',
+                  ),
+                    ),
+              )
+                .toList(),
+        ),
         const SizedBox(height: 16),
         Text('Ημερομηνίες με τα περισσότερα ραντεβού',
-            style: Theme.of(context).textTheme.titleMedium),
+            style: Theme.of(context).textTheme.titleMedium,
+        ),
         ...daily.take(10).map((item) => ListTile(
               title: Text(DateFormat('dd/MM/yyyy')
-                  .format(DateTime.parse(item['date'].toString()))),
+                  .format(DateTime.parse(item['date'].toString())),
+                ),
               trailing: Text('${item['count']} ραντεβού'),
-            )),
+            ),
+            ),
         const SizedBox(height: 24),
         Text('Απόδοση υπηρεσιών',
-            style: Theme.of(context).textTheme.titleLarge),
+            style: Theme.of(context).textTheme.titleLarge,
+        ),
         ...services.map(
           (metric) => ListTile(
             title: Text(metric.name),
@@ -567,7 +589,8 @@ class _BusinessSettingsState extends State<BusinessSettings>
         ),
         const SizedBox(height: 16),
         Text('Απόδοση εργαζομένων',
-            style: Theme.of(context).textTheme.titleLarge),
+            style: Theme.of(context).textTheme.titleLarge,
+        ),
         ...employees.map(
           (metric) => ListTile(
             title: Text(metric.name),
@@ -726,8 +749,7 @@ class _EmployeeSettingsTile extends StatelessWidget {
               Text(
                 '${employee.name} ${employee.surname}',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                      fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 3),
               Text(
@@ -842,9 +864,11 @@ class _ServiceDialogState extends State<_ServiceDialog> {
     _category = TextEditingController(text: service?.category ?? '');
     _subcategory = TextEditingController(text: service?.subcategory ?? '');
     _price =
-        TextEditingController(text: service?.price.toStringAsFixed(2) ?? '0');
+        TextEditingController(text: service?.price.toStringAsFixed(2) ?? '0',
+    );
     _duration = TextEditingController(
-        text: service?.durationMinutes.toString() ?? '30');
+        text: service?.durationMinutes.toString() ?? '30',
+    );
   }
 
   @override
@@ -861,7 +885,8 @@ class _ServiceDialogState extends State<_ServiceDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-          widget.service == null ? 'Νέα υπηρεσία' : 'Επεξεργασία υπηρεσίας'),
+          widget.service == null ? 'Νέα υπηρεσία' : 'Επεξεργασία υπηρεσίας',
+      ),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 450),
         child: SingleChildScrollView(
@@ -871,23 +896,30 @@ class _ServiceDialogState extends State<_ServiceDialog> {
             children: [
               TextField(
                   controller: _name,
-                  decoration: const InputDecoration(labelText: 'Όνομα')),
+                  decoration: const InputDecoration(labelText: 'Όνομα'),
+              ),
               TextField(
                   controller: _category,
-                  decoration: const InputDecoration(labelText: 'Κατηγορία')),
+                  decoration: const InputDecoration(labelText: 'Κατηγορία'),
+              ),
               TextField(
                   controller: _subcategory,
-                  decoration: const InputDecoration(labelText: 'Υποκατηγορία')),
+                  decoration: const InputDecoration(labelText: 'Υποκατηγορία'),
+              ),
               TextField(
                   controller: _price,
                   keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: 'Τιμή €')),
+                      const TextInputType.numberWithOptions(decimal: true,
+                ),
+                  decoration: const InputDecoration(labelText: 'Τιμή €'),
+              ),
               TextField(
                   controller: _duration,
                   keyboardType: TextInputType.number,
                   decoration:
-                      const InputDecoration(labelText: 'Διάρκεια (λεπτά)')),
+                      const InputDecoration(labelText: 'Διάρκεια (λεπτά)',
+                ),
+              ),
             ],
           ),
         ),
@@ -895,7 +927,8 @@ class _ServiceDialogState extends State<_ServiceDialog> {
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Άκυρο')),
+            child: const Text('Άκυρο'),
+        ),
         FilledButton(
           onPressed: () {
             final price = double.tryParse(_price.text.replaceAll(',', '.'));
@@ -940,7 +973,8 @@ class _StationDialogState extends State<_StationDialog> {
     super.initState();
     _name = TextEditingController(text: widget.station?.name ?? '');
     _capacity =
-        TextEditingController(text: widget.station?.capacity.toString() ?? '1');
+        TextEditingController(text: widget.station?.capacity.toString() ?? '1',
+    );
   }
 
   @override
@@ -963,19 +997,24 @@ class _StationDialogState extends State<_StationDialog> {
             TextField(
                 controller: _name,
                 decoration:
-                    const InputDecoration(labelText: 'Όνομα χώρου / σταθμού')),
+                    const InputDecoration(labelText: 'Όνομα χώρου / σταθμού',
+              ),
+            ),
             TextField(
                 controller: _capacity,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                    labelText: 'Ταυτόχρονη χωρητικότητα')),
+                    labelText: 'Ταυτόχρονη χωρητικότητα',
+              ),
+            ),
           ],
         ),
       ),
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Άκυρο')),
+            child: const Text('Άκυρο'),
+        ),
         FilledButton(
           onPressed: () {
             final capacity = int.tryParse(_capacity.text);
@@ -983,7 +1022,8 @@ class _StationDialogState extends State<_StationDialog> {
               return;
             }
             Navigator.pop(
-                context, {'name': _name.text.trim(), 'capacity': capacity});
+                context, {'name': _name.text.trim(), 'capacity': capacity,
+            });
           },
           child: const Text('Αποθήκευση'),
         ),
@@ -997,7 +1037,8 @@ class _EmployeeServicesDialog extends StatefulWidget {
   final List<ServiceOffering> services;
 
   const _EmployeeServicesDialog(
-      {required this.employee, required this.services});
+      {required this.employee, required this.services,
+  });
 
   @override
   State<_EmployeeServicesDialog> createState() =>
@@ -1016,7 +1057,8 @@ class _EmployeeServicesDialogState extends State<_EmployeeServicesDialog> {
   @override
   Widget build(BuildContext context) {
     final maxHeight =
-        (MediaQuery.sizeOf(context).height * .62).clamp(240.0, 560.0);
+        (MediaQuery.sizeOf(context).height * .62).clamp(240.0, 560.0,
+    );
     return AlertDialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       title: Text('Υπηρεσίες: ${widget.employee.name}'),
@@ -1035,12 +1077,15 @@ class _EmployeeServicesDialogState extends State<_EmployeeServicesDialog> {
                       contentPadding: EdgeInsets.zero,
                       value: _selected.contains(service.id),
                       title: Text(service.name),
-                      subtitle: Text([service.category, service.subcategory]
+                      subtitle: Text([service.category, service.subcategory,
+                        ]
                           .where((value) => value.isNotEmpty)
-                          .join(' • ')),
+                          .join(' • '),
+                      ),
                       onChanged: (value) => setState(() => value == true
                           ? _selected.add(service.id)
-                          : _selected.remove(service.id)),
+                          : _selected.remove(service.id),
+                      ),
                     );
                   },
                 ),
@@ -1049,10 +1094,12 @@ class _EmployeeServicesDialogState extends State<_EmployeeServicesDialog> {
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Άκυρο')),
+            child: const Text('Άκυρο'),
+        ),
         FilledButton(
             onPressed: () => Navigator.pop(context, _selected.toList()),
-            child: const Text('Αποθήκευση')),
+            child: const Text('Αποθήκευση'),
+        ),
       ],
     );
   }
@@ -1075,7 +1122,7 @@ class _AvailabilityDialogState extends State<_AvailabilityDialog> {
     'Τετάρτη',
     'Πέμπτη',
     'Παρασκευή',
-    'Σάββατο'
+    'Σάββατο',
   ];
   late final Set<int> _selectedDays;
   late final TextEditingController _start;
@@ -1093,9 +1140,11 @@ class _AvailabilityDialogState extends State<_AvailabilityDialog> {
         ? null
         : widget.employee.availability.first;
     _start = TextEditingController(
-        text: _shortTime(first?['start_time']) ?? '09:00');
+        text: _shortTime(first?['start_time']) ?? '09:00',
+    );
     _end =
-        TextEditingController(text: _shortTime(first?['end_time']) ?? '17:00');
+        TextEditingController(text: _shortTime(first?['end_time']) ?? '17:00',
+    );
   }
 
   String? _shortTime(dynamic value) {
@@ -1240,7 +1289,8 @@ class _AvailabilityDialogState extends State<_AvailabilityDialog> {
                 'weekday': day,
                 'start_time': _start.text,
                 'end_time': _end.text,
-              })
+              },
+          )
           .toList(),
     );
   }
@@ -1299,7 +1349,9 @@ class _TimeOffDialogState extends State<_TimeOffDialog> {
               items: widget.employees
                   .map((employee) => DropdownMenuItem(
                       value: employee,
-                      child: Text('${employee.name} ${employee.surname}')))
+                      child: Text('${employee.name} ${employee.surname}'),
+                    ),
+                  )
                   .toList(),
               onChanged: (value) => setState(() => _employee = value),
             ),
@@ -1324,14 +1376,17 @@ class _TimeOffDialogState extends State<_TimeOffDialog> {
             TextField(
                 controller: _reason,
                 decoration:
-                    const InputDecoration(labelText: 'Αιτία (προαιρετικό)')),
+                    const InputDecoration(labelText: 'Αιτία (προαιρετικό)',
+              ),
+            ),
           ],
         ),
       ),
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Άκυρο')),
+            child: const Text('Άκυρο'),
+        ),
         FilledButton(
           onPressed: () {
             if (_employee == null || !_endsAt.isAfter(_startsAt)) return;
@@ -1387,7 +1442,8 @@ class _MemberDialogState extends State<_MemberDialog> {
               contentPadding: EdgeInsets.zero,
               title: const Text('Νέος λογαριασμός εργαζομένου'),
               subtitle: const Text(
-                  'Απενεργοποίησε για σύνδεση υπάρχοντος λογαριασμού.'),
+                  'Απενεργοποίησε για σύνδεση υπάρχοντος λογαριασμού.',
+              ),
               value: _create,
               onChanged: (value) => setState(() {
                 _create = value;
@@ -1402,8 +1458,10 @@ class _MemberDialogState extends State<_MemberDialog> {
                   .map((employee) => DropdownMenuItem(
                         value: employee,
                         child: Text('${employee.name} ${employee.surname}',
-                            overflow: TextOverflow.ellipsis),
-                      ))
+                            overflow: TextOverflow.ellipsis,
+                      ),
+                      ),
+                  )
                   .toList(),
               onChanged: (value) => setState(() {
                 _employee = value;
@@ -1420,7 +1478,8 @@ class _MemberDialogState extends State<_MemberDialog> {
                 controller: _password,
                 obscureText: true,
                 decoration: const InputDecoration(
-                    labelText: 'Κωδικός (8–72 χαρακτήρες)'),
+                    labelText: 'Κωδικός (8–72 χαρακτήρες)',
+                ),
               ),
             if (!_create)
               DropdownButtonFormField<String>(
@@ -1430,14 +1489,14 @@ class _MemberDialogState extends State<_MemberDialog> {
                   DropdownMenuItem(value: 'staff', child: Text('Προσωπικό')),
                   DropdownMenuItem(
                     value: 'admin',
-                    child: Text('Διαχειριστής'),
-                  ),
+                    child: Text('Διαχειριστής')),
                 ],
                 onChanged: (value) => setState(() => _role = value ?? 'staff'),
               ),
             if (_error != null)
               Text(_error!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
           ],
         ),
       ),
@@ -1455,7 +1514,8 @@ class _MemberDialogState extends State<_MemberDialog> {
                     (_password.text.length < 8 ||
                         _password.text.length > 72))) {
               setState(() => _error =
-                  'Επίλεξε εργαζόμενο, έγκυρο email και κωδικό 8–72 χαρακτήρων.');
+                  'Επίλεξε εργαζόμενο, έγκυρο email και κωδικό 8–72 χαρακτήρων.',
+              );
               return;
             }
             Navigator.pop(context, {
@@ -1488,7 +1548,7 @@ class _StoreWorkingDaysState extends State<_StoreWorkingDays> {
     'Πέμπτη',
     'Παρασκευή',
     'Σάββατο',
-    'Κυριακή'
+    'Κυριακή',
   ];
   Set<int> _days = {};
   bool _loading = true;
@@ -1534,8 +1594,7 @@ class _StoreWorkingDaysState extends State<_StoreWorkingDays> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
-      );
+        SnackBar(content: Text(error.toString())));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -1548,17 +1607,19 @@ class _StoreWorkingDaysState extends State<_StoreWorkingDays> {
       return Center(
           child: TextButton(
         onPressed: _load,
-        child: Text('$_error Ξανά'),
-      ));
+        child: Text('$_error Ξανά')),
+      );
     }
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
         Text('Ημέρες λειτουργίας καταστήματος',
-            style: Theme.of(context).textTheme.titleLarge),
+            style: Theme.of(context).textTheme.titleLarge,
+        ),
         const SizedBox(height: 8),
         const Text('Εμφανίζονται στις προβολές «Εργάσιμες ημέρες» και '
-            '«Χρονοδιάγραμμα εργασίμων». Το ωράριο κάθε εργαζομένου ορίζεται στην Ομάδα.'),
+            '«Χρονοδιάγραμμα εργασίμων». Το ωράριο κάθε εργαζομένου ορίζεται στην Ομάδα.',
+        ),
         const SizedBox(height: 20),
         Wrap(spacing: 10, runSpacing: 10, children: [
           for (var day = 1; day <= 7; day++)
@@ -1575,7 +1636,8 @@ class _StoreWorkingDaysState extends State<_StoreWorkingDays> {
                         }
                       }),
             ),
-        ]),
+        ],
+        ),
         const SizedBox(height: 16),
         if (_days.isEmpty)
           const Text('Επίλεξε τουλάχιστον μία ημέρα λειτουργίας.'),
@@ -1585,7 +1647,8 @@ class _StoreWorkingDaysState extends State<_StoreWorkingDays> {
               onPressed: _saving || _days.isEmpty ? null : _save,
               icon: const Icon(Icons.check),
               label: Text(_saving ? 'Αποθήκευση…' : 'Αποθήκευση'),
-            )),
+            ),
+        ),
       ],
     );
   }

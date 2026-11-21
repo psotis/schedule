@@ -19,6 +19,8 @@ import 'package:scheldule/routes/route_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'styling/themes/legacy_widget_bridge.dart';
+import 'providers/billing/billing_provider.dart';
+import 'repositories/billing_repository.dart';
 import 'repositories/add_appointment_repository.dart';
 import 'repositories/employee_repository.dart';
 import 'repositories/ui_preferences_repository.dart';
@@ -34,7 +36,8 @@ Future<void> main() async {
   if (geminiApiKey.isNotEmpty) Gemini.init(apiKey: geminiApiKey);
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle
-        .loadString('assets/google_fonts/ibm_plex_sans/OFL.txt');
+        .loadString('assets/google_fonts/ibm_plex_sans/OFL.txt',
+    );
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
   prefs = await SharedPreferences.getInstance();
@@ -85,22 +88,26 @@ class MyApp extends StatelessWidget {
             repository: UiPreferencesRepository(apiClient: apiClient),
           ),
         ),
+        ChangeNotifierProvider<BillingProvider>(
+          create: (_) => BillingProvider(
+            repository: BillingRepository(apiClient: apiClient),
+          ),
+        ),
         ChangeNotifierProvider<AuthProvider>(
           create: (context) => AuthProvider(authRepository: authRepository),
         ),
         ChangeNotifierProvider<SigninProvider>(
           create: (context) => SigninProvider(
-            authRepository: context.read<AuthRepository>(),
-          ),
+            authRepository: context.read<AuthRepository>()),
         ),
         ChangeNotifierProvider<SignupProvider>(
           create: (context) => SignupProvider(
-            authRepository: context.read<AuthRepository>(),
-          ),
+            authRepository: context.read<AuthRepository>()),
         ),
         ChangeNotifierProvider<AppointmentProvider>(
           create: (context) => AppointmentProvider(
-              appointmentRepository: context.read<AppointmentRepository>()),
+              appointmentRepository: context.read<AppointmentRepository>(),
+          ),
         ),
         ChangeNotifierProvider<AddUserProvider>(
           create: (context) => AddUserProvider(
@@ -110,12 +117,14 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<SearchUserProvider>(
           create: (context) => SearchUserProvider(
               searchEditUserRepository:
-                  context.read<SearchEditUserRepository>()),
+                  context.read<SearchEditUserRepository>(),
+          ),
         ),
         ChangeNotifierProvider<AddAppointmentProvider>(
           create: (context) => AddAppointmentProvider(
               addAppointmentRepository:
-                  context.read<AddAppointmentRepository>()),
+                  context.read<AddAppointmentRepository>(),
+          ),
         ),
         ChangeNotifierProvider<ChangePageProvider>(
           create: (context) => ChangePageProvider(),
@@ -144,8 +153,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'Rantevia',
           builder: (context, child) => LegacyWidgetBridge(
-            child: child ?? const SizedBox.shrink(),
-          ),
+            child: child ?? const SizedBox.shrink()),
           debugShowCheckedModeBanner: false,
           theme: context.watch<ThemeProvider>().state?.themeData,
           themeAnimationDuration: Duration.zero,
@@ -156,10 +164,10 @@ class MyApp extends StatelessWidget {
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
           supportedLocales: [
             const Locale('el'),
-            const Locale('en'),
-          ],
+            const Locale('en')],
         );
-      }),
+      },
+      ),
     );
   }
 }

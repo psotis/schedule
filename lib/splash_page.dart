@@ -3,6 +3,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/auth/auth_provider.dart';
+import 'screens/billing/billing_gate.dart';
 import 'providers/auth/auth_state.dart';
 import 'screens/login/login_screen.dart';
 import 'screens/responsive_ui/homepage.dart';
@@ -34,13 +35,12 @@ class _SplashPageState extends State<SplashPage> {
       case AuthStatus.authenticated:
         return authState.user?.role == 'user-admin'
             ? const UserAdminDashboard()
-            : HomeLayoutScreen();
+            : BillingGate(child: HomeLayoutScreen());
       case AuthStatus.unauthenticated:
         return const LoginScreen();
       case AuthStatus.unknown:
         return const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        );
+          body: Center(child: CircularProgressIndicator()));
     }
   }
 }

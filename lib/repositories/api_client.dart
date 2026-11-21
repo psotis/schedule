@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
@@ -26,6 +28,9 @@ class ApiClient {
   final String baseUrl;
   late final RealtimeClient realtime;
 
+  final StreamController<void> _accessRequired = StreamController.broadcast();
+  Stream<void> get accessRequired => _accessRequired.stream;
+
   final StreamController<int> _sessionChanges = StreamController.broadcast();
   int _sessionRevision = 0;
   Stream<int> get sessionChanges => _sessionChanges.stream;
@@ -45,11 +50,15 @@ class ApiClient {
     String? baseUrl,
   })  : _client = client ?? http.Client(),
         _storage = storage ?? const FlutterSecureStorage(),
-        baseUrl = (baseUrl ?? const String.fromEnvironment('API_BASE_URL'))
+        baseUrl = (baseUrl ??
+                (const String.fromEnvironment('API_BASE_URL').isEmpty &&
+                        kIsWeb &&
+                        kReleaseMode
+                    ? Uri.base.resolve('/api/v1').toString()
+                    : const String.fromEnvironment('API_BASE_URL')))
             .replaceAll(
           RegExp(r'/$'),
-          '',
-        ) {
+          '') {
     realtime = RealtimeClient(baseUrl: this.baseUrl);
   }
 
@@ -163,6 +172,7 @@ class ApiClient {
     } catch (_) {
       throw ApiException(response.statusCode, 'Invalid service response');
     }
+    if (response.statusCode == 402) _accessRequired.add(null);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw ApiException(
         response.statusCode,

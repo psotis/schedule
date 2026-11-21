@@ -39,6 +39,14 @@
     return;
   }
 
+  fetch('/api/v1/billing/config').then(response => response.ok ? response.json() : null).then(payload => {
+    const message = document.getElementById('billing-launch-message');
+    if (!message || !payload?.data) return;
+    message.textContent = payload.data.enabled
+      ? 'Επίλεξε πρόγραμμα ή ξεκίνα με δωρεάν δοκιμή 15 ημερών. Ενημέρωση 5, 3 και 1 ημέρα πριν από τη λήξη.'
+      : 'Η Rantevia παρέχεται δωρεάν για όλους κατά την αρχική διάθεση. Δεν χρειάζεται πληρωμή και δεν ξεκινά δοκιμή.';
+  }).catch(() => {});
+
   const nav = document.getElementById('main-nav');
   const toggle = document.querySelector('.menu-toggle');
   function closeMenu() {

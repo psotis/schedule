@@ -159,3 +159,31 @@ separate. Calendar clients refresh this setting on store realtime events.
 The sidebar arrow switches desktop/tablet navigation between expanded and compact
 layouts without replacing the current page. The choice is saved per authenticated
 store membership as `ui_preferences.sidebar_layout`. Mobile navigation is unchanged.
+
+### Subscription access
+
+Subscription management is owner-only under Settings → Subscription. When billing
+is enabled, registration continues with required trial/plan selection. The 15-day
+trial is available once per store; paid periods can be renewed early. Employees
+never see billing controls and cannot sign in to an inactive store. During the
+initial free launch, no subscription or trial selection is required.
+
+The platform administrator controls the global billing flag and owner free-access
+exceptions. Deployment, SMTP reminders and Viva configuration are documented in
+`schedule_srv/DEPLOYMENT.md` in the adjacent service repository.
+
+
+### Version-tag deployment
+
+Production deployment is defined in `.github/workflows/deploy.yml`. Merge changes
+into `main`, then create a `vMAJOR.MINOR.PATCH` tag on that branch when ready to
+release. Only version tags deploy; other branches cannot be released unless their
+tagged commit is already part of main. The workflow builds/tests the web image on
+GitHub and transfers it to the VPS over verified SSH.
+
+Configure GitHub repository Actions secrets/variables with `VPS_SSH_KEY`,
+`VPS_KNOWN_HOSTS`, `VPS_HOST`, and the public `GOOGLE_WEB_CLIENT_ID`. Deploy the
+backend before the first frontend release. See the backend repository's
+`DEPLOYMENT.md` for server paths, secrets, backup behavior and first-release steps.
+The public URL is `https://rantevia.gr`; the release API defaults to `/api/v1` on
+the same origin. Local Flutter debugging configuration is unchanged.

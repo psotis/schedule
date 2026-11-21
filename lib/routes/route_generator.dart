@@ -4,8 +4,11 @@ import '../splash_page.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
-    switch (settings.name) {
+    switch (Uri.parse(settings.name ?? '/').path) {
       case '/':
+      case '/billing':
+      case '/billing/success':
+      case '/billing/failure':
       case '/login':
       case '/home':
       case '/user-admin':
@@ -22,13 +25,10 @@ class RouteGenerator {
         return Scaffold(
           appBar: AppBar(
             title: const Text(
-              'Error',
-            ),
-            centerTitle: true,
-          ),
+              'Error'),
+            centerTitle: true),
           body: const Center(
-            child: Text('Page not found'),
-          ),
+            child: Text('Page not found')),
         );
       },
     );

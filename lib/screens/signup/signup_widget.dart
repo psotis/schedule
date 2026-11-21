@@ -24,7 +24,10 @@ class _SignupWidgetState extends State<SignupWidget> {
     _nameController = TextEditingController();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadStoreTypes());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadStoreTypes();
+      _loadBillingOptions();
+    });
   }
 
   @override
@@ -33,6 +36,19 @@ class _SignupWidgetState extends State<SignupWidget> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Map<String, dynamic>? _billingOptions;
+  Future<void> _loadBillingOptions() async {
+    try {
+      final options =
+          await context.read<ApiClient>().get('/billing/config') as Map;
+      if (mounted) {
+        setState(() => _billingOptions = Map<String, dynamic>.from(options));
+      }
+    } catch (_) {
+      // The authenticated subscription gate remains the authority for access.
+    }
   }
 
   bool check = false;
@@ -78,6 +94,17 @@ class _SignupWidgetState extends State<SignupWidget> {
     return Column(
       spacing: 15,
       children: [
+        if (_billingOptions != null)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Text(
+                _billingOptions!['enabled'] == true
+                    ? 'Μετά την εγγραφή επιλέγεις δωρεάν δοκιμή 15 ημερών ή πρόγραμμα πρόσβασης: 1 μήνας 10 €, 3 μήνες 24 €, 6 μήνες 40 €, 12 μήνες 50 €. Το πρόγραμμα καλύπτει το κατάστημα και την ομάδα σου.'
+                    : 'Η Rantevia παρέχεται δωρεάν για όλους στην αρχική διάθεση. Δεν απαιτείται πληρωμή.',
+              ),
+            ),
+          ),
         //* ****************** Name textfield ***************************
         SizedBox(
           // height: ScreenSize.screenHeight * .1,
@@ -223,8 +250,8 @@ class _SignupWidgetState extends State<SignupWidget> {
             icon: const Icon(Icons.arrow_back_rounded),
             label: Text('Πίσω στη σύνδεση',
                 style: TextStyle(
-                  fontSize: widget.isMobile == true ? 16 : 18,
-                )),
+                  fontSize: widget.isMobile == true ? 16 : 18),
+            ),
           ),
         ),
       ],
@@ -249,8 +276,7 @@ class _SignupWidgetState extends State<SignupWidget> {
       if (!mounted) return;
       final error = context.read<SignupProvider>().state.error;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+        SnackBar(content: Text(error.message)));
     }
   }
 }

@@ -1,0 +1,71 @@
+name: Deploy frontend
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-frontend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require a version tag on main
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          echo "RELEASE_ID=${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_ENV"
+      - name: Build and test Flutter release
+        env:
+          GOOGLE_WEB_CLIENT_ID: ${{ vars.GOOGLE_WEB_CLIENT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$GOOGLE_WEB_CLIENT_ID"
+          build_args=(--build-arg "GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID" --build-arg "GOOGLE_SERVER_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID")
+          docker build -f Dockerfile.production --target build "${build_args[@]}" -t rantevia-web-check .
+          docker run --rm --entrypoint flutter rantevia-web-check test --no-pub
+          docker build -f Dockerfile.production "${build_args[@]}" -t "rantevia-web:$RELEASE_ID" .
+          docker save "rantevia-web:$RELEASE_ID" | gzip > images.tar.gz
+      - name: Configure deployment SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$VPS_SSH_KEY"
+          test -n "$VPS_KNOWN_HOSTS"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_KEY" > "$HOME/.ssh/deploy_key"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/deploy_key" "$HOME/.ssh/known_hosts"
+      - name: Transfer and deploy
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST || '2.24.149.74' }}
+          VPS_USER: rantevia-deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$VPS_HOST" =~ ^[a-zA-Z0-9.-]+$ ]]
+          stage="/opt/rantevia/incoming/frontend-$RELEASE_ID"
+          ssh_options=(-i "$HOME/.ssh/deploy_key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20)
+          ssh "${ssh_options[@]}" "$VPS_USER@$VPS_HOST" "mkdir -p '$stage'"
+          scp "${ssh_options[@]}" images.tar.gz scripts/deploy-release.sh "$VPS_USER@$VPS_HOST:$stage/"
+          ssh "${ssh_options[@]}" "$VPS_USER@$VPS_HOST" "bash '$stage/deploy-release.sh' frontend '$RELEASE_ID'"
+      - name: Remove runner SSH credentials
+        if: always()
+        shell: bash
+        run: rm -f "$HOME/.ssh/deploy_key"
