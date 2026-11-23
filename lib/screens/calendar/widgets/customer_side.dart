@@ -10,6 +10,7 @@ import 'package:scheldule/providers/add%20appointment/add_appointment_provider.d
 import 'package:scheldule/repositories/add_appointment_repository.dart';
 import 'package:scheldule/repositories/api_client.dart';
 import 'package:scheldule/screens/responsive_ui/appointments/appointment_editor.dart';
+import 'package:scheldule/screens/responsive_ui/appointments/appointment_payment_panel.dart';
 import 'package:scheldule/screens/responsive_ui/appointments/appointment_history_view.dart';
 import 'package:scheldule/utils/custom_text_form.dart';
 import 'package:scheldule/utils/search/search.dart';
@@ -42,7 +43,6 @@ class _CustomerSideState extends State<CustomerSide> {
       owes,
       employee,
       position;
-  int? paid;
   int appointmentLength = 0;
   final _formKey = GlobalKey<FormState>();
   final DateTime? date = DateTime.now();
@@ -437,7 +437,7 @@ class _CustomerSideState extends State<CustomerSide> {
                   ),
                   OutlinedButton.icon(
                     icon: const Icon(Icons.payments_outlined),
-                    label: const Text('Ολοκλήρωση / πληρωμή'),
+                    label: const Text('Ιστορικό πληρωμών'),
                     onPressed: () =>
                         showAppointmentPayments(context, widget.appointMent),
                   ),
@@ -490,24 +490,12 @@ class _CustomerSideState extends State<CustomerSide> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
+                AppointmentPaymentPanel(appointment: widget.appointMent),
+                const SizedBox(height: 16),
                 Row(
                   spacing: 10,
                   children: [
-                    Flexible(
-                      flex: 1,
-                      child: CustomTextForm(
-                        labelText: 'Πληρωμή',
-                        readOnly: true,
-                        hintText: 'Σημερινό πληρωτέο ποσό',
-                        prefixIcon: Icons.euro,
-                        chooseText: ChooseText.owes,
-                        initial:
-                            widget.appointMent.paidAmount.toStringAsFixed(2),
-                        onSaved: (val) {
-                          paid = int.tryParse(val!);
-                        },
-                      ),
-                    ),
                     Flexible(
                       flex: 2,
                       child: CustomTextForm(
