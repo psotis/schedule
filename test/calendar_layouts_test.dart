@@ -41,6 +41,60 @@ class _StoreEventsApi extends ApiClient {
 }
 
 void main() {
+  testWidgets('today panel sorts by time and distinguishes elapsed/current appointments', (tester) async {
+    tester.view.physicalSize = const Size(1280, 1100);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final now = DateTime.now();
+    final api = ApiClient(baseUrl: 'http://localhost/api/v1',
+      client: MockClient((request) async {
+        Object data = {};
+        if (request.url.path.endsWith('/appointments')) {
+          data = [
+            for (final entry in [
+              ('future', now.add(const Duration(hours: 2))),
+              ('elapsed', now.subtract(const Duration(hours: 2))),
+              ('current', now.subtract(const Duration(minutes: 10))),
+            ]) {
+              'uuid': entry.$1,
+              'client_record': {'uuid': entry.$1, 'first_name': entry.$1, 'last_name': 'Customer'},
+              'start_time': entry.$2.toUtc().toIso8601String(),
+              'end_time': entry.$2.add(const Duration(hours: 1)).toUtc().toIso8601String(),
+              'total_duration_minutes': 60,
+              'status': 'scheduled',
+            }
+          ];
+        } else if (request.url.path.endsWith('/employee')) {
+          data = [];
+        }
+        return http.Response(jsonEncode({'data': data}), 200);
+      }));
+    final preferences = UiPreferencesProvider(repository: UiPreferencesRepository(apiClient: api));
+    final employees = EmployeeProvider(employeeRepository: EmployeeRepository(apiClient: api));
+    await tester.pumpWidget(MultiProvider(providers: [
+      Provider.value(value: api),
+      Provider(create: (_) => AppointmentRepository(apiClient: api)),
+      ChangeNotifierProvider.value(value: employees),
+      ChangeNotifierProvider.value(value: preferences),
+    ], child: MaterialApp(theme: buildAppTheme(Brightness.light),
+      home: const Scaffold(body: SyncFusionCalendar()))));
+    await tester.pumpAndSettle();
+    final panel = find.byKey(const ValueKey('calendar-today-panel'));
+    Finder customer(String name) => find.descendant(of: panel, matching: find.text('$name Customer'));
+    expect(tester.getTopLeft(customer('elapsed')).dy,
+        lessThan(tester.getTopLeft(customer('current')).dy));
+    expect(tester.getTopLeft(customer('current')).dy,
+        lessThan(tester.getTopLeft(customer('future')).dy));
+    for (final label in ['Η ώρα πέρασε', 'Σε εξέλιξη', 'Προσεχές']) {
+      expect(find.descendant(of: panel, matching: find.text(label)), findsOneWidget);
+    }
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    employees.dispose();
+    preferences.dispose();
+  });
+
   test(
       'store working-day settings retain the legacy fallback and accept Sunday',
       () {

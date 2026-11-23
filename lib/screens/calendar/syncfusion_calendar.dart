@@ -7,6 +7,8 @@ import '../../repositories/store_repository.dart';
 import 'package:scheldule/models/employee.dart';
 import 'package:scheldule/providers/ui_preferences/ui_preferences_provider.dart';
 import 'widgets/calendar_layout_picker.dart';
+import 'widgets/calendar_appointment_tile.dart';
+import 'widgets/appointment_summary_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/appointment/appointment_provider.dart';
@@ -70,6 +72,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
   StreamSubscription<void>? _storeChanges;
   StreamSubscription<int>? _storeSessionChanges;
   int _storeRequest = 0;
+  Timer? _clock;
 
   Future<void> _loadWorkingDays(StoreRepository repository) async {
     final request = ++_storeRequest;
@@ -90,6 +93,10 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
   void initState() {
     super.initState();
     _controller.displayDate = DateTime.now();
+    // Refresh time labels locally; appointment data still arrives over streams.
+    _clock = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
     final repository = context.read<AppointmentRepository>();
     final store = StoreRepository(apiClient: repository.apiClient);
     _loadWorkingDays(store);
@@ -119,43 +126,25 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
     });
   }
 
-  void calendarPicker(CalendarTapDetails details) async {
-    if (details.targetElement == CalendarElement.appointment) {
-      setState(() {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              actions: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        IconButton(
-                          onPressed: () async {
-                            context
-                                .read<AppointmentProvider>()
-                                .deleteAppointments(
-                                    details.appointments![0].id.toString());
-                            Navigator.pop(context);
-                          },
-                          icon: Icon(
-                            Icons.delete,
-                            color: Colors.red,
-                          ),
-                        ),
-                        Text('Διαγραφή'),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      });
+  Future<void> calendarPicker(CalendarTapDetails details) async {
+    if (details.targetElement != CalendarElement.appointment ||
+        details.appointments?.isEmpty != false) {
+      return;
     }
+    final appointment = details.appointments!.first;
+    if (appointment is! AppointMent) return;
+    final provider = context.read<AppointmentProvider>();
+    await showDialog<bool>(
+      context: context,
+      builder: (context) => AppointmentSummaryDialog(
+        customer: appointment.eventName,
+        start: appointment.from,
+        end: appointment.to,
+        employee: appointment.employeeLabel,
+        station: appointment.stationLabel,
+        onDelete: () => provider.deleteAppointments(appointment.id),
+      ),
+    );
   }
 
   Future<void> showEditDialog(AppointMent appointment) async {
@@ -255,6 +244,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
 
   @override
   void dispose() {
+    _clock?.cancel();
     _appointmentsSubscription?.cancel();
     _todaySubscription?.cancel();
     _appointmentsSnapshot.dispose();
@@ -584,100 +574,11 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
     CalendarAppointmentDetails details,
   ) {
     final appointment = details.appointments.first as AppointMent;
-    final colors = Theme.of(context).colorScheme;
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    final accent = Color.lerp(
-      appointment.background,
-      dark ? Colors.white : Colors.black,
-      dark ? 0.35 : 0.2,
-    )!;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final showTime =
-            constraints.maxHeight >= 46 && constraints.maxWidth >= 100;
-        final inset = constraints.maxHeight >= 30 ? 5.0 : 1.0;
-        return Semantics(
-          label: '${appointment.eventName}, '
-              '${DateFormat('HH:mm').format(appointment.from)} – '
-              '${DateFormat('HH:mm').format(appointment.to)}',
-          child: Container(
-            margin: const EdgeInsets.all(1),
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: Color.alphaBlend(
-                appointment.background.withAlpha(dark ? 50 : 35),
-                colors.surface,
-              ),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: accent.withAlpha(25)),
-            ),
-            child: Row(
-              children: [
-                Container(width: 2, color: accent.withAlpha(140)),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: constraints.maxWidth >= 70 ? 7 : 2,
-                      vertical: inset,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (constraints.maxHeight >= 70) ...[
-                          Container(
-                              width: 5,
-                              height: 5,
-                              decoration: BoxDecoration(
-                                  color: accent, shape: BoxShape.circle)),
-                          const SizedBox(height: 4),
-                        ],
-                        Flexible(
-                          child: Text(
-                            appointment.serviceLabel.isEmpty
-                                ? appointment.eventName
-                                : appointment.serviceLabel,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: colors.onSurface,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        if (constraints.maxHeight >= 95 &&
-                            appointment.serviceLabel.isNotEmpty) ...[
-                          const SizedBox(height: 3),
-                          Text(appointment.eventName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  color: colors.onSurfaceVariant,
-                                  fontSize: 10)),
-                        ],
-                        if (showTime) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            '${DateFormat('HH:mm').format(appointment.from)} – '
-                            '${DateFormat('HH:mm').format(appointment.to)}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: colors.onSurfaceVariant,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    return CalendarAppointmentTile(
+      customer: appointment.eventName,
+      start: appointment.from,
+      end: appointment.to,
+      background: appointment.background,
     );
   }
 
@@ -726,7 +627,17 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
               if (snapshot.hasError) {
                 return Center(child: Text('Αδύνατη η φόρτωση ραντεβού'));
               }
-              final appointments = snapshot.data ?? <app.AppointMent>[];
+              final appointments = [...?snapshot.data]
+                ..sort((a, b) {
+                  final first = a.date?.toDate();
+                  final second = b.date?.toDate();
+                  if (first == null) {
+                    return second == null ? a.id.compareTo(b.id) : 1;
+                  }
+                  if (second == null) return -1;
+                  final order = first.compareTo(second);
+                  return order == 0 ? a.id.compareTo(b.id) : order;
+                });
               return Container(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
                 decoration: BoxDecoration(
@@ -799,9 +710,9 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                         child: ListView.builder(
                           padding: EdgeInsets.zero,
                           shrinkWrap: true,
-                          itemCount: snapshot.data?.length,
+                          itemCount: appointments.length,
                           itemBuilder: (context, index) {
-                            var appoint = snapshot.data?[index];
+                            final appoint = appointments[index];
 
                             return GestureDetector(
                               onTap: () async {
@@ -825,7 +736,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                                 clipBehavior: Clip.antiAlias,
                                 color: colors.surfaceContainerLow,
                                 child: Dismissible(
-                                  key: Key(appoint!.id),
+                                  key: Key(appoint.id),
                                   confirmDismiss: (direction) async {
                                     return await showDialog(
                                       context: context,
@@ -891,80 +802,144 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
   Widget _todayAppointmentDetails(app.AppointMent appointment) {
     final colors = Theme.of(context).colorScheme;
     final date = appointment.date?.toDate();
+    final now = DateTime.now();
+    final end = date?.add(
+      Duration(minutes: appointment.effectiveDurationMinutes),
+    );
+    final elapsed = end != null && !end.isAfter(now);
+    final inactive = const ['cancelled', 'no_show', 'completed']
+        .contains(appointment.status);
+    final ongoing = !inactive && date != null && !date.isAfter(now) && !elapsed;
+    final timedStatus = switch (appointment.status) {
+      'cancelled' => 'Ακυρωμένο',
+      'no_show' => 'Δεν προσήλθε',
+      'completed' => 'Ολοκληρωμένο',
+      _ => ongoing ? 'Σε εξέλιξη' : elapsed ? 'Η ώρα πέρασε' : 'Προσεχές',
+    };
+    final highlight = ongoing ? colors.primary : colors.onSurfaceVariant;
     final services = appointment.serviceItems
         .map((line) => line.serviceName)
         .where((name) => name.trim().isNotEmpty)
         .join(' · ');
     final employee = (appointment.employee ?? '').trim();
     final position = (appointment.position ?? '').trim();
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Icon(Icons.schedule_rounded, size: 16, color: colors.primary),
-          const SizedBox(width: 6),
-          Text(date == null ? '—' : DateFormat('HH:mm').format(date),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: ongoing ? colors.primaryContainer.withAlpha(90) : null,
+        border: Border(
+          left: BorderSide(
+            color: ongoing
+                ? colors.primary
+                : elapsed
+                ? colors.outline
+                : colors.outlineVariant,
+            width: 3,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              timedStatus,
               style: TextStyle(
-                  color: colors.primary, fontWeight: FontWeight.w800)),
-          const SizedBox(width: 8),
-          Expanded(
-              child: Text('${appointment.effectiveDurationMinutes} λεπτά',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: colors.onSurfaceVariant))),
-          Icon(Icons.chevron_right_rounded,
-              size: 20, color: colors.onSurfaceVariant),
-        ]),
-        const SizedBox(height: 12),
-        Text('${appointment.name} ${appointment.surname}'.trim(),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: colors.onSurface, fontWeight: FontWeight.w700)),
-        if (services.isNotEmpty) ...[
-          const SizedBox(height: 5),
-          Text(services,
+                color: highlight,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.schedule_rounded, size: 16, color: colors.primary),
+                const SizedBox(width: 6),
+                Text(
+                  date == null
+                      ? '—'
+                      : '${DateFormat('HH:mm').format(date)} – ${DateFormat('HH:mm').format(end!)}',
+                  style: TextStyle(
+                    color: colors.primary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Spacer(),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: colors.onSurfaceVariant,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '${appointment.name} ${appointment.surname}'.trim(),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: colors.onSurfaceVariant)),
-        ],
-        if (employee.isNotEmpty || position.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          if (employee.isNotEmpty)
-            Row(children: [
-              Icon(Icons.person_outline_rounded,
-                  size: 16, color: colors.onSurfaceVariant),
-              const SizedBox(width: 6),
-              Expanded(
-                  child: Text(employee,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: colors.onSurfaceVariant))),
-            ]),
-          if (position.isNotEmpty) ...[
-            const SizedBox(height: 5),
-            Row(children: [
-              Icon(Icons.place_outlined,
-                  size: 16, color: colors.onSurfaceVariant),
-              const SizedBox(width: 6),
-              Expanded(
-                  child: Text(position,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: colors.onSurfaceVariant))),
-            ]),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: colors.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (services.isNotEmpty) ...[
+              const SizedBox(height: 5),
+              Text(
+                services,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: colors.onSurfaceVariant),
+              ),
+            ],
+            if (employee.isNotEmpty || position.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              if (employee.isNotEmpty)
+                Row(
+                  children: [
+                    Icon(
+                      Icons.person_outline_rounded,
+                      size: 16,
+                      color: colors.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        employee,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(color: colors.onSurfaceVariant),
+                      ),
+                    ),
+                  ],
+                ),
+              if (position.isNotEmpty) ...[
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.place_outlined,
+                      size: 16,
+                      color: colors.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        position,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(color: colors.onSurfaceVariant),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
           ],
-        ],
-      ]),
+        ),
+      ),
     );
   }
 
@@ -1093,7 +1068,17 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
                 if (snapshot.hasError) {
                   return Center(child: Text('Αδύνατη η φόρτωση ραντεβού'));
                 }
-                final appointments = snapshot.data ?? <app.AppointMent>[];
+                final appointments = [...?snapshot.data]
+                ..sort((a, b) {
+                  final first = a.date?.toDate();
+                  final second = b.date?.toDate();
+                  if (first == null) {
+                    return second == null ? a.id.compareTo(b.id) : 1;
+                  }
+                  if (second == null) return -1;
+                  final order = first.compareTo(second);
+                  return order == 0 ? a.id.compareTo(b.id) : order;
+                });
                 if (appointments.isEmpty) {
                   return Container(
                     margin: const EdgeInsets.only(top: 14),
@@ -1449,6 +1434,11 @@ class MeetingDataSource extends CalendarDataSource<AppointMent> {
         item.surname, item.phone, item.email, item.address, item.paid,
         '', // Client fields must never be interpreted as recurrence rules.
         resourceIds: resourceIds.toList(),
+        employeeLabel: {
+          if ((item.employee ?? '').trim().isNotEmpty) item.employee!.trim(),
+          ...item.serviceItems.map((line) => line.employeeName.trim()).where((name) => name.isNotEmpty),
+        }.join(' · '),
+        stationLabel: item.position ?? '',
         serviceLabel: item.serviceItems
             .map((line) => line.serviceName)
             .where((name) => name.isNotEmpty)
@@ -1543,6 +1533,8 @@ class AppointMent extends CalendarDataSource {
     this.recurrenceRule, {
     this.resourceIds = const [],
     this.serviceLabel = '',
+    this.employeeLabel = '',
+    this.stationLabel = '',
   });
 
   String eventName;
@@ -1559,6 +1551,8 @@ class AppointMent extends CalendarDataSource {
   String recurrenceRule;
   final List<Object> resourceIds;
   final String serviceLabel;
+  final String employeeLabel;
+  final String stationLabel;
 
   // bool isAllDay;
 }
