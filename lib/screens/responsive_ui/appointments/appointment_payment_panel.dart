@@ -8,9 +8,14 @@ import 'package:scheldule/repositories/appointment_repository.dart';
 
 /// Direct payment/status controls shared by the calendar detail panels.
 class AppointmentPaymentPanel extends StatefulWidget {
-  const AppointmentPaymentPanel({super.key, required this.appointment});
+  const AppointmentPaymentPanel({
+    super.key,
+    required this.appointment,
+    this.onChanged,
+  });
 
   final AppointMent appointment;
+  final ValueChanged<AppointMent>? onChanged;
 
   @override
   State<AppointmentPaymentPanel> createState() =>
@@ -90,6 +95,7 @@ class _AppointmentPaymentPanelState extends State<AppointmentPaymentPanel> {
         _needsRefresh = false;
         _error = null;
       });
+      widget.onChanged?.call(_appointment);
       return true;
     } catch (_) {
       if (mounted &&
@@ -121,7 +127,10 @@ class _AppointmentPaymentPanelState extends State<AppointmentPaymentPanel> {
         appointment: _appointment,
         status: status,
       );
-      if (mounted) setState(() => _appointment = updated);
+      if (mounted) {
+        setState(() => _appointment = updated);
+        widget.onChanged?.call(updated);
+      }
     } catch (error) {
       if (mounted) setState(() => _error = _message(error));
     } finally {

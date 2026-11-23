@@ -43,6 +43,8 @@ class _CustomerSideState extends State<CustomerSide> {
       owes,
       employee,
       position;
+  int? paid;
+  double? _paidAmount;
   int appointmentLength = 0;
   final _formKey = GlobalKey<FormState>();
   final DateTime? date = DateTime.now();
@@ -437,7 +439,7 @@ class _CustomerSideState extends State<CustomerSide> {
                   ),
                   OutlinedButton.icon(
                     icon: const Icon(Icons.payments_outlined),
-                    label: const Text('Ιστορικό πληρωμών'),
+                    label: const Text('Ολοκλήρωση / πληρωμή'),
                     onPressed: () =>
                         showAppointmentPayments(context, widget.appointMent),
                   ),
@@ -490,12 +492,27 @@ class _CustomerSideState extends State<CustomerSide> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                AppointmentPaymentPanel(appointment: widget.appointMent),
-                const SizedBox(height: 16),
                 Row(
                   spacing: 10,
                   children: [
+                    Flexible(
+                      flex: 1,
+                      child: CustomTextForm(
+                        key: ValueKey(
+                            'paid-${_paidAmount ?? widget.appointMent.paidAmount}'),
+                        labelText: 'Πληρωμή',
+                        readOnly: true,
+                        hintText: 'Σημερινό πληρωτέο ποσό',
+                        prefixIcon: Icons.euro,
+                        chooseText: ChooseText.owes,
+                        initial:
+                            (_paidAmount ?? widget.appointMent.paidAmount)
+                            .toStringAsFixed(2),
+                        onSaved: (val) {
+                          paid = int.tryParse(val!);
+                        },
+                      ),
+                    ),
                     Flexible(
                       flex: 2,
                       child: CustomTextForm(
@@ -510,7 +527,16 @@ class _CustomerSideState extends State<CustomerSide> {
                     ),
                   ],
                 ),
-                _pickDate()
+                _pickDate(),
+                const SizedBox(height: 20),
+                AppointmentPaymentPanel(
+                  appointment: widget.appointMent,
+                  onChanged: (appointment) {
+                    if (mounted && _paidAmount != appointment.paidAmount) {
+                      setState(() => _paidAmount = appointment.paidAmount);
+                    }
+                  },
+                ),
               ],
             )),
       ),

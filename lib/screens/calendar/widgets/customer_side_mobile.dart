@@ -44,6 +44,8 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
       owes,
       employee,
       position;
+  int? paid;
+  double? _paidAmount;
   int appointmentLength = 0;
   final _formKey = GlobalKey<FormState>();
   final DateTime? date = DateTime.now();
@@ -414,7 +416,7 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
                   ),
                   OutlinedButton.icon(
                     icon: const Icon(Icons.payments_outlined),
-                    label: const Text('Ιστορικό πληρωμών'),
+                    label: const Text('Ολοκλήρωση / πληρωμή'),
                     onPressed: () =>
                         showAppointmentPayments(context, widget.appointMent),
                   ),
@@ -456,9 +458,20 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
                   initial: DateFormat('dd-MM-yyyy HH:mm')
                       .format(widget.appointMent.date!.toDate()),
                 ),
-                const SizedBox(height: 16),
-                AppointmentPaymentPanel(appointment: widget.appointMent),
-                const SizedBox(height: 16),
+                CustomTextForm(
+                  key: ValueKey(
+                      'paid-${_paidAmount ?? widget.appointMent.paidAmount}'),
+                  labelText: 'Πληρωμή',
+                  readOnly: true,
+                  hintText: 'Σημερινό πληρωτέο ποσό',
+                  prefixIcon: Icons.euro,
+                  chooseText: ChooseText.owes,
+                  initial: (_paidAmount ?? widget.appointMent.paidAmount)
+                      .toStringAsFixed(2),
+                  onSaved: (val) {
+                    paid = int.tryParse(val!);
+                  },
+                ),
                 CustomTextForm(
                   labelText: 'Περιγραφή',
                   hintText: '...........',
@@ -468,7 +481,16 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
                     description = val;
                   },
                 ),
-                _pickDate()
+                _pickDate(),
+                const SizedBox(height: 20),
+                AppointmentPaymentPanel(
+                  appointment: widget.appointMent,
+                  onChanged: (appointment) {
+                    if (mounted && _paidAmount != appointment.paidAmount) {
+                      setState(() => _paidAmount = appointment.paidAmount);
+                    }
+                  },
+                ),
               ],
             )),
       ),

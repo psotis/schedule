@@ -1,3 +1,10 @@
+import 'package:scheldule/screens/calendar/widgets/customer_side.dart';
+import 'package:scheldule/screens/calendar/widgets/customer_side_mobile.dart';
+import 'package:scheldule/repositories/search_edit_user_repository.dart';
+import 'package:scheldule/repositories/add_appointment_repository.dart';
+import 'package:scheldule/providers/search%20user/search_user_provider.dart';
+import 'package:scheldule/utils/custom_text_form.dart';
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -366,4 +373,144 @@ void main() {
       expect(find.text('Συμπληρώστε ποσό μεγαλύτερο από 0.'), findsOneWidget);
     }
   });
+  for (final mobile in [false, true]) {
+    testWidgets(
+      'complete ${mobile ? 'mobile' : 'desktop'} side panel retains every existing detail beside inline controls',
+      (tester) async {
+        tester.view.physicalSize = Size(mobile ? 360 : 560, 1000);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final data = booking();
+        final client = {
+          'uuid': 'client',
+          'first_name': 'Test',
+          'last_name': 'Customer',
+          'phone': '6900000000',
+          'amka': '12345678901',
+          'owes': 12,
+          'client_description': ['Existing customer note'],
+        };
+        data['client_record'] = client;
+        data['employee'] = 'Demo Employee';
+        data['position_description'] = 'Room 2';
+        final api = _EventsApi(
+          client: MockClient((request) async {
+            Object response = [data];
+            if (request.url.path.endsWith('/employee')) {
+              response = [
+                {
+                  'uuid': 'employee',
+                  'first_name': 'Demo',
+                  'last_name': 'Employee',
+                },
+              ];
+            } else if (request.url.path.endsWith('/client')) {
+              response = [client];
+            } else if (request.method == 'POST') {
+              final body = jsonDecode(request.body) as Map<String, dynamic>;
+              data['payments'] = [
+                ...data['payments'] as List,
+                {
+                  'id': 'new-payment',
+                  'amount': body['amount'],
+                  'method': body['method'],
+                  'paid_at': '2026-11-23T09:00:00Z',
+                },
+              ];
+              response = {};
+            }
+            return http.Response(jsonEncode({'data': response}), 200);
+          }),
+        );
+        final searchRepository = SearchEditUserRepository(apiClient: api);
+        final search = SearchUserProvider(
+          searchEditUserRepository: searchRepository,
+        );
+        final appointment = AppointMent.fromJson(data);
+        final customer = AppointMent.fromJson(client);
+        await tester.pumpWidget(
+          MultiProvider(
+            providers: [
+              Provider(create: (_) => AppointmentRepository(apiClient: api)),
+              Provider.value(value: searchRepository),
+              Provider(create: (_) => AddAppointmentRepository(apiClient: api)),
+              ChangeNotifierProvider.value(value: search),
+            ],
+            child: MaterialApp(
+              theme: buildAppTheme(Brightness.dark),
+              home: Scaffold(
+                body: mobile
+                    ? CustomerSideMobile(
+                        customer: customer,
+                        appointMent: appointment,
+                      )
+                    : CustomerSide(
+                        customer: customer,
+                        appointMent: appointment,
+                      ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        Finder originalField(String label) => find.byWidgetPredicate(
+          (widget) => widget is CustomTextForm && widget.labelText == label,
+        );
+        for (final label in [
+          'Όνομα',
+          'Επώνυμο',
+          'ΑΜΚΑ',
+          'Τηλέφωνο',
+          'Σταθμός / χώρος',
+          'Υπάλληλος',
+          'Οφειλή',
+          'Ραντεβού',
+          'Πληρωμή',
+          'Περιγραφή',
+        ]) {
+          expect(originalField(label), findsOneWidget, reason: label);
+        }
+        expect(find.text('Υπηρεσίες / εργαζόμενοι'), findsOneWidget);
+        expect(find.text('Ολοκλήρωση / πληρωμή'), findsOneWidget);
+        expect(find.text('Αλλαγή ημερομηνίας / ώρας'), findsOneWidget);
+        expect(find.text('Αποθήκευση'), findsOneWidget);
+        expect(find.text('Διαγραφή πελάτη'), findsOneWidget);
+        expect(find.text('Existing customer note'), findsOneWidget);
+        expect(find.byType(AppointmentPaymentPanel), findsOneWidget);
+        expect(
+          tester.widget<CustomTextForm>(originalField('Πληρωμή')).initial,
+          '5.50',
+        );
+        final inlineAmount = find.descendant(
+          of: find.byType(AppointmentPaymentPanel),
+          matching: find.byType(TextField),
+        );
+        await tester.ensureVisible(inlineAmount);
+        await tester.enterText(inlineAmount, '4.50');
+        await tester.ensureVisible(find.text('Καταχώρηση πληρωμής'));
+        await tester.tap(find.text('Καταχώρηση πληρωμής'));
+        await tester.pumpAndSettle();
+        expect(
+          tester.widget<CustomTextForm>(originalField('Πληρωμή')).initial,
+          '10.00',
+        );
+        expect(find.text('Πληρωμένα: 10.00 €'), findsOneWidget);
+        expect(
+          tester.widget<CustomTextForm>(originalField('ΑΜΚΑ')).initial,
+          '12345678901',
+        );
+        expect(
+          tester
+              .widget<CustomTextForm>(originalField('Σταθμός / χώρος'))
+              .initial,
+          'Room 2',
+        );
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        search.dispose();
+        await api.events.close();
+      },
+    );
+  }
 }
