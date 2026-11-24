@@ -9,6 +9,7 @@ import 'package:scheldule/providers/ui_preferences/ui_preferences_provider.dart'
 import 'widgets/calendar_layout_picker.dart';
 import 'widgets/calendar_appointment_tile.dart';
 import 'widgets/appointment_summary_dialog.dart';
+import 'widgets/calendar_appointment_action_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:scheldule/providers/appointment/appointment_provider.dart';
@@ -45,6 +46,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
     if (position == null || _openingAppointment) return;
     final details = _controller.getCalendarDetailsAtOffset?.call(position);
     app.AppointMent? existing;
+    DateTime? selectedStart = details?.date;
     if (details?.targetElement == CalendarElement.appointment) {
       final tapped = details?.appointments?.firstOrNull;
       if (tapped is! AppointMent) return;
@@ -52,14 +54,27 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
           ?.where((item) => item.id == tapped.id)
           .firstOrNull;
       if (existing == null) return;
+      selectedStart = existing.date?.toDate() ?? tapped.from;
     } else if (details?.targetElement != CalendarElement.calendarCell ||
         details?.date == null) {
       return;
     }
     _openingAppointment = true;
     try {
+      if (existing != null) {
+        final selectedAppointment = existing;
+        final action = await showDialog<CalendarAppointmentAction>(
+          context: context,
+          builder: (context) => CalendarAppointmentActionDialog(
+            customer: '${selectedAppointment.name} ${selectedAppointment.surname}'.trim(),
+            start: selectedStart!,
+          ),
+        );
+        if (!mounted || action == null) return;
+        if (action == CalendarAppointmentAction.create) existing = null;
+      }
       await showAppointmentEditor(context, existing,
-          initialStart: existing == null ? details?.date : null);
+          initialStart: existing == null ? selectedStart : null);
     } finally {
       _openingAppointment = false;
     }
