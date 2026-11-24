@@ -38,21 +38,30 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
   CalendarController _controller = CalendarController();
   CalendarLayout? _renderedLayout;
   Offset? _doubleTapPosition;
-  bool _creatingAppointment = false;
+  bool _openingAppointment = false;
 
-  Future<void> _createAppointmentAtTap() async {
+  Future<void> _openAppointmentAtTap() async {
     final position = _doubleTapPosition;
-    if (position == null || _creatingAppointment) return;
+    if (position == null || _openingAppointment) return;
     final details = _controller.getCalendarDetailsAtOffset?.call(position);
-    if (details?.targetElement != CalendarElement.calendarCell ||
+    app.AppointMent? existing;
+    if (details?.targetElement == CalendarElement.appointment) {
+      final tapped = details?.appointments?.firstOrNull;
+      if (tapped is! AppointMent) return;
+      existing = _appointmentsSnapshot.value.data
+          ?.where((item) => item.id == tapped.id)
+          .firstOrNull;
+      if (existing == null) return;
+    } else if (details?.targetElement != CalendarElement.calendarCell ||
         details?.date == null) {
       return;
     }
-    _creatingAppointment = true;
+    _openingAppointment = true;
     try {
-      await showAppointmentEditor(context, null, initialStart: details!.date);
+      await showAppointmentEditor(context, existing,
+          initialStart: existing == null ? details?.date : null);
     } finally {
-      _creatingAppointment = false;
+      _openingAppointment = false;
     }
   }
 
@@ -337,7 +346,7 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
               child: GestureDetector(
                   onDoubleTapDown: (details) =>
                       _doubleTapPosition = details.localPosition,
-                  onDoubleTap: _createAppointmentAtTap,
+                  onDoubleTap: _openAppointmentAtTap,
                   child: LegacyWidgetBridge(
                       child: SfCalendar(
                     key: ValueKey(layout),
