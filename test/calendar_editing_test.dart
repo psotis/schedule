@@ -20,7 +20,7 @@ import 'package:scheldule/styling/themes/app_theme.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 void main() {
-  for (final width in [390.0, 1280.0]) {
+  for (final width in [390.0, 768.0, 1280.0]) {
     testWidgets(
       'single-tap shows details; double-tap updates the same booking at $width',
       (tester) async {

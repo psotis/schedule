@@ -107,7 +107,7 @@ void main() {
         }),
         [2, 6, 7]);
   });
-  for (final width in [360.0, 1280.0]) {
+  for (final width in [360.0, 768.0, 1280.0]) {
     for (final brightness in Brightness.values) {
       testWidgets('calendar layouts switch and fit at $width in $brightness',
           (tester) async {

@@ -864,17 +864,20 @@ class _SyncFusionCalendarState extends State<SyncFusionCalendar> {
               children: [
                 Icon(Icons.schedule_rounded, size: 16, color: colors.primary),
                 const SizedBox(width: 6),
-                Text(
-                  date == null
-                      ? '—'
-                      : '${DateFormat('HH:mm').format(date)} – ${DateFormat('HH:mm').format(end!)}',
-                  style: TextStyle(
-                    color: colors.primary,
-                    fontWeight: FontWeight.w800,
+                Expanded(
+                  child: Text(
+                    date == null
+                        ? '—'
+                        : '${DateFormat('HH:mm').format(date)} – ${DateFormat('HH:mm').format(end!)}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Spacer(),
                 Icon(
                   Icons.chevron_right_rounded,
                   size: 20,

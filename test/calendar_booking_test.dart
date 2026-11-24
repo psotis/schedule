@@ -18,7 +18,7 @@ import 'package:scheldule/styling/themes/app_theme.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 void main() {
-  for (final width in [390.0, 1280.0]) {
+  for (final width in [390.0, 768.0, 1280.0]) {
     testWidgets('double-tap creates a booking at the selected slot at $width',
         (tester) async {
       tester.view.physicalSize = Size(width, 900);
