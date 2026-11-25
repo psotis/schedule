@@ -37,6 +37,12 @@ class StoreRepository {
     await apiClient.put('/reports/monthly-email', body: {'enabled': enabled});
   }
 
+  Future<Map<String, dynamic>> getCurrentStore() async {
+    final data = await apiClient.get('/store');
+    final store = data is Map ? data['store'] : null;
+    return store is Map ? Map<String, dynamic>.from(store) : {};
+  }
+
   Future<List<int>> getWorkingDays() async {
     final data = await apiClient.get('/store');
     final store = data is Map ? data['store'] : null;

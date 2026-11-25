@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:scheldule/providers/store/store_provider.dart';
 import 'package:scheldule/models/app_timestamp.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
@@ -70,6 +71,7 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
   }
 
   Future<bool> _submit() async {
+    final showMedicalFields = context.read<StoreProvider>().showMedicalFields;
     if (mounted) {
       setState(() {
         autovalidateUser = AutovalidateMode.always;
@@ -108,7 +110,7 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
         description: (description == null || description!.isEmpty)
             ? ''
             : "$descriptionDate:  $description",
-        amka: amka ?? widget.customer.amka,
+        amka: showMedicalFields ? (amka ?? widget.customer.amka) : null,
         owes: owes ?? widget.customer.owes!,
         docId: widget.customer.id,
       );
@@ -338,6 +340,7 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
   }
 
   Padding _form(BuildContext context) {
+    final showMedicalFields = context.watch<StoreProvider>().showMedicalFields;
     return Padding(
       padding: EdgeInsets.only(top: 20, left: 20, right: 20),
       child: SizedBox(
@@ -367,15 +370,16 @@ class _CustomerSideMobileState extends State<CustomerSideMobile> {
                     surname = val;
                   },
                 ),
-                CustomTextForm(
-                  labelText: 'ΑΜΚΑ',
-                  hintText: '800000000',
-                  prefixIcon: Icons.numbers,
-                  initial: widget.customer.amka,
-                  onSaved: (val) {
-                    amka = val;
-                  },
-                ),
+                if (showMedicalFields)
+                  CustomTextForm(
+                    labelText: 'ΑΜΚΑ',
+                    hintText: '800000000',
+                    prefixIcon: Icons.numbers,
+                    initial: widget.customer.amka,
+                    onSaved: (val) {
+                      amka = val;
+                    },
+                  ),
                 CustomTextForm(
                   labelText: 'Τηλέφωνο',
                   hintText: '6900000000',

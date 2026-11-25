@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:scheldule/providers/store/store_provider.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
@@ -66,6 +67,7 @@ class _CustomerCardState extends State<CustomerCard> {
   }
 
   void _submit() async {
+    final showMedicalFields = context.read<StoreProvider>().showMedicalFields;
     final DateTime date = DateTime.now();
     if (mounted) {
       setState(() {
@@ -90,7 +92,7 @@ class _CustomerCardState extends State<CustomerCard> {
           description: description!.isEmpty
               ? description!
               : "$descriptionDate:  $description",
-          amka: amka!,
+          amka: showMedicalFields ? (amka ?? widget.customer.amka) : null,
           owes: owes!,
           docId: widget.customer.id,
         );
@@ -254,6 +256,7 @@ class _CustomerCardState extends State<CustomerCard> {
   }
 
   Padding _form(BuildContext context, double layoutWidth) {
+    final showMedicalFields = context.watch<StoreProvider>().showMedicalFields;
     return Padding(
       padding: EdgeInsets.only(top: 20),
       child: SizedBox(
@@ -315,15 +318,16 @@ class _CustomerCardState extends State<CustomerCard> {
                     address = val;
                   },
                 ),
-                CustomTextForm(
-                  labelText: 'ΑΜΚΑ',
-                  hintText: '800000000',
-                  prefixIcon: Icons.numbers,
-                  initial: widget.customer.address,
-                  onSaved: (val) {
-                    amka = val;
-                  },
-                ),
+                if (showMedicalFields)
+                  CustomTextForm(
+                    labelText: 'ΑΜΚΑ',
+                    hintText: '800000000',
+                    prefixIcon: Icons.numbers,
+                    initial: widget.customer.amka,
+                    onSaved: (val) {
+                      amka = val;
+                    },
+                  ),
                 CustomTextForm(
                   labelText: 'Οφειλή',
                   hintText: 'Υπόλοιπο',

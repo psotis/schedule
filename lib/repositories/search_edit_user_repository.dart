@@ -73,7 +73,7 @@ class SearchEditUserRepository {
     required String email,
     required String address,
     String? description,
-    required String amka,
+    required String? amka,
     required String docId,
     String? owes,
 
@@ -184,7 +184,7 @@ class SearchEditUserRepository {
         'phone': phone,
         'email': email,
         'address': address,
-        'amka': amka,
+        if (amka != null) 'amka': amka,
         'client_description': description ?? '',
         'owes': owes ?? '',
         if (normalizedBirthday != null) 'date_of_birth': normalizedBirthday,

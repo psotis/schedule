@@ -1,3 +1,5 @@
+import 'providers/store/store_provider.dart';
+import 'repositories/store_repository.dart';
 // ignore: depend_on_referenced_packages
 
 import 'package:flutter/foundation.dart';
@@ -65,6 +67,9 @@ class MyApp extends StatelessWidget {
       providers: [
         Provider<ApiClient>.value(value: apiClient),
         Provider<AuthRepository>.value(value: authRepository),
+        ChangeNotifierProvider<StoreProvider>(
+          create: (_) => StoreProvider(repository: StoreRepository(apiClient: apiClient)),
+        ),
         Provider<AppointmentRepository>(
           create: (context) => AppointmentRepository(apiClient: apiClient),
         ),

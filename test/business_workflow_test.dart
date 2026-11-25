@@ -1,3 +1,5 @@
+import 'package:scheldule/providers/store/store_provider.dart';
+import 'package:scheldule/repositories/store_repository.dart';
 import 'dart:convert';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -77,6 +79,7 @@ void main() {
   Widget wrap(ApiClient api, Widget child) => MultiProvider(
         providers: [
           Provider<ApiClient>.value(value: api),
+          ChangeNotifierProvider(create: (_) => StoreProvider(repository: StoreRepository(apiClient: api))),
           Provider(create: (_) => AddAppointmentRepository(apiClient: api)),
           Provider(create: (_) => AppointmentRepository(apiClient: api)),
           ChangeNotifierProvider(create: (_) => ThemeProvider()),

@@ -90,7 +90,7 @@ class SearchUserProvider extends ChangeNotifier {
     required String email,
     required String address,
     required String description,
-    required String amka,
+    required String? amka,
     required String docId,
     required String owes,
     bool? heart,

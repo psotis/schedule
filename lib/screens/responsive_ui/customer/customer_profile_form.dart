@@ -1,3 +1,4 @@
+import 'package:scheldule/providers/store/store_provider.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -112,7 +113,8 @@ class _CustomerProfileFormState extends State<CustomerProfileForm> {
         'source': _source.text.trim(),
         'date_of_birth': _birthday.text,
         'address': _address.text.trim(),
-        'amka': _amka.text.trim(),
+        if (context.read<StoreProvider>().showMedicalFields)
+          'amka': _amka.text.trim(),
         'afm': _afm.text.trim(),
         'client_description': _notes.text.trim(),
       };
@@ -213,11 +215,13 @@ class _CustomerProfileFormState extends State<CustomerProfileForm> {
                         controller: _afm,
                         decoration: const InputDecoration(labelText: 'ΑΦΜ')),
                     const SizedBox(height: 16),
-                    TextField(
-                        controller: _amka,
-                        decoration: const InputDecoration(
-                            labelText: 'ΑΜΚΑ (όπου χρειάζεται)')),
-                    const SizedBox(height: 16),
+                    if (context.watch<StoreProvider>().showMedicalFields) ...[
+                      TextField(
+                          controller: _amka,
+                          decoration: const InputDecoration(
+                              labelText: 'ΑΜΚΑ (όπου χρειάζεται)')),
+                      const SizedBox(height: 16),
+                    ],
                   ],
                 ),
                 TextField(

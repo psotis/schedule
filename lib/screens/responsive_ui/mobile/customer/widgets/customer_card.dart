@@ -1,3 +1,4 @@
+import 'package:scheldule/providers/store/store_provider.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
@@ -253,6 +254,7 @@ class _CustomerCardState extends State<CustomerCard> {
   }
 
   void _submit() async {
+    final showMedicalFields = context.read<StoreProvider>().showMedicalFields;
     if (mounted) {
       setState(() {
         autovalidateUser = AutovalidateMode.always;
@@ -276,34 +278,34 @@ class _CustomerCardState extends State<CustomerCard> {
           description: description!.isEmpty
               ? description!
               : "$descriptionDate:  $description",
-          amka: amka!,
+          amka: showMedicalFields ? (amka ?? widget.customer.amka) : null,
           owes: owes!,
           docId: widget.customer.id,
-          heart: heart!,
-          breathe: breathe,
-          sugar: sugar,
-          ypertash: ypertash,
-          neuro: neuro,
-          orthopedic: orthopedic,
-          selfCare: selfCare,
-          helpCare: helpCare,
-          disabled: disabled,
-          good: good,
-          medium: medium,
-          bad: bad,
-          yes: yes,
-          no: no,
+          heart: showMedicalFields ? heart : null,
+          breathe: showMedicalFields ? breathe : null,
+          sugar: showMedicalFields ? sugar : null,
+          ypertash: showMedicalFields ? ypertash : null,
+          neuro: showMedicalFields ? neuro : null,
+          orthopedic: showMedicalFields ? orthopedic : null,
+          selfCare: showMedicalFields ? selfCare : null,
+          helpCare: showMedicalFields ? helpCare : null,
+          disabled: showMedicalFields ? disabled : null,
+          good: showMedicalFields ? good : null,
+          medium: showMedicalFields ? medium : null,
+          bad: showMedicalFields ? bad : null,
+          yes: showMedicalFields ? yes : null,
+          no: showMedicalFields ? no : null,
           birthday: birthday,
-          allo: allo,
-          startingDate: startingDate,
-          mainIssue: mainIssue,
-          doctor: doctor,
-          surgeryPast: surgeryPast,
-          surgeryNow: surgeryNow,
-          pharmacy: pharmacy,
-          allergies: allergies,
-          spot: spot,
-          missFunctions: missFunctions,
+          allo: showMedicalFields ? allo : null,
+          startingDate: showMedicalFields ? startingDate : null,
+          mainIssue: showMedicalFields ? mainIssue : null,
+          doctor: showMedicalFields ? doctor : null,
+          surgeryPast: showMedicalFields ? surgeryPast : null,
+          surgeryNow: showMedicalFields ? surgeryNow : null,
+          pharmacy: showMedicalFields ? pharmacy : null,
+          allergies: showMedicalFields ? allergies : null,
+          spot: showMedicalFields ? spot : null,
+          missFunctions: showMedicalFields ? missFunctions : null,
         );
   }
 
@@ -392,9 +394,10 @@ class _CustomerCardState extends State<CustomerCard> {
                     Text(appointmentLength.toString()),
                   ],
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                Wrap(
+                  alignment: WrapAlignment.center,
                   spacing: 10,
+                  runSpacing: 8,
                   children: [
                     ...[
                       Text("Συνολική πληρωμή: ${fullPaid.toString()}"),
@@ -496,6 +499,7 @@ class _CustomerCardState extends State<CustomerCard> {
   }
 
   Padding _form(BuildContext context) {
+    final showMedicalFields = context.watch<StoreProvider>().showMedicalFields;
     return Padding(
       padding: EdgeInsets.only(top: 20, left: 20, right: 20),
       child: SizedBox(
@@ -573,17 +577,18 @@ class _CustomerCardState extends State<CustomerCard> {
                         },
                       ),
                     ),
-                    Flexible(
-                      child: CustomTextForm(
-                        labelText: 'ΑΜΚΑ',
-                        hintText: '800000000',
-                        prefixIcon: Icons.numbers,
-                        initial: widget.customer.address,
-                        onSaved: (val) {
-                          amka = val;
-                        },
+                    if (showMedicalFields)
+                      Flexible(
+                        child: CustomTextForm(
+                          labelText: 'ΑΜΚΑ',
+                          hintText: '800000000',
+                          prefixIcon: Icons.numbers,
+                          initial: widget.customer.amka,
+                          onSaved: (val) {
+                            amka = val;
+                          },
+                        ),
                       ),
-                    ),
                   ],
                 ),
                 Row(
@@ -614,310 +619,318 @@ class _CustomerCardState extends State<CustomerCard> {
                     ),
                   ],
                 ),
-                // *************** Checkboxes ****************
-                Row(
-                  spacing: 10,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomCheckbox(
-                      value: heart!,
-                      onChanged: (newValue) => setState(() => heart = newValue),
-                      label: "Καρδιολογικά ",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 22,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                    CustomCheckbox(
-                      value: breathe!,
-                      onChanged: (newValue) =>
-                          setState(() => breathe = newValue),
-                      label: "Αναπνευστικά ",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 22,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                    CustomCheckbox(
-                      value: sugar!,
-                      onChanged: (newValue) => setState(() => sugar = newValue),
-                      label: "Διαβήτης",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 22,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-                // *************** Checkboxes ****************
-                Row(
-                  spacing: 10,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomCheckbox(
-                      value: ypertash!,
-                      onChanged: (newValue) =>
-                          setState(() => ypertash = newValue),
-                      label: "Υπέρταση",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 22,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                    CustomCheckbox(
-                      value: neuro!,
-                      onChanged: (newValue) => setState(() => neuro = newValue),
-                      label: "Νευρολογικά",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 22,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                    CustomCheckbox(
-                      value: orthopedic!,
-                      onChanged: (newValue) =>
-                          setState(() => orthopedic = newValue),
-                      label: "Ορθοπεδικά",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 22,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-                Row(
-                  spacing: 10,
-                  children: [
-                    Flexible(
-                      child: CustomTextForm(
-                        labelText: 'Άλλο',
-                        hintText: 'Άλλο',
-                        prefixIcon: Icons.event,
-                        initial: widget.customer.allo,
-                        onSaved: (val) {
-                          allo = val;
-                        },
+                if (showMedicalFields) ...[
+                  // *************** Checkboxes ****************
+                  Wrap(
+                    spacing: 10,
+                    alignment: WrapAlignment.center,
+                    runSpacing: 8,
+                    children: [
+                      CustomCheckbox(
+                        value: heart!,
+                        onChanged: (newValue) => setState(() => heart = newValue),
+                        label: "Καρδιολογικά ",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 22,
+                        labelStyle: const TextStyle(fontSize: 16),
                       ),
-                    ),
-                    Flexible(
-                      child: CustomTextForm(
-                        labelText: 'Ημ.Έναρξης Συμπτωμάτων',
-                        hintText: '20/02/2025',
-                        prefixIcon: Icons.calendar_month,
-                        initial: widget.customer.startingDate,
-                        onSaved: (val) {
-                          startingDate = val;
-                        },
+                      CustomCheckbox(
+                        value: breathe!,
+                        onChanged: (newValue) =>
+                            setState(() => breathe = newValue),
+                        label: "Αναπνευστικά ",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 22,
+                        labelStyle: const TextStyle(fontSize: 16),
                       ),
-                    ),
-                  ],
-                ),
+                      CustomCheckbox(
+                        value: sugar!,
+                        onChanged: (newValue) => setState(() => sugar = newValue),
+                        label: "Διαβήτης",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 22,
+                        labelStyle: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  // *************** Checkboxes ****************
+                  Wrap(
+                    spacing: 10,
+                    alignment: WrapAlignment.center,
+                    runSpacing: 8,
+                    children: [
+                      CustomCheckbox(
+                        value: ypertash!,
+                        onChanged: (newValue) =>
+                            setState(() => ypertash = newValue),
+                        label: "Υπέρταση",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 22,
+                        labelStyle: const TextStyle(fontSize: 16),
+                      ),
+                      CustomCheckbox(
+                        value: neuro!,
+                        onChanged: (newValue) => setState(() => neuro = newValue),
+                        label: "Νευρολογικά",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 22,
+                        labelStyle: const TextStyle(fontSize: 16),
+                      ),
+                      CustomCheckbox(
+                        value: orthopedic!,
+                        onChanged: (newValue) =>
+                            setState(() => orthopedic = newValue),
+                        label: "Ορθοπεδικά",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 22,
+                        labelStyle: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    spacing: 10,
+                    children: [
+                      Flexible(
+                        child: CustomTextForm(
+                          labelText: 'Άλλο',
+                          hintText: 'Άλλο',
+                          prefixIcon: Icons.event,
+                          initial: widget.customer.allo,
+                          onSaved: (val) {
+                            allo = val;
+                          },
+                        ),
+                      ),
+                      Flexible(
+                        child: CustomTextForm(
+                          labelText: 'Ημ.Έναρξης Συμπτωμάτων',
+                          hintText: '20/02/2025',
+                          prefixIcon: Icons.calendar_month,
+                          initial: widget.customer.startingDate,
+                          onSaved: (val) {
+                            startingDate = val;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
 
-                CustomTextForm(
-                  labelText: 'Κύριο Πρόβλημα',
-                  hintText: 'Κύριο Πρόβλημα',
-                  prefixIcon: Icons.sync_problem,
-                  initial: widget.customer.mainIssue,
-                  onSaved: (val) {
-                    mainIssue = val;
-                  },
-                ),
-                Row(
-                  spacing: 10,
-                  children: [
-                    Flexible(
-                      child: CustomTextForm(
-                        labelText: 'Παραπέμπον Ιατρός',
-                        hintText: 'Ειδικότητα',
-                        prefixIcon: Icons.person,
-                        initial: widget.customer.doctor,
-                        onSaved: (val) {
-                          doctor = val;
-                        },
+                  CustomTextForm(
+                    labelText: 'Κύριο Πρόβλημα',
+                    hintText: 'Κύριο Πρόβλημα',
+                    prefixIcon: Icons.sync_problem,
+                    initial: widget.customer.mainIssue,
+                    onSaved: (val) {
+                      mainIssue = val;
+                    },
+                  ),
+                  Row(
+                    spacing: 10,
+                    children: [
+                      Flexible(
+                        child: CustomTextForm(
+                          labelText: 'Παραπέμπον Ιατρός',
+                          hintText: 'Ειδικότητα',
+                          prefixIcon: Icons.person,
+                          initial: widget.customer.doctor,
+                          onSaved: (val) {
+                            doctor = val;
+                          },
+                        ),
                       ),
-                    ),
-                    Flexible(
-                      child: CustomTextForm(
-                        labelText: 'Χειρουργεία (παρελθόν)',
-                        hintText: 'Τύπος χειρουργείου',
-                        prefixIcon: Icons.man,
-                        initial: widget.customer.surgeryPast,
-                        onSaved: (val) {
-                          surgeryPast = val;
-                        },
+                      Flexible(
+                        child: CustomTextForm(
+                          labelText: 'Χειρουργεία (παρελθόν)',
+                          hintText: 'Τύπος χειρουργείου',
+                          prefixIcon: Icons.man,
+                          initial: widget.customer.surgeryPast,
+                          onSaved: (val) {
+                            surgeryPast = val;
+                          },
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  spacing: 10,
-                  children: [
-                    Flexible(
-                      child: CustomTextForm(
-                        labelText: 'Φαρμακευτική αγωγή',
-                        hintText: 'Φάρμακα',
-                        prefixIcon: Icons.vaccines,
-                        initial: widget.customer.pharmacy,
-                        onSaved: (val) {
-                          pharmacy = val;
-                        },
+                    ],
+                  ),
+                  Row(
+                    spacing: 10,
+                    children: [
+                      Flexible(
+                        child: CustomTextForm(
+                          labelText: 'Φαρμακευτική αγωγή',
+                          hintText: 'Φάρμακα',
+                          prefixIcon: Icons.vaccines,
+                          initial: widget.customer.pharmacy,
+                          onSaved: (val) {
+                            pharmacy = val;
+                          },
+                        ),
                       ),
-                    ),
-                    Flexible(
-                      child: CustomTextForm(
-                        labelText: 'Χειρουργεία (τωρινό)',
-                        hintText: 'Τύπος χειρουργείου',
-                        prefixIcon: Icons.man,
-                        initial: widget.customer.surgeryNow,
-                        onSaved: (val) {
-                          surgeryNow = val;
-                        },
+                      Flexible(
+                        child: CustomTextForm(
+                          labelText: 'Χειρουργεία (τωρινό)',
+                          hintText: 'Τύπος χειρουργείου',
+                          prefixIcon: Icons.man,
+                          initial: widget.customer.surgeryNow,
+                          onSaved: (val) {
+                            surgeryNow = val;
+                          },
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                CustomTextForm(
-                  labelText: 'Αλλεργίες',
-                  hintText: 'Τύποι',
-                  prefixIcon: Icons.man_2,
-                  initial: widget.customer.allergies,
-                  onSaved: (val) {
-                    allergies = val;
-                  },
-                ),
-                // *************** Checkboxes ****************
-                Row(
-                  spacing: 8,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomText(
-                        text: 'Κίνηση:',
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal),
-                    CustomCheckbox(
-                      value: selfCare!,
-                      onChanged: (newValue) =>
-                          setState(() => selfCare = newValue),
-                      label: "Αυτόνομος",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 22,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                    CustomCheckbox(
-                      value: helpCare!,
-                      onChanged: (newValue) =>
-                          setState(() => helpCare = newValue),
-                      label: "Με βοήθεια",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 22,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                    CustomCheckbox(
-                      value: disabled!,
-                      onChanged: (newValue) =>
-                          setState(() => disabled = newValue),
-                      label: "Καθηλωμένος",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 22,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-                // *************** Checkboxes ****************
-                Row(
-                  spacing: 10,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomText(
-                        text: 'Ισορροπία/Στάση:',
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal),
-                    CustomCheckbox(
-                      value: good!,
-                      onChanged: (newValue) => setState(() => good = newValue),
-                      label: "Καλή",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 28,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                    CustomCheckbox(
-                      value: medium!,
-                      onChanged: (newValue) =>
-                          setState(() => medium = newValue),
-                      label: "Μέτρια",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 28,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                    CustomCheckbox(
-                      value: bad!,
-                      onChanged: (newValue) => setState(() => bad = newValue),
-                      label: "Κακή",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 28,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-                // *************** Checkboxes ****************
-                Row(
-                  spacing: 10,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CustomText(
-                        text: 'Αίσθηση πόνου:',
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal),
-                    CustomCheckbox(
-                      value: yes!,
-                      onChanged: (newValue) => setState(() => yes = newValue),
-                      label: "Ναι",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 22,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                    CustomCheckbox(
-                      value: no!,
-                      onChanged: (newValue) => setState(() => no = newValue),
-                      label: "Όχι",
-                      activeColor: Colors.green,
-                      checkColor: Colors.white,
-                      size: 22,
-                      labelStyle: const TextStyle(fontSize: 16),
-                    ),
-                    Expanded(
-                      child: CustomTextForm(
-                        labelText: 'Σημείο',
-                        hintText: 'Σημείο',
-                        prefixIcon: Icons.sticky_note_2,
-                        initial: widget.customer.spot,
-                        onSaved: (val) {
-                          spot = val;
-                        },
+                    ],
+                  ),
+                  CustomTextForm(
+                    labelText: 'Αλλεργίες',
+                    hintText: 'Τύποι',
+                    prefixIcon: Icons.man_2,
+                    initial: widget.customer.allergies,
+                    onSaved: (val) {
+                      allergies = val;
+                    },
+                  ),
+                  // *************** Checkboxes ****************
+                  Wrap(
+                    spacing: 8,
+                    alignment: WrapAlignment.center,
+                    runSpacing: 8,
+                    children: [
+                      CustomText(
+                          text: 'Κίνηση:',
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal),
+                      CustomCheckbox(
+                        value: selfCare!,
+                        onChanged: (newValue) =>
+                            setState(() => selfCare = newValue),
+                        label: "Αυτόνομος",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 22,
+                        labelStyle: const TextStyle(fontSize: 16),
                       ),
-                    ),
-                  ],
-                ),
-                CustomTextForm(
-                  labelText: 'Κινητικάν/λειτουργικά ελλείμματα',
-                  hintText: '....',
-                  prefixIcon: Icons.sticky_note_2_sharp,
-                  initial: widget.customer.missFunctions,
-                  onSaved: (val) {
-                    missFunctions = val;
-                  },
-                ),
+                      CustomCheckbox(
+                        value: helpCare!,
+                        onChanged: (newValue) =>
+                            setState(() => helpCare = newValue),
+                        label: "Με βοήθεια",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 22,
+                        labelStyle: const TextStyle(fontSize: 16),
+                      ),
+                      CustomCheckbox(
+                        value: disabled!,
+                        onChanged: (newValue) =>
+                            setState(() => disabled = newValue),
+                        label: "Καθηλωμένος",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 22,
+                        labelStyle: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  // *************** Checkboxes ****************
+                  Wrap(
+                    spacing: 10,
+                    alignment: WrapAlignment.center,
+                    runSpacing: 8,
+                    children: [
+                      CustomText(
+                          text: 'Ισορροπία/Στάση:',
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal),
+                      CustomCheckbox(
+                        value: good!,
+                        onChanged: (newValue) => setState(() => good = newValue),
+                        label: "Καλή",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 28,
+                        labelStyle: const TextStyle(fontSize: 16),
+                      ),
+                      CustomCheckbox(
+                        value: medium!,
+                        onChanged: (newValue) =>
+                            setState(() => medium = newValue),
+                        label: "Μέτρια",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 28,
+                        labelStyle: const TextStyle(fontSize: 16),
+                      ),
+                      CustomCheckbox(
+                        value: bad!,
+                        onChanged: (newValue) => setState(() => bad = newValue),
+                        label: "Κακή",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 28,
+                        labelStyle: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  // *************** Checkboxes ****************
+                  Wrap(
+                    spacing: 10,
+                    alignment: WrapAlignment.center,
+                    runSpacing: 8,
+                    children: [
+                      CustomText(
+                          text: 'Αίσθηση πόνου:',
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal),
+                      CustomCheckbox(
+                        value: yes!,
+                        onChanged: (newValue) => setState(() => yes = newValue),
+                        label: "Ναι",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 22,
+                        labelStyle: const TextStyle(fontSize: 16),
+                      ),
+                      CustomCheckbox(
+                        value: no!,
+                        onChanged: (newValue) => setState(() => no = newValue),
+                        label: "Όχι",
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        size: 22,
+                        labelStyle: const TextStyle(fontSize: 16),
+                      ),
+                      SizedBox(
+                        width: 220,
+                        child: CustomTextForm(
+                          labelText: 'Σημείο',
+                          hintText: 'Σημείο',
+                          prefixIcon: Icons.sticky_note_2,
+                          initial: widget.customer.spot,
+                          onSaved: (val) {
+                            spot = val;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  CustomTextForm(
+                    labelText: 'Κινητικάν/λειτουργικά ελλείμματα',
+                    hintText: '....',
+                    prefixIcon: Icons.sticky_note_2_sharp,
+                    initial: widget.customer.missFunctions,
+                    onSaved: (val) {
+                      missFunctions = val;
+                    },
+                  ),
 
+                ],
                 CustomTextForm(
                   labelText: 'Περιγραφή',
                   hintText: '...........',
