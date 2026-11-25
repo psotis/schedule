@@ -1,3 +1,5 @@
+import 'customer_preferences.dart';
+
 import 'package:scheldule/providers/store/store_provider.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
@@ -224,6 +226,11 @@ class _CustomerProfileFormState extends State<CustomerProfileForm> {
                     ],
                   ],
                 ),
+                if (_customer != null)
+                  CustomerPreferences(
+                    customerId: _customer!['uuid'].toString(),
+                    apiClient: context.read<ApiClient>(),
+                  ),
                 TextField(
                     controller: _notes,
                     maxLines: 3,

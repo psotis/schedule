@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'customer_field_settings.dart';
 import 'monthly_report_settings.dart';
 import 'messaging_settings.dart';
 import 'package:material_ui/material_ui.dart';
@@ -41,7 +42,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
   void initState() {
     super.initState();
     _isOwner = context.read<AuthProvider?>()?.state.user?.storeRole == 'owner';
-    _tabs = TabController(length: _isOwner ? 9 : 7, vsync: this);
+    _tabs = TabController(length: _isOwner ? 10 : 7, vsync: this);
     _load();
     _reportChanges =
         context.read<ApiClient>().watch('reports').listen((_) => _loadReport());
@@ -271,7 +272,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
       );
     }
     return DefaultTabController(
-      length: _isOwner ? 9 : 7,
+      length: _isOwner ? 10 : 7,
       child: Column(
         children: [
           Row(
@@ -288,6 +289,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
                     Tab(text: 'Πρόσβαση'),
                     Tab(text: 'Αναφορές'),
                     Tab(text: 'Λειτουργία'),
+                    if (_isOwner) const Tab(text: 'Πεδία πελάτη'),
                     if (_isOwner) const Tab(text: 'SMS'),
                     if (_isOwner) const Tab(text: 'Συνδρομή'),
                   ],
@@ -321,6 +323,7 @@ class _BusinessSettingsState extends State<BusinessSettings>
                 _membersView(),
                 _reportsView(),
                 const _StoreWorkingDays(),
+                if (_isOwner) const CustomerFieldSettings(),
                 if (_isOwner) const MessagingSettings(),
                 if (_isOwner) const BillingPage(),
               ],

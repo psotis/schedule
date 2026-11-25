@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:scheldule/screens/responsive_ui/customer/customer_preferences.dart';
 import 'package:scheldule/providers/store/store_provider.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
@@ -388,6 +389,12 @@ class _CustomerCardState extends State<CustomerCard> {
                   ),
                   const SizedBox(height: 10),
                   CustomerInsights(customerId: widget.customer.id),
+                  CustomerPreferences(
+                    customerId: widget.customer.id,
+                    apiClient: context
+                        .read<SearchEditUserRepository>()
+                        .apiClient,
+                  ),
                   _form(context),
                   const SizedBox(height: 20),
                   _descriptionList(descriptions),
