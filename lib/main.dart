@@ -1,3 +1,4 @@
+import 'screens/responsive_ui/customer/customer_merge_notice_listener.dart';
 import 'providers/store/store_provider.dart';
 import 'repositories/store_repository.dart';
 // ignore: depend_on_referenced_packages
@@ -157,8 +158,9 @@ class MyApp extends StatelessWidget {
       child: Builder(builder: (context) {
         return MaterialApp(
           title: 'Rantevia',
-          builder: (context, child) => LegacyWidgetBridge(
-            child: child ?? const SizedBox.shrink()),
+          scaffoldMessengerKey: AppMaterialKey.scaffoldMessengerKey,
+          builder: (context, child) => CustomerMergeNoticeListener(apiClient: apiClient, child: LegacyWidgetBridge(
+            child: child ?? const SizedBox.shrink())),
           debugShowCheckedModeBanner: false,
           theme: context.watch<ThemeProvider>().state?.themeData,
           themeAnimationDuration: Duration.zero,

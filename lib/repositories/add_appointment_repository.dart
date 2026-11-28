@@ -27,7 +27,7 @@ class AddAppointmentRepository {
       '/client-duplicate',
       query: {'phone': phone},
     );
-    if (data == null) return null;
+    if (data == null || data['automatic_merge_enabled'] == true) return null;
     return AppointMent.fromJson(Map<String, dynamic>.from(data as Map));
   }
 
@@ -191,6 +191,10 @@ class AddAppointmentRepository {
     await apiClient.put('/employee/$employeeId/availability', body: {
       'availability': availability,
     });
+  }
+
+  Future<void> setEmployeeSchedule({required String employeeId, required Map<String, dynamic> schedule}) async {
+    await apiClient.put('/employee/$employeeId/schedule', body: schedule);
   }
 
   Future<List<Map<String, dynamic>>> getEmployeeTimeOff() async {

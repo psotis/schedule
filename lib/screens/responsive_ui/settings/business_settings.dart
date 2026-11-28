@@ -1,3 +1,4 @@
+import 'employee_schedule_dialog.dart';
 import 'dart:async';
 import 'customer_field_settings.dart';
 import 'monthly_report_settings.dart';
@@ -169,15 +170,15 @@ class _BusinessSettingsState extends State<BusinessSettings>
   }
 
   Future<void> _editAvailability(Employee employee) async {
-    final availability = await showDialog<List<Map<String, dynamic>>>(
+    final availability = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => _AvailabilityDialog(employee: employee),
+      builder: (context) => EmployeeScheduleDialog(employee: employee),
     );
     if (availability == null || !mounted) return;
     try {
-      await context.read<AddAppointmentRepository>().setEmployeeAvailability(
+      await context.read<AddAppointmentRepository>().setEmployeeSchedule(
             employeeId: employee.id,
-            availability: availability,
+            schedule: availability,
           );
       await _load();
     } catch (error) {
@@ -1112,197 +1113,6 @@ class _EmployeeServicesDialogState extends State<_EmployeeServicesDialog> {
             child: const Text('Αποθήκευση'),
         ),
       ],
-    );
-  }
-}
-
-class _AvailabilityDialog extends StatefulWidget {
-  final Employee employee;
-
-  const _AvailabilityDialog({required this.employee});
-
-  @override
-  State<_AvailabilityDialog> createState() => _AvailabilityDialogState();
-}
-
-class _AvailabilityDialogState extends State<_AvailabilityDialog> {
-  static const _days = [
-    'Κυριακή',
-    'Δευτέρα',
-    'Τρίτη',
-    'Τετάρτη',
-    'Πέμπτη',
-    'Παρασκευή',
-    'Σάββατο',
-  ];
-  late final Set<int> _selectedDays;
-  late final TextEditingController _start;
-  late final TextEditingController _end;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedDays = widget.employee.availability
-        .map((item) => num.tryParse(item['weekday'].toString())?.round())
-        .whereType<int>()
-        .toSet();
-    if (_selectedDays.isEmpty) _selectedDays.addAll([1, 2, 3, 4, 5]);
-    final first = widget.employee.availability.isEmpty
-        ? null
-        : widget.employee.availability.first;
-    _start = TextEditingController(
-        text: _shortTime(first?['start_time']) ?? '09:00',
-    );
-    _end =
-        TextEditingController(text: _shortTime(first?['end_time']) ?? '17:00',
-    );
-  }
-
-  String? _shortTime(dynamic value) {
-    final text = value?.toString();
-    return text != null && text.length >= 5 ? text.substring(0, 5) : null;
-  }
-
-  @override
-  void dispose() {
-    _start.dispose();
-    _end.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final availableHeight = MediaQuery.sizeOf(context).height - 48;
-    final dialogHeight = availableHeight.clamp(360.0, 620.0);
-    return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: SizedBox(
-        width: 560,
-        height: dialogHeight,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(22, 18, 22, 14),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Ωράριο: ${widget.employee.name}',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: 'Κλείσιμο',
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Το κοινό ωράριο εφαρμόζεται στις επιλεγμένες ημέρες.',
-                      ),
-                      const SizedBox(height: 16),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: List.generate(
-                          _days.length,
-                          (index) => FilterChip(
-                            selected: _selectedDays.contains(index),
-                            label: Text(_days[index]),
-                            onSelected: (selected) => setState(
-                              () => selected
-                                  ? _selectedDays.add(index)
-                                  : _selectedDays.remove(index),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final fields = [
-                            TextField(
-                              controller: _start,
-                              decoration: const InputDecoration(
-                                labelText: 'Από (HH:mm)',
-                              ),
-                            ),
-                            TextField(
-                              controller: _end,
-                              decoration: const InputDecoration(
-                                labelText: 'Έως (HH:mm)',
-                              ),
-                            ),
-                          ];
-                          if (constraints.maxWidth < 360) {
-                            return Column(
-                              children: [
-                                fields.first,
-                                const SizedBox(height: 16),
-                                fields.last,
-                              ],
-                            );
-                          }
-                          return Row(
-                            children: [
-                              Expanded(child: fields.first),
-                              const SizedBox(width: 16),
-                              Expanded(child: fields.last),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const Divider(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Άκυρο'),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: _save,
-                    child: const Text('Αποθήκευση'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _save() {
-    final validTime = RegExp(r'^([01]\d|2[0-3]):[0-5]\d$');
-    if (_selectedDays.isEmpty ||
-        !validTime.hasMatch(_start.text) ||
-        !validTime.hasMatch(_end.text) ||
-        _end.text.compareTo(_start.text) <= 0) {
-      return;
-    }
-    Navigator.pop(
-      context,
-      _selectedDays
-          .map((day) => {
-                'weekday': day,
-                'start_time': _start.text,
-                'end_time': _end.text,
-              },
-          )
-          .toList(),
     );
   }
 }

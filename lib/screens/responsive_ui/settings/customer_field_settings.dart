@@ -1,3 +1,4 @@
+import 'customer_merge_settings.dart';
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -99,6 +100,8 @@ class _CustomerFieldSettingsState extends State<CustomerFieldSettings> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const CustomerMergeSettings(),
+              const SizedBox(height: 20),
               Text(
                 'Πεδία καρτέλας πελάτη',
                 style: Theme.of(context).textTheme.headlineSmall,

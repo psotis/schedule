@@ -29,6 +29,9 @@ class ApiClient {
   final String baseUrl;
   late final RealtimeClient realtime;
 
+  final StreamController<Map<String, dynamic>> _mergeNotices = StreamController.broadcast();
+  Stream<Map<String, dynamic>> get mergeNotices => _mergeNotices.stream;
+
   final StreamController<void> _accessRequired = StreamController.broadcast();
   Stream<void> get accessRequired => _accessRequired.stream;
 
@@ -158,6 +161,7 @@ class ApiClient {
     if (baseUrl.isEmpty) {
       throw const ApiException(0, 'API_BASE_URL is not configured');
     }
+    final revision = _sessionRevision;
     final uri = Uri.parse('$baseUrl$path').replace(queryParameters: query);
     final headers = <String, String>{'Content-Type': 'application/json'};
     if (_token != null) headers['Authorization'] = 'Bearer $_token';
@@ -206,6 +210,15 @@ class ApiClient {
         envelope['data'],
       );
     }
-    return envelope['data'];
+    final data = envelope['data'];
+    if (revision == _sessionRevision && data is Map) {
+      if (data['merge_notice'] is Map) _mergeNotices.add(Map<String, dynamic>.from(data['merge_notice'] as Map));
+      if (data['merge_notices'] is List) {
+        for (final notice in data['merge_notices'] as List) {
+          if (notice is Map) _mergeNotices.add(Map<String, dynamic>.from(notice));
+        }
+      }
+    }
+    return data;
   }
 }

@@ -388,7 +388,7 @@ class _CustomerCardState extends State<CustomerCard> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  CustomerInsights(customerId: widget.customer.id),
+                  CustomerInsights(customerId: widget.customer.id, onMerged: (_) => context.read<ToggleScreenProvider>().showInitialScreen()),
                   CustomerPreferences(
                     customerId: widget.customer.id,
                     apiClient: context

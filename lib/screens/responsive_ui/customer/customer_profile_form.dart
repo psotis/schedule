@@ -85,7 +85,7 @@ class _CustomerProfileFormState extends State<CustomerProfileForm> {
         final duplicate =
             await api.get('/client-duplicate', query: {'phone': phone});
         if (!mounted) return;
-        if (duplicate is Map && duplicate['uuid'] != _customer?['uuid']) {
+        if (duplicate is Map && duplicate['uuid'] != _customer?['uuid'] && duplicate['automatic_merge_enabled'] != true) {
           final existing = Map<String, dynamic>.from(duplicate);
           final open = await showDialog<bool>(
               context: context,
@@ -156,7 +156,8 @@ class _CustomerProfileFormState extends State<CustomerProfileForm> {
                 if (_customer != null && widget.customer == null)
                   CustomerInsights(
                       key: ValueKey(_customer!['uuid']),
-                      customerId: _customer!['uuid'].toString()),
+                      customerId: _customer!['uuid'].toString(),
+                      onMerged: (_) => setState(() => _setCustomer(null))),
                 TextFormField(
                     controller: _name,
                     decoration: const InputDecoration(labelText: 'Όνομα'),

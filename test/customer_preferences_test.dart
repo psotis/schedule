@@ -212,6 +212,12 @@ void main() {
               writes.add(body);
               visible = body['is_active'] as bool;
             }
+            if (request.url.path.endsWith('/store/customer-merge-settings')) {
+              return http.Response('{"data":{"enabled":false}}', 200);
+            }
+            if (request.url.path.endsWith('/client-merges')) {
+              return http.Response('{"data":[]}', 200);
+            }
             return http.Response(
               jsonEncode({
                 'data': [
@@ -237,11 +243,13 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        await tester.tap(find.byType(Switch));
+        await tester.ensureVisible(find.widgetWithText(SwitchListTile, 'Προτιμώμενο σχήμα νυχιών'));
+        await tester.tap(find.descendant(of: find.widgetWithText(SwitchListTile, 'Προτιμώμενο σχήμα νυχιών'), matching: find.byType(Switch)));
         await tester.pumpAndSettle();
         expect(visible, isFalse);
         expect(find.text('Κρυφό — τα στοιχεία διατηρούνται'), findsOneWidget);
-        await tester.tap(find.byType(Switch));
+        await tester.ensureVisible(find.widgetWithText(SwitchListTile, 'Προτιμώμενο σχήμα νυχιών'));
+        await tester.tap(find.descendant(of: find.widgetWithText(SwitchListTile, 'Προτιμώμενο σχήμα νυχιών'), matching: find.byType(Switch)));
         await tester.pumpAndSettle();
         expect(visible, isTrue);
         expect(writes, [

@@ -1,3 +1,5 @@
+import 'customer_merge_dialog.dart';
+import 'package:scheldule/providers/auth/auth_provider.dart';
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -8,8 +10,9 @@ import 'customer_profile_form.dart';
 
 class CustomerInsights extends StatefulWidget {
   final String customerId;
+  final ValueChanged<String>? onMerged;
 
-  const CustomerInsights({super.key, required this.customerId});
+  const CustomerInsights({super.key, required this.customerId, this.onMerged});
 
   @override
   State<CustomerInsights> createState() => _CustomerInsightsState();
@@ -18,11 +21,18 @@ class CustomerInsights extends StatefulWidget {
 class _CustomerInsightsState extends State<CustomerInsights> {
   Map<String, dynamic>? _report;
   StreamSubscription<void>? _changes;
+  StreamSubscription<Map<String, dynamic>>? _merges;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _merges = context.read<AppointmentRepository>().apiClient.mergeNotices.listen((notice) {
+      if (notice['source_uuid'] != widget.customerId) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onMerged?.call(notice['target_uuid'].toString());
+      });
+    });
     _changes = context.read<AppointmentRepository>().changes.listen((_) {
       _load();
     });
@@ -42,6 +52,7 @@ class _CustomerInsightsState extends State<CustomerInsights> {
   @override
   void dispose() {
     _changes?.cancel();
+    _merges?.cancel();
     super.dispose();
   }
 
@@ -80,6 +91,16 @@ class _CustomerInsightsState extends State<CustomerInsights> {
         leading: const Icon(Icons.insights),
         title: const Text('Σύνοψη και ιστορικό πελάτη'),
         children: [
+          if (const {'owner', 'admin'}.contains(context.watch<AuthProvider?>()?.state.user?.storeRole))
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Align(alignment: Alignment.centerRight, child: OutlinedButton.icon(
+              icon: const Icon(Icons.merge_type), label: const Text('Συγχώνευση καρτέλας'),
+              onPressed: () async {
+                final target = await showDialog<String>(context: context, barrierDismissible: false, builder: (_) => CustomerMergeDialog(source: client, apiClient: context.read<AppointmentRepository>().apiClient));
+                if (!context.mounted || target == null) return;
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Οι καρτέλες συγχωνεύτηκαν με διατήρηση ιστορικού.')));
+                widget.onMerged?.call(target);
+              },
+            ))),
           Align(
               alignment: Alignment.centerRight,
               child: TextButton.icon(

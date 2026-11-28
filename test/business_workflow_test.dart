@@ -272,7 +272,7 @@ void main() {
       expect(
           requests.any((request) =>
               request.method == 'PUT' &&
-              request.url.path.endsWith('/availability')),
+              request.url.path.endsWith('/schedule')),
           isTrue);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());

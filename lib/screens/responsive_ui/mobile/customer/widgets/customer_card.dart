@@ -410,7 +410,7 @@ class _CustomerCardState extends State<CustomerCard> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                CustomerInsights(customerId: widget.customer.id),
+                CustomerInsights(customerId: widget.customer.id, onMerged: (_) => Navigator.pop(context)),
                 CustomerPreferences(
                   customerId: widget.customer.id,
                   apiClient: context.read<SearchEditUserRepository>().apiClient,

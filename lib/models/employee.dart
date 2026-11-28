@@ -17,6 +17,8 @@ class Employee extends Equatable {
   final String? color;
   final List<String> serviceIds;
   final List<Map<String, dynamic>> availability;
+  final bool weeklyScheduleEnabled;
+  final List<Map<String, dynamic>> scheduleExceptions;
   Employee({
     required this.id,
     this.userId = '',
@@ -33,6 +35,8 @@ class Employee extends Equatable {
     this.color,
     this.serviceIds = const [],
     this.availability = const [],
+    this.weeklyScheduleEnabled = false,
+    this.scheduleExceptions = const [],
   });
 
   factory Employee.fromJson(Map<String, dynamic> userData) {
@@ -55,6 +59,8 @@ class Employee extends Equatable {
           .map((item) => (item['service_id'] ?? '').toString())
           .where((id) => id.isNotEmpty)
           .toList(),
+      weeklyScheduleEnabled: userData['weekly_schedule_enabled'] as bool? ?? ((userData['availability'] as List?)?.isNotEmpty ?? false),
+      scheduleExceptions: ((userData['scheduleExceptions'] ?? const []) as List).map((item) => Map<String, dynamic>.from(item as Map)).toList(),
       availability: ((userData['availability'] ?? const []) as List)
           .map((item) => Map<String, dynamic>.from(item as Map))
           .toList(),
@@ -95,6 +101,8 @@ class Employee extends Equatable {
     String? color,
     List<String>? serviceIds,
     List<Map<String, dynamic>>? availability,
+    bool? weeklyScheduleEnabled,
+    List<Map<String, dynamic>>? scheduleExceptions,
   }) {
     return Employee(
       id: id ?? this.id,
@@ -112,6 +120,8 @@ class Employee extends Equatable {
       color: color ?? this.color,
       serviceIds: serviceIds ?? this.serviceIds,
       availability: availability ?? this.availability,
+      weeklyScheduleEnabled: weeklyScheduleEnabled ?? this.weeklyScheduleEnabled,
+      scheduleExceptions: scheduleExceptions ?? this.scheduleExceptions,
     );
   }
 
@@ -135,5 +145,7 @@ class Employee extends Equatable {
         color,
         serviceIds,
         availability,
+        weeklyScheduleEnabled,
+        scheduleExceptions,
       ];
 }
